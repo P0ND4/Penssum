@@ -1,0 +1,344 @@
+.signup-container,
+.signin-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.signin-container{ background: linear-gradient(45deg,#eeeeeeff 60%,#3282b8bf 60%) }
+
+.signup-card,
+.signin-card {
+    padding: 30px 40px;
+}
+.signin-card {
+    margin: 0 auto;
+    width: 80%;
+}
+
+.signup-card-title h1,
+.signin-card-title h1,
+.signin-admin-card-title h1 {
+    text-align: center;
+    color: #3282B8;
+    margin: 18px 0;
+    padding: 8px;
+    border-bottom: 1px solid #1b262c9e;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+.form-control {
+    margin: 10px 0;
+    width: 100%;
+}
+
+.form-control input,
+#signup-button,
+#signin-button,
+.registration-options button,
+.form-control-select select,
+.post-description-abbreviation textarea,
+#report-description,
+.posting-price-and-discount input,
+.dateOfDelivery input,
+#publish,
+#goToProfile, 
+#send-user-report,
+#send-quote,
+.improvementComment-description,
+#send-improve,
+.dark-input input,
+.dark-button-container button,
+.preference-description,
+#signin-admin-button,
+.textarea-dark,
+.button-thereAreNoProducts,
+#goToProfilePostInformation,
+#filter-city-change {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 8px 20px;
+}
+
+.form-control-select select, #filter-city-change { 
+    background: #3282B8;
+    border-radius: 40px; 
+    color: #ffffff;
+    cursor: pointer;
+    transition: .2s all;
+}
+
+#filter-city-change { font-size: 18px; }
+
+.form-control-select select:hover, #filter-city-change:hover { background: #0F4C75; }
+.form-control-select select option, #filter-city-change option { background: #ffffff; }
+
+.form-control input, 
+.dateOfDelivery input, 
+.post-description-abbreviation textarea, 
+#report-description,
+.posting-price-and-discount input,
+.improvementComment-description,
+.dark-input input,
+.preference-description,
+.textarea-dark {
+    font-size: 18px;
+    color: #444;
+    background: #ffffff;
+    border-radius: 40px;
+}
+
+.posting-price-and-discount input { margin: 3px; }
+
+.post-description-abbreviation,
+.preference-description-zone { position: relative; }
+
+.post-description-abbreviation textarea, 
+#report-description,
+.improvementComment-description,
+.preference-description,
+.textarea-dark {
+    border-radius: 25px;
+    max-width: 100%;
+    min-width: 100%;
+    min-height: 100px;
+    max-height: 100px;
+    resize: none;
+}
+
+#letter-counter,
+#letter-count-description-preference,
+#letter-count-report-description { 
+    position: absolute;
+    color: #aaaaaa;
+    bottom: 10px;
+    right: 18px;
+}
+
+#signup-button,
+#signin-button,
+#send-quote,
+#send-user-report,
+#send-improve,
+.save-edit,
+.cancel-edit,
+#signin-admin-button,
+.button-thereAreNoProducts,
+#goToProfilePostInformation {
+    cursor: pointer;
+    font-size: 17px;
+    background: #3282B8;
+    color: #ffffff;
+    border-radius: 40px;
+    margin: 10px 0;
+    transition: .2s all;
+}
+
+#signup-button:hover,
+#signin-button:hover,
+#send-quote:hover,
+#send-user-report:hover,
+#send-improve:hover,
+.save-edit:hover,
+#signin-admin-button:hover,
+.button-thereAreNoProducts:hover,
+#goToProfilePostInformation:hover {
+    background: #0F4C75;
+}
+
+.cancel-edit { background: #0F4C75; }
+.cancel-edit:hover { background: #1b262c9e; }
+
+.uploaded-photo-container, .selected-report-images-container { 
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+}
+
+.uploaded-photo-container div, .selected-report-images-container div { position: relative; } 
+
+.clearFile {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    padding: 8px 12px;
+    border-radius: 50%;
+    background: #dd5308;
+    color: #FFFFFF;
+    cursor: pointer;
+    z-index: 1;
+    transition: all .2s;
+}
+
+.clearFile:hover { 
+    background: #b94607; 
+    transform: scale(1.04);
+}
+
+.uploaded-photo-container img, .selected-report-images-container img {
+    width: 100px;
+    height: 100px;
+    margin: 5px 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: .2s all;
+}
+
+.uploaded-photo-container img:hover, .selected-report-images-container img:hover { opacity: .8; }
+
+.dark {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1b262cb1;
+    z-index: 500;
+}
+
+.dark-button-container {
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.dark-button-container button { margin: 2px 4px; }
+
+.signUpUsingTitle,
+.signInUsingTitle {
+    color: #1b262c9e;
+    text-align: center;
+    padding: 8px;
+    border-top: 1px solid #1b262c9e;
+    border-bottom: 1px solid #1b262c9e;
+}
+
+.registration-options {
+    margin: 15px 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.registration-options button {
+    cursor: pointer;
+    font-size: 18px;
+    margin: 5px;
+    color: #555555;
+    background: #ffffff;
+    font-weight: 600;
+    border-radius: 40px;
+    transition: 0.2s all;
+}
+
+.registration-options button img {
+    width: 28px;
+    margin: 0 5px;
+    transition: 0.3s all ease-in-out;
+}
+
+.registration-options button:hover {
+    color: #3282B8;
+}
+#signup-wity-facebook:hover > .facebook_icon,
+#signup-wity-google:hover > .google_icon {
+    transform: scale(1.3);
+}
+
+.container-description-signup {
+    background: linear-gradient(45deg, #1B262CDD,#0F4C7544), url("../../img/background/images2.png");
+    background-size: cover;
+    position: center;
+    border-radius: 0 0 0 20%;
+    width: 100%;
+    height: 100%;
+    padding: 60px;
+}
+
+.description-signup h1 {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 800;
+    margin: 8px 0;
+}
+
+.description-signup p,
+.description-signup p ul li {
+    color: #eeeeee;
+    letter-spacing: 1px;
+}
+
+.description-signup p ul {
+    margin: 10px 0;
+}
+
+.illustration-signin-container { padding: 40px; }
+.illustration-signin-container img { width: 80%; }
+
+.field {
+    color: #d10b0b;
+    padding: 0 20px;
+    margin: 6px 0;
+    text-align: justify;
+    display: none;
+}
+
+.showError { display: block; }
+
+@media only screen and (max-width: 1000px) {
+    .signup-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .container-description-signup {
+        border-radius: 0;
+    }
+    .signin-card { width: 100%; }
+    .illustration-signin-container img { width: 100%; }
+}
+
+@media only screen and (max-width: 800px) {
+    .signin-container { background: linear-gradient(45deg,#eeeeeeff 80%,#3282b8bf 80%) }
+    .illustration-signin-container { display: none; }
+    .signin-container {
+        display: flex;
+        justify-content: center;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .signin-container { background: none; }
+    .form-control {
+        margin: 3px 0;
+    }
+    .signup-card, .signin-card {
+        padding: 15px 8px;
+        width: 80%;
+    }
+    .form-grid {
+        display: flex;
+        flex-direction: column;
+    }
+    .registration-options, .dark-button-container {
+        flex-direction: column;
+    }
+}
+
+@media only screen and (max-width: 400px) {
+    .signup-card, .signin-card {
+        padding: 15px 8px;
+        width: 100%;
+    }
+}

@@ -1,0 +1,133 @@
+.post-activity-container { 
+    padding: 40px; 
+    background: linear-gradient(135deg,#3282B8 16%, #EEEEEE 16%);
+}
+
+.post-activity {
+    display: flex;
+    justify-content: space-between;
+}
+
+.post-photos-container, .post-form-container {
+    width: 50%;
+    padding: 10px;
+}
+
+.container-to-upload-photos { 
+    width: 100%;
+    height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.container-to-upload-photos label {
+    padding: 8px 20px;
+    background: #3282B8;
+    color: #ffffff;
+    font-size: 26px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: .2s all;
+}
+
+.container-to-upload-photos label:hover { background: #0F4C75; }
+
+.container-to-upload-photos p {
+    font-size: 18px;
+    color: #AAAAAA;
+    margin: 15px 0;
+}
+
+.post-form-container form { margin: 25px 0; }
+
+.post-form-containert-title { 
+    color: #3282B8;
+    padding: 10px 0;
+    border-bottom: 1px solid #aaaaaa;
+    font-size: 28px;
+}
+
+.posting-price-and-discount, .delivery-information { width: 100%; }
+
+.post-product-price label {
+    font-size: 20px;
+    padding: 6px;
+    background: #3282B8;
+    border-radius: 5px;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.dateOfDelivery {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px 0;
+}
+
+.dateOfDelivery input { width: 55%; }
+
+.dateOfDelivery label {
+    font-size: 19px;
+    color: #666666;
+}
+
+#videoCallLink { 
+    color: #3282B8;
+    font-size: 20px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.post-button-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+#goToProfile, #publish {
+    color: #ffffff;
+    font-size: 20px;
+    border-radius: 40px;
+    margin: 3px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: .2s all;
+}
+
+#goToProfile { 
+    background: #0F4C75; 
+    text-decoration: none;
+}
+
+#publish { background: #3282B8; }
+
+#publish:hover { background: #0F4C75; }
+#goToProfile:hover { background: #1B262C; }
+
+@media only screen and (max-width: 1000px) {
+    .post-photos-container, .post-form-container { width: 70%; }
+    .post-activity {
+        flex-direction: column;
+        align-items: center;
+    }
+    .container-to-upload-photos { height: 30vh; }
+    .dateOfDelivery label { text-align: center; }
+}
+
+@media only screen and (max-width: 800px) {
+    .post-activity-container { background: none; }
+    .post-photos-container, .post-form-container { width: 100%; }
+    .post-subtitle { display: none; }
+}
+
+@media only screen and (max-width: 600px) {
+    .dateOfDelivery { flex-direction: column; }
+    .dateOfDelivery input { width: 100%; margin: 10px 0; }
+    .post-form-containert-title { font-size: 23px; }
+    .post-button-container { flex-direction: column }
+    .post-activity-container { padding: 20px; }
+    .container-to-upload-photos label { font-size: 20px; }
+    .container-to-upload-photos { height: 18vh; }
+}

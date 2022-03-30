@@ -1,0 +1,559 @@
+.user-profile-container { position: relative; }
+
+.edit-user-cover-photo {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: #FFFFFF;
+    padding: 6px 12px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: .3s all ease-in-out;
+    display: flex;
+}
+
+.edit-user-cover-photo p {
+    margin: 0 5px;
+    color: #888888;
+    font-size: 16px;
+}
+
+.edit-user-cover-photo:hover { background: #EEEEEE; }
+
+.user-profile { 
+    width: 100%;
+    padding: 25px 80px; 
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-profile-option-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.union-user-profile-picture { 
+    position: relative; 
+    max-width: 120px;
+    max-height: 120px;
+}
+
+.edit-user-profile-picture {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border-radius: 50%;
+    background: #FFFFFF;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.edit-user-profile-picture:hover {
+    background: #EEEEEE;
+    transform: scale(1.06);
+}
+
+.edit-user-profile-picture i, .edit-user-cover-photo i {
+    font-size: 22px;
+    color: #888888;
+}
+
+.profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+}
+
+.profile-cover {
+    height: 180px;
+    width: 85%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 35px;
+}
+
+.profile-description-control { width: 60%; }
+
+.profile-username {
+    font-size: 28px;
+    color: #FFFFFF;
+    margin: 10px 0;
+}
+
+.profile-description { color: #DDDDDD; }
+
+.profile-score-title {
+    text-align: center;
+    color: #ffffff;
+    font-size: 28px;
+    margin: 2px 0;
+}
+
+.profile-score {
+    display: flex;
+    margin: 10px 0;
+}
+
+.profile-score i {
+    font-size: 32px;
+    color: #1B262C;
+}
+
+.profile-development-container {
+    margin: 40px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* option navigation*/
+
+.user-option-icon {
+    width: 130px;
+    margin: 20px 0;
+    padding: 8px 14px;
+    background: #1B262C;
+    border-radius: 40px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.user-option-icon i {
+    color: #FFFFFF;
+    font-size: 23px;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.user-option-icon i:hover {
+    transform: scale(1.05);
+    color: #EEEEEE;
+}
+
+/*filter*/
+
+.filter-container {
+    width: 20%;
+    padding: 20px;
+    border-right: 1px solid #aaa;
+}
+
+.profile-options {
+    margin: 15px 0;
+    width: 100%;
+}
+
+.profile-options button, #profile-phone-number, .profile-filter select, .profile-filter input {
+    width: 100%;
+    margin: 2px 0;
+    border: none;
+    outline: none;
+    padding: 8px 20px;
+    font-size: 17px;
+    color: #ffffff;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+#create-post { 
+    background: #3282B8; 
+    text-decoration: none;
+}
+
+#send-quote { background: #0F4C75; }
+
+#profile-phone-number {
+    background: #DDDDDD;
+    text-align: center;
+    color: #333;
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+#profile-phone-number::after {
+    content: 'Ver numero de contacto';
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #FFFFFF;
+    background: #1B262C;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: .2s all ease-in-out;
+}
+
+#profile-phone-number:active::after { top: -100%; }
+#profile-phone-number:hover::after { background: #3d5764; }
+#create-post:hover { background: #0F4C75; }
+#send-quote:hover { background: #0f2749; }
+
+.profile-filter { margin: 35px 0; }
+
+.profile-filter select, .profile-filter input { 
+    color: #1B262C;
+    font-size: 14px;
+}
+
+.profile-filter input::placeholder { color: #DDDDDD; }
+.profile-filter input::selection { background: #1B262C; }
+
+.profile-filter input { 
+    margin: 15px 0;
+    background: #3282B8; 
+    color: #ffffff
+}
+
+.profile-filter select:hover { background: #EEEEEE; }
+
+/*product*/
+
+.profile-products-container {
+    width: 60%;
+    padding: 0 25px;
+}
+
+.profile-business-hours, .profile-business-hours-for-mobile { width: 100%; }
+.profile-business-hours-for-mobile { display: none; }
+
+.business-hours-title {
+    font-size: 25px;
+    color: #1B262C;
+    text-align: center;
+}
+
+.weeksdays-container {
+    margin: 10px;
+    padding: 5px 20px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.day-active { color: #3282B8; }
+.product-zone { padding: 15px 5px; }
+
+.profile-filter-name { 
+    color: #0f2749; 
+    font-size: 25px;
+    margin: 16px 0;
+    display: none;
+}
+
+.profile-products {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 40px 10px;
+}
+
+/*Advertising*/
+
+.advertising-container { 
+    width: 20%; 
+    padding: 0 15px;
+}
+
+.advertising { 
+    width: 100%;
+    height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: #3282B8;
+}
+
+/* zone crop */
+
+.select-image-crop-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1b262c75;
+    z-index: 100;
+}
+
+.select-image-crop {
+    padding: 20px;
+    background: #EEEEEE;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.select-image-title {
+    color: #3282B8;
+    font-size: 26px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.container-crop {
+    position: relative;
+    width: 500px;
+    height: 200px;
+}
+
+.zoom-range {
+    margin: 10px 0;
+    width: 100%;
+}
+
+.container-crop-buttons {
+    margin: 10px 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.container-crop-buttons button {
+    margin: 5px;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    padding: 8px 16px;
+    width: 100%;
+    text-align: center;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 17px;
+    transition: .3s all ease-in-out;
+}
+
+.save-crop-profile-image { background: #3282B8; }
+.save-crop-profile-image:hover { background: #0f2749; }
+
+.cancel-crop-profile-image { background: #333; }
+.cancel-crop-profile-image:hover { background: #1B262C; }
+
+@media only screen and (max-width: 1250px) {
+    .profile-products { grid-template-columns: repeat(2,1fr); }
+    .profile-products-container { width: 55%; }
+    .filter-container { width: 25%; }
+    .profile-username { font-size: 24px; }
+    .profile-score-title { font-size: 24px; }
+    .profile-score i { font-size: 28px; }
+}
+
+@media only screen and (max-width: 1000px) {
+    .weeksdays-container { padding: 5px; }
+    .advertising-container { display: none; }
+    .profile-products-container { width: 70%; }
+    .filter-container { width: 30%; }
+    .profile-products { grid-template-columns: repeat(2,1fr); }
+    .profile-username { font-size: 22px; }
+    .profile-score-title { font-size: 22px; }
+    .profile-score i { font-size: 26px; }
+    .profile-cover { width: 100%; }
+}
+
+@media only screen and (max-width: 850px) {
+    .filter-container { padding: 6px; }
+}
+
+@media only screen and (max-width: 750px) {
+    .weeksdays-container { 
+        padding: 0 40px; 
+        justify-content: space-evenly;
+    }
+    .profile-options button, #profile-phone-number, .profile-filter select, .profile-filter input, #send-quote {
+        padding: 10px;
+        font-size: 15px;
+    }
+    .profile-business-hours { display: none; }
+    .profile-business-hours-for-mobile { 
+        display: block; 
+        margin: 20px 0;
+    }
+    .profile-products-container { width: 60%; }
+    .filter-container { width: 40%; }
+    .profile-products { grid-template-columns: 1fr; }
+    .user-profile {
+        padding: 25px 20px;
+        flex-direction: column;
+        align-items: center;
+    }
+    .profile-cover { width: 100%; }
+    .profile-picture, .union-user-profile-picture {
+        width: 100px;
+        height: 100px;
+    }
+    .profile-cover {
+        height: auto;
+        flex-direction: column-reverse;
+        align-items: center;
+        padding: 0;
+    }
+    .profile-description-control { 
+        width: 100%; 
+        text-align: center;
+    }
+    .profile-score i { font-size: 32px; }    
+    .profile-username { font-size: 26px; }
+    .profile-score-title { font-size: 26px; }
+
+    .edit-user-profile-picture {
+        height: 35px;
+        width: 35px;
+    }
+
+    .edit-user-cover-photo {
+        top: 20px;
+        bottom: initial;
+        font-size: 14px;
+    }
+
+    .edit-user-cover-photo i { font-size: 18px; }
+}
+
+.review-product {
+    color: #ff9900;
+    font-size: 35px;
+    position: absolute;
+    right: -5px;
+    top: -5px;
+}
+
+.news-span {
+    position: fixed;
+    bottom: -50px;
+    right: 50px;
+    background: #1B262C;
+    padding: 8px 16px;
+    border-radius: 40px;
+    color: #FFFFFF;
+    font-size: 13px;
+    transition: .4s all;
+    z-index: 200;
+}
+
+.news-span-active { animation: newsSpan forwards 3.8s ease-in-out; }
+
+.profile-blocked {
+    width: 100%;
+    padding: 14px 30px;
+    display: flex;
+    align-items: center;
+}
+
+.profile-blocked i, .profile-blocked p {
+    font-size: 22px;
+    color: #888888;
+    margin: 0 10px;
+}
+
+@keyframes newsSpan {
+    0% { bottom: -50px; }
+    30% { 
+        transform: scale(1.1); 
+        bottom: 50px;
+    }
+    50% { 
+        transform: scale(1.0);
+        bottom: 50px;
+    }
+    70% { 
+        transform: scale(1.1); 
+        bottom: 50px;
+    }
+    80% { 
+        transform: scale(1.0); 
+        bottom: 50px;
+    }
+    100% { 
+        bottom: -50px; 
+        transform: scale(1.1); 
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .select-image-crop {
+        width: 90%;
+        max-width: 90%;
+        padding: 10px;
+    }
+    .select-image-title { font-size: 20px; }
+    .container-crop { width: 300px; }
+    .edit-user-cover-photo p { display: none; }
+    .container-crop-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    .edit-user-cover-photo {
+        padding: 0;
+        height: 30px;
+        width: 30px;
+        border-radius: 50%;
+        justify-content: center;
+        align-items: center;
+    }
+    .weeksdays-container { 
+        padding-bottom: 10px;
+        border-bottom: 1px solid #aaaaaa; 
+    }
+    .profile-business-hours-for-mobile { margin: 20px 0; }
+    .profile-development-container {
+        margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .filter-container { 
+        width: 80%; 
+        border: none;
+    }
+    .profile-products-container { width: 100%; }
+    .profile-products { grid-template-columns: 1fr; }
+    .profile-options { margin: 5px 0; }
+    .profile-options button, #profile-phone-number, .profile-filter select, .profile-filter input { font-size: 14px; }
+}
+
+@media only screen and (max-width: 500px) {
+    .profile-products-container { padding: 0 15px; }
+    .weeksdays-container { 
+        padding: 0;
+        padding-bottom: 10px;
+        justify-content: space-around;
+    }
+    .weeksdays-container p { font-size: 14px; }
+    .user-option-icon i { font-size: 19px; }
+    .news-span { right: 30px; }
+}
+
+@media only screen and (max-width: 400px) {
+    .container-crop { width: 200px; }
+    .select-image-crop { width: 95%; }
+    .edit-user-profile-picture { width: 30px; height: 30px; }
+    .edit-user-profile-picture i { font-size: 20px; }
+    .weeksdays-container p { font-size: 11px; }
+    .profile-score i { font-size: 26px; }    
+    .profile-username { font-size: 22px; }
+    .profile-score-title { font-size: 22px; }
+    .profile-description { font-size: 14px; }
+    .profile-picture, .union-user-profile-picture {
+        width: 80px;
+        height: 80px;
+    }
+    .user-profile { padding: 25px 10px; }
+    .news-span { right: 15px; }
+}

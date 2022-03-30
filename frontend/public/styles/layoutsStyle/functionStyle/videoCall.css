@@ -1,0 +1,117 @@
+.video_call-meeting {
+    background: #283841;
+    height: 81.5vh;
+    position: relative;
+}
+
+.video_call-meeting-control { 
+    padding: 30px 20px; 
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.video_call {
+    border-radius: 8px;
+    margin: 0 5px;
+    width: 100%; 
+    height: 100%;
+    background: #1B262C;
+}
+
+.students-video-zone {
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin: 0 5px;
+    width: 60%;
+    height: 100%;
+    background: #1B262C;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+.students-video-zone .students-video {
+    margin: 10px 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 180px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #283841;
+}
+
+.students-video video {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.users-video_call {
+    width: 100%; 
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-user-video { 
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.video_call-nav {
+    padding: 15px 25px;
+    width: 100%;
+    background: #1B262C;
+    display: flex;
+    justify-content: center;
+}
+
+.video_call-icons-container {
+    width: 25%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.video_call-icons-container div {
+    width: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.video_call-icons-container i {
+    font-size: 30px;
+    color: #41a3e4;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+
+#fa-video, #fa-microphone { color: #ffffff; }
+#fa-video-slash, #fa-microphone-slash { display: none; }
+.video_call-icons-container i:hover { transform: scale(1.07); }
+
+@media only screen and (max-width: 1000px) {
+    .video_call-icons-container { width: 40%; }
+    .video_call-meeting { height: 70vh; }
+}
+
+@media only screen and (max-width: 500px) {
+    .video_call { width: 90%; }
+    .video_call-icons-container { width: 80%; }
+    .video_call-meeting { height: 80vh; }
+    .second-user-video { 
+        width: 200px;
+        height: 100px; 
+    }
+}
+
+@media only screen and (max-width: 500px) { 
+    .video_call { width: 100%; } 
+    .video_call-icons-container { width: 90%; }
+}
