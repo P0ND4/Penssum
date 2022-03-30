@@ -1,0 +1,82 @@
+import { useEffect, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { changeMail } from '../../../api';
+import swal from 'sweetalert';
+import Loading from "../../parts/Loading";
+
+function CheckEmail({ setRegistration, userInformation, setUserInformation, registrationProcess }) {
+    const [data, setData] = useState('');
+
+    const regularExpresionMail = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/;
+
+    useEffect(() => { setRegistration(false) });
+    useEffect(() => {
+        if (registrationProcess.validated !== null && !registrationProcess.validated && registrationProcess.selection) {
+            document.getElementById('input-check-email').value = userInformation.email;
+            setData(userInformation.email);
+        } 
+    }, [userInformation.email,registrationProcess]);
+
+    const change = async () => {
+        if (data !== userInformation.email) {
+            if (!regularExpresionMail.test(data)) {
+                document.querySelector('.field_error-change-mail-invalid').classList.add('showError');
+                setTimeout(() => document.querySelector('.field_error-change-mail-invalid').classList.remove('showError'), 2000);
+            } else {
+                const result = await changeMail(userInformation._id, userInformation.username, data);
+                if (result.error) {
+                    document.querySelector('.field_error-change-mail-in-use').classList.add('showError');
+                    setTimeout(() => document.querySelector('.field_error-change-mail-in-use').classList.remove('showError'), 2000);
+                } else {
+                    setUserInformation(result);
+                    swal({
+                        title: 'Enviado',
+                        text: 'Revisa tu correo electronico',
+                        icon: 'success',
+                        timer: '2000',
+                        button: false
+                    });
+                };
+            };
+        } else {
+            document.querySelector('.field_error-change-mail').classList.add('showError');
+            setTimeout(() => document.querySelector('.field_error-change-mail').classList.remove('showError'), 2000);
+        };
+    };
+
+    return (
+        <div className="check-email-container">
+            {registrationProcess.validated === null ? <Loading margin="auto" />
+                : !registrationProcess.validated && registrationProcess.selection ? (
+                    <div className="check-email">
+                        <div className="check-email-header">
+                            <i className="fa fa-check"></i>
+                            <h1>REVISA TU EMAIL</h1>
+                        </div>
+                        <div className="check-email-main">
+                            <p className="sentEmail">Te hemos enviado un correo. Activa tu cuenta en el enlace proporcionado.</p>
+                            <div className="input-list-container">
+                                <h1>¿No recibiste nada?</h1>
+                                <div className="input-list">
+                                    <p>1. Si no encuentras el correo, mira a ver si está en otras carpetas (spam, social, ...).</p>
+                                    <div>
+                                        <p>2. ¿Escribiste bien el correo electronico?</p>
+                                        <p className="field field_error-change-mail-in-use" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}>El correo esta en uso.</p>
+                                        <p className="field field_error-change-mail-invalid" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}>Escriba un correo valido.</p>
+                                        <p className="field field_error-change-mail" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}>Escriba un correo electronico diferente</p>
+                                        <div className="check-email-change">
+                                            <input type="email" id="input-check-email" placeholder="Correo electronico" onChange={e => setData(e.target.value)} />
+                                            <button onClick={() => change()}>Cambiar</button>
+                                        </div>
+                                    </div>
+                                    <p>3. Espera unos 5 minutos. (dependiendo del correo esto puede llevar unos segundos).</p>
+                                    <p>4. ¿No ha llegado nada? por favor contactanos y explicanos el problema <Link className="check-email-link-help" to="help">Ayuda</Link></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>) : <Navigate to="/"/>}
+        </div>
+    );
+};
+
+export default CheckEmail;
