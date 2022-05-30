@@ -81,14 +81,12 @@
 
 .profile_provider-score {
     display: flex;
+    flex-direction: row-reverse;
     justify-content: center;
     margin: 10px 0;
 }
 
-.profile_provider-score i {
-    font-size: 32px;
-    color: #fbff00;
-}
+.profile_provider-score i { font-size: 32px; }
 
 @media only screen and (max-width: 1220px) { .profile_provider-name-and-description { width: 60%; } }
 

@@ -16,13 +16,25 @@
     width: 280px; 
     min-width: 250px;
     background: #3282B8;
+    z-index: 50;
 }
 
-#dashboard-product-account {
+#dashboard-product-account, #dashboard-payments-account {
     color: #FFFFFF;
-    padding: 4px 9px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    font-size: 17px;
+    margin: 0 5px;
+    justify-content: center;
+    align-items: center;
     border-radius: 50%;
     background: #dd5308;
+}
+
+.dashboard-sections p { 
+    display: flex; 
+    align-items: center;
 }
 
 .dashboard-sections-title { text-align: center; }
@@ -188,12 +200,6 @@
     color: #3282B8;
 }
 
-.reviewProduct {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .dashboard-products {
     display: grid;
     grid-template-columns: repeat(3,1fr);
@@ -201,7 +207,10 @@
 }
 
 .review-products-button {
-    margin: 10px 0;
+    width: 100%;
+    padding: 14px 8px;
+    background: #FFFFFF;
+    border-radius: 0 0 5px 5px;
     display: flex;
     justify-content: space-between;
 }
@@ -303,6 +312,8 @@
     align-items: center;
 }
 
+.icon-exclamation-container { position: relative; }
+
 .icon-exclamation {
     font-size: 25px;
     color: #888888;
@@ -341,7 +352,6 @@
 .information-user-dark {
     display: flex;
     justify-content: space-between;
-    flex-wrap: nowrap;
 }
 
 .information-user { 
@@ -369,6 +379,106 @@
 
 .delete-user:hover { background: #0F4C75; }
 
+.dashboard-payments-title {
+    font-size: 32px;
+    color: #777777;
+    margin: 14px 0;
+}
+
+.dashboard-payments-card-container {
+    padding: 15px;
+    background: #FFFFFF;
+    border-radius: 8px;
+    height: 72vh;
+    max-height: 72vh;
+    overflow: auto;
+}
+
+.thereAreNoPayments {
+    text-align: center;
+    color: #3282B8;
+    font-size: 26px;
+}
+
+.payment-card-dashboard {
+    width: 100%;
+    padding: 8px 16px;
+    background: #EEEEEE;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.payment-card-dashboard p {
+    font-size: 16px;
+    color: #444444;
+}
+
+.payment-card-dashboard-button-container button {
+    margin: 0 4px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 8px 10px;
+    color: #FFFFFF;
+    background: #3282B8;
+    transition: .2s all ease-in-out;
+}
+
+.payment-card-dashboard-button-container button:hover { background: #0F4C75; }
+
+.payment-card-dashboard-information {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 380px;
+    background: #DDDDDD;
+    border-radius: 8px;
+    animation: appearSlowly .6s forwards ease-in-out;
+}
+
+.payment-card-dashboard-information p {
+    color: #555555;
+    font-size: 13px;
+    margin: 8px 10px;
+}
+
+#fa-chevron-left-payment-dashboard {
+    display: block;
+    text-align: right;
+    font-size: 30px;
+    margin: 20px;
+    color: #EEEEEE;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+#fa-chevron-left-payment-dashboard:hover { color: #DDDDDD; }
+
+.notifications-dashboard-container h1 {
+    color: #3282B8;
+    font-size: 32px;
+}
+
+.notifications-dashboard-section {
+    margin: 10px 0;
+    padding: 0 10px;
+}
+
+@keyframes appearSlowly {
+    0% { 
+        height: 0; 
+        opacity: 0;
+    }
+    100% { 
+        height: 290px; 
+        opacity: 1;
+    }
+}
+
 @media only screen and (max-width: 1150px) {
     .dashboard-products {
         grid-template-columns: 1fr 1fr;
@@ -376,27 +486,50 @@
     .statistics-card-container {
         grid-template-columns: repeat(3,1fr);
     }
+    .graphics { 
+        width: 90%; 
+        margin: 0 auto;
+    }
 }
 
 @media only screen and (max-width: 850px) {
+    .thereAreNoProductsInDashboard, .thereAreNoUsersInDashboard { font-size: 30px; }
     .dashboard-products {
         grid-template-columns: 1fr;
+    }
+    .dashboard-payments-title { font-size: 28px; }
+    .statistics-card-container { grid-template-columns: 1fr 1fr; }
+    .graphics-container { 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center; 
+    }
+    .graphics-container .WeeklyRegisteredUsers { width: 90%; }
+    .graphics-container .UserState { 
+        width: 90%;
+        padding: 20px;
     }
 }
 
 @media only screen and (max-width: 750px) {
-    .statistics-card-container { grid-template-columns: 1fr 1fr; }
-    .graphics-container { display: block; }
-    .graphics-container .WeeklyRegisteredUsers { width: 100%; }
-    .graphics-container .UserState { 
-        width: 100%;
-        padding: 20px 160px;
-    }
+    .statistics-card-container { grid-template-columns: 1fr; }
     #search-user-dashboard { width: 170px; }
     .found-users-container { height: 100vh; }
+    .date-found-user-dashboard { display: none; }
+    .payment-card-dashboard-information {
+        width: 300px;
+        top: 30px;
+        left: -10px;
+    }
+    .payment-card-dashboard-information p { font-size: 12px; }
 }
 
 @media only screen and (max-width: 600px) {
+    .statistics-card-container { grid-template-columns: 1fr 1fr; }
+    .information-user { width: 100%; }
+    .information-user-dark { flex-direction: column-reverse; }
+    .thereAreNoProductsInDashboard, .thereAreNoUsersInDashboard { font-size: 28px; }
     .dashboard-sections-container {
         position: fixed;
         width: 100%;
@@ -405,9 +538,34 @@
     .main-dashboard-section { width: 100%; }
     .graphics-container .UserState { padding: 20px 130px; }
     #fa-chevron-left-dashboard { display: inline-block; }
+    .delete-user { width: 100%; }
+    .payment-card-dashboard-information {
+        width: 100%;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 20px;
+        background: #283841;
+        animation: appearPaymentInformation .4s forwards ease-in-out;
+        border-radius: 0;
+    }
+    .payment-card-dashboard-information p {
+        width: 100%;
+        font-size: 18px;
+        color: #EEEEEE;
+    }
+    .icon-exclamation-container { position: initial; }
+    .notifications-dashboard-container h1 { font-size: 24px; }
 }
 
+@keyframes appearPaymentInformation {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+} 
+
 @media only screen and (max-width: 500px) {
+    .thereAreNoProductsInDashboard, .thereAreNoUsersInDashboard { font-size: 26px; }
     .graphics-container .UserState { padding: 20px 100px; }
     .statistics-card-container { grid-template-columns: 1fr; }
     .main-header-dashboard h1 { font-size: 28px; }
@@ -416,9 +574,12 @@
         font-size: 14px;
     }
     .dashboard-nav { padding: 15px; }
+    .dashboard-payments-card-container { padding: 10px; }
 }
 
 @media only screen and (max-width: 400px) {
+    .found-options button { margin: 0; }
+    .thereAreNoProductsInDashboard, .thereAreNoUsersInDashboard { font-size: 24px; }
     .graphics-container .UserState { padding: 20px 60px; }
     .graphics-container .WeeklyRegisteredUsers, .graphics { padding: 10px; }
     .main-header-dashboard { flex-direction: column; }

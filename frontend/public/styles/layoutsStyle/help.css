@@ -67,12 +67,22 @@
 .dark-contact-form {
     width: 50%;
     height: auto;
-    max-height: 75vh;
+    max-height: 80vh;
     text-align: center;
     background: #DDDDDD;
     border-radius: 8px;
     padding: 20px;
     overflow: auto;
+}
+
+.dark-files-count {
+    color: #AAAAAA;
+    font-size: 20px;
+}
+
+.dark-files-count span {
+    color: #3282B8;
+    font-size: 20px;
 }
 
 .dark-contact-form h1 {

@@ -190,6 +190,30 @@
     transform: translateX(40px);
 }
 
+.payment-method-help-card {
+    width: 100%;
+    background: #FFFFFF;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.payment-method-help-card:hover { 
+    transform: scale(1.02);
+    box-shadow: 0px 6px 12px #bbbbbbaa; 
+}
+
+.payment-method-help-card img { width: 180px; }
+
+.payment-method-help-card p {
+    font-size: 16px;
+    color: #AAAAAA;
+}
+
 @media only screen and (max-width:1150px) {
     .general-preference h4 { display: none; }  
 }
@@ -218,9 +242,19 @@
     .privacy-zone { flex-direction: column; }
     .privacy-zone-information { width: 100%; }
     .button-toggle-zone { margin: 15px 0; }
+    .payment-method-help-card {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 }
 
 @media only screen and (max-width: 600px) {
+    .payment-method-help-card {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
     .dark-input { width: 90%; }
     .general-preference-card { margin: 8px 0; }
     .security-preference i { font-size: 30px; }
@@ -241,6 +275,11 @@
     .checkbox-week-day {
         grid-template-columns: 1fr 1fr;
         gap: 4px;
+    }
+    .payment-method-help-card {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 }
 

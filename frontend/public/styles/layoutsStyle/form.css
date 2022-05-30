@@ -58,14 +58,19 @@
 .textarea-dark,
 .button-thereAreNoProducts,
 #goToProfilePostInformation,
-#filter-city-change {
+#filter-city-change,
+#improvementComment-description,
+#filter-state-change,
+#selectAccountType-preference,
+#typeOfAccound-preference-save,
+.pay-service-in-post {
     border: none;
     outline: none;
     width: 100%;
     padding: 8px 20px;
 }
 
-.form-control-select select, #filter-city-change { 
+.form-control-select select, #filter-city-change, #filter-state-change, #selectAccountType-preference { 
     background: #3282B8;
     border-radius: 40px; 
     color: #ffffff;
@@ -73,10 +78,11 @@
     transition: .2s all;
 }
 
-#filter-city-change { font-size: 18px; }
+#filter-city-change, #filter-state-change { font-size: 18px; }
+#selectAccountType-preference { font-size: 16px; }
 
-.form-control-select select:hover, #filter-city-change:hover { background: #0F4C75; }
-.form-control-select select option, #filter-city-change option { background: #ffffff; }
+.form-control-select select:hover, #filter-city-change:hover, #filter-state-change:hover, #selectAccountType-preference:hover { background: #0F4C75; }
+.form-control-select select option, #filter-city-change option, #filter-state-change option, #selectAccountType-preference option { background: #ffffff; }
 
 .form-control input, 
 .dateOfDelivery input, 
@@ -86,7 +92,8 @@
 .improvementComment-description,
 .dark-input input,
 .preference-description,
-.textarea-dark {
+.textarea-dark,
+#improvementComment-description {
     font-size: 18px;
     color: #444;
     background: #ffffff;
@@ -99,6 +106,7 @@
 .preference-description-zone { position: relative; }
 
 .post-description-abbreviation textarea, 
+#improvementComment-description,
 #report-description,
 .improvementComment-description,
 .preference-description,
@@ -113,7 +121,9 @@
 
 #letter-counter,
 #letter-count-description-preference,
-#letter-count-report-description { 
+#letter-count-report-description,
+#letter-count-improvementComment-description,
+#letter-count-help-description { 
     position: absolute;
     color: #aaaaaa;
     bottom: 10px;
@@ -129,7 +139,9 @@
 .cancel-edit,
 #signin-admin-button,
 .button-thereAreNoProducts,
-#goToProfilePostInformation {
+#goToProfilePostInformation,
+#typeOfAccound-preference-save,
+.pay-service-in-post {
     cursor: pointer;
     font-size: 17px;
     background: #3282B8;
@@ -147,14 +159,16 @@
 .save-edit:hover,
 #signin-admin-button:hover,
 .button-thereAreNoProducts:hover,
-#goToProfilePostInformation:hover {
+#goToProfilePostInformation:hover,
+#typeOfAccound-preference-save:hover,
+.pay-service-in-post:hover {
     background: #0F4C75;
 }
 
 .cancel-edit { background: #0F4C75; }
 .cancel-edit:hover { background: #1b262c9e; }
 
-.uploaded-photo-container, .selected-report-images-container { 
+.uploaded-photo-container, .selected-improvementComment-images-container, .selected-report-images-container { 
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -163,7 +177,9 @@
     min-width: 100%;
 }
 
-.uploaded-photo-container div, .selected-report-images-container div { position: relative; } 
+.uploaded-photo-container div, 
+.selected-report-images-container div, 
+.selected-improvementComment-images-container div { position: relative; } 
 
 .clearFile {
     position: absolute;
@@ -183,7 +199,7 @@
     transform: scale(1.04);
 }
 
-.uploaded-photo-container img, .selected-report-images-container img {
+.uploaded-photo-container img, .selected-report-images-container img, .selected-improvementComment-images-container img {
     width: 100px;
     height: 100px;
     margin: 5px 8px;
@@ -192,7 +208,9 @@
     transition: .2s all;
 }
 
-.uploaded-photo-container img:hover, .selected-report-images-container img:hover { opacity: .8; }
+.uploaded-photo-container img:hover, 
+.selected-report-images-container img:hover, 
+.selected-improvementComment-images-container img { opacity: .8; }
 
 .dark {
     display: none;
@@ -204,7 +222,13 @@
     right: 0;
     bottom: 0;
     background: #1b262cb1;
+    animation: appearDark .3s forwards ease-in-out;
     z-index: 500;
+}
+
+@keyframes appearDark {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 .dark-button-container {
@@ -319,6 +343,7 @@
 }
 
 @media only screen and (max-width: 500px) {
+    .button-thereAreNoProducts { font-size: 14px; width: 100%; }
     .signin-container { background: none; }
     .form-control {
         margin: 3px 0;
@@ -337,6 +362,7 @@
 }
 
 @media only screen and (max-width: 400px) {
+    .button-thereAreNoProducts { font-size: 12px; }
     .signup-card, .signin-card {
         padding: 15px 8px;
         width: 100%;

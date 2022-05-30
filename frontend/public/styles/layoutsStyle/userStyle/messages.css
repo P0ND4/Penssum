@@ -22,6 +22,8 @@
     height: 100%;
     border-radius: 8px 0 0 8px;
     border-right: 1px solid #38454d;
+    transition: .8s all ease-in-out;
+    z-index: 5;
 }
 
 .recent-message {
@@ -29,9 +31,10 @@
     display: flex;
     align-items: center;
     cursor: pointer;
+    transition: .2s all ease-in-out;
 }
 
-.message-watching { background: #38454d; }
+.message-watching, .recent-message:hover { background: #38454d; }
 
 .user-connection {
     width: 30px;
@@ -76,6 +79,24 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.message-header-main { 
+    display: flex; 
+    align-items: center;
+}
+
+.message-header-main i {
+    color: #FFFFFF;
+    font-size: 28px;
+    margin-right: 15px;
+    cursor: pointer;
+    transition: .3s all ease-in;
+}
+
+.message-header-main i:hover { 
+    color: #eee; 
+    transform: scale(1.05);
 }
 
 .message-header-title {
@@ -163,7 +184,9 @@
 }
 
 #send-message {
-    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -214,9 +237,6 @@
 @media only screen and (max-width: 900px) {
     .messages-container { padding: 10px; }
     .recent-message { padding: 18px 8px; }
-}
-
-@media only screen and (max-width: 900px) {
     .recent-messages { width: 40%; }
     .message { width: 60%; }
     .messages-by-date div p { 
@@ -226,19 +246,24 @@
 }
 
 @media only screen and (max-width: 700px) {
-    .message { 
-        display: none; 
+    .message { width: 100%; }
+    .recent-messages { 
+        position: absolute;
         width: 100%;
+        height: 100%;
     }
-    .recent-messages { width: 100%; }
-    .messages-container { padding: 8px; }
+    .messages-container { padding: 0; }
     .short-paragrahp { font-size: 15px; }
     .message-name-and-time h2 { font-size: 25px; }
     .recent-message { padding: 25px 20px; }
+    .message-header { padding: 8px 10px; }
 }
 
 @media only screen and (max-width: 500px) {
-    .messages-container { padding: 0; }
+    #send-message { margin: 0 5px; }
+    .send-message { padding: 8px 10px; }
+    .message-header i { font-size: 22px; }
+    .message-header-title { font-size: 22px; }
     .short-paragrahp { font-size: 14px; }
     .message-name-and-time h2 { font-size: 20px; }
     .recent-message { padding: 18px 8px; }

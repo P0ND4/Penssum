@@ -40,6 +40,7 @@
 }
 
 .main-image-info-no-products h1 { 
+    font-family: 'Satisfy', cursive;
     color: #FFFFFF; 
     margin: 10px 0;
 }
@@ -291,6 +292,12 @@
 
 .show-more-products:hover { background: #1B262C; }
 
+.carousel-image-score-title {
+    color: #ffffff;
+    font-size: 28px;
+    margin: 2px 0;
+}
+
 /*Responsive Desing*/
 
 @media only screen and (max-width: 1050px) {
@@ -325,7 +332,6 @@
     }
     .thereAreNoProducts { width: 95%; }
     .thereAreNoProducts h1 { font-size: 24px; }
-    .button-thereAreNoProducts { font-size: 14px; }
     .product-container { grid-template-columns: 1fr; }
     .product-container { padding: 10px 20px; }
     .home-events-button-container {
