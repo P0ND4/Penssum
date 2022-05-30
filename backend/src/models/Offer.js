@@ -8,6 +8,8 @@ const OfferSchema = new Schema ({
     firstName: { type: String },
     lastName: { type: String },
     acceptOffer: { type: Boolean, default: false },
+    isThePayment: { type: Boolean, default: false },
+    isBought: { type: Boolean, default: false },
     creationDate: { type: Date, default: Date.now() }
 });
 

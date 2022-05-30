@@ -6,7 +6,9 @@ const Offer = require('../models/Offer');
 const Product = require('../models/Product');
 const Message = require('../models/Message');
 const Block = require('../models/Block');
-const Notification = require('../models/Notification'); 
+const Notification = require('../models/Notification');
+const Vote = require('../models/Vote');
+const Transaction = require('../models/Transaction');
 
 const { randomName } = require('../helpers/libs');
 const hash = require('../helpers/hash');
@@ -85,7 +87,33 @@ ctrl.accountAuthentication = async (req, res) => {
         await User.findByIdAndUpdate(data.id, { token: TOKEN });
 
         const updatedUser = await User.findById(data.id);
-        await sendEmail(updatedUser.username, updatedUser.email, TOKEN);
+
+        const contentHTML = `
+            <div style="width: 100%; margin: 0;" >
+                <img src="cid:penssum" style="display: block; margin: 20px auto; width: 120px; border-radius: 16px;"/>
+                <p style="display: block; width: 90%; margin: 0 auto; text-align: center; font-family: sans-serif; font-size: 18px; color: #666;">Muchas gracias por registrarte en Penssum, por favor confirma tu cuenta como ${updatedUser.username}</p>
+                <div style="width: 100%; text-align: center; margin: 30px 0;">
+                    <a href="${process.env.FRONTEND_PENSSUM}/signup/email/verification/${TOKEN}" style="text-decoration: none;">
+                        <button style="border: none; outline: none; border-radius: 40px; padding: 8px 20px; font-size: 18px; font-family: sans-serif; background: #3282B8; color: #FFF; cursor: pointer;">Confirmar</button>
+                    </a>
+                    <p style="color: #666; font-size: 16px; margin: 8px 0;">Si no funciona el boton presiona <a href="http://localhost:3000/signup/email/verification/${TOKEN}" style="color: #3282B8;">Aqui</a></p>
+                </div>
+                <p style="display: block; width: 90%; margin: 0 auto; color: #666; font-size: 16px; text-align: center;">Si no fuiste tu, puedes ignorar este correo. Este correo es un correo automatizado de nuestra plataforma Penssum Lee nuestros terminos y condiciones de uso de nuestra aplicacion. <a href="http://localhost:3000/help/information/mod=terms_and_conditions" style="color: #3282B8;">Terminos y condiciones</a></p>
+            </div>
+        `
+
+        const informationToSend = {
+            to: updatedUser.email,
+            subject: `Confirma tu cuenta de Penssum como ${updatedUser.username}`,
+            html: contentHTML,
+            attachments: [{
+                filename: 'penssum-transparent.png',
+                path: `${process.env.API_PENSSUM}/penssum-transparent.png`,
+                cid: 'penssum'
+            }]
+        };
+
+        await sendEmail(informationToSend);
 
         return res.send(updatedUser);
     };
@@ -105,7 +133,7 @@ ctrl.tokenVerification = async (req, res) => {
 
 ctrl.delete = async (req, res) => {
     const { id } = req.body;
-    
+
     const user = await User.findById(id);
     const userNotifications = await Notification.find({ to: id });
     const products = await Product.find({ owner: id });
@@ -115,18 +143,18 @@ ctrl.delete = async (req, res) => {
     });
 
     if (user.profilePicture !== null) {
-        try { await fs.unlink(path.resolve(`src/public/user/${user.userImageFileName.profilePicture}`)) } catch(e) { console.log('Image not found') };
+        try { await fs.unlink(path.resolve(`src/public/user/${user.userImageFileName.profilePicture}`)) } catch (e) { console.log('Image not found') };
     };
 
-    if (user.coverPhoto !== null) { 
-        try { await fs.unlink(path.resolve(`src/public/user/${user.userImageFileName.coverPhoto}`)) } catch(e) {console.log('Image not found') };
+    if (user.coverPhoto !== null) {
+        try { await fs.unlink(path.resolve(`src/public/user/${user.userImageFileName.coverPhoto}`)) } catch (e) { console.log('Image not found') };
     };
 
     if (userNotifications.length > 0) {
         userNotifications.forEach(notification => {
             const files = notification.files;
             files.forEach(async file => {
-                try { await fs.unlink(path.resolve(`src/public/quotes/${file.fileName}`)) } catch(e) {console.log('Image not found') };
+                try { await fs.unlink(path.resolve(`src/public/quotes/${file.fileName}`)) } catch (e) { console.log('Image not found') };
             });
         });
     };
@@ -136,6 +164,8 @@ ctrl.delete = async (req, res) => {
     await Block.deleteMany({ $or: [{ from: id }, { to: id }] });
     await Message.deleteMany({ $or: [{ transmitter: id }, { receiver: id }] });
     await Notification.deleteMany({ to: id });
+    await Transaction.findOneAndDelete({ ownerId: id });
+    await Vote.findOneAndDelete({ from: id });
     await User.findByIdAndDelete(id);
 
     res.send('User delete successfully');
@@ -151,11 +181,36 @@ ctrl.changeMail = async (req, res) => {
         const TOKEN = randomName(100);
 
         await User.findByIdAndUpdate(id, { email, token: TOKEN });
-        await sendEmail(username, email, TOKEN);
 
+        const contentHTML = `
+            <div style="width: 100%; margin: 0;" >
+                <img src="cid:penssum" style="display: block; margin: 20px auto; width: 120px; border-radius: 16px;" />
+                <p style="display: block; width: 90%; margin: 0 auto; text-align: center; font-family: sans-serif; font-size: 22px; color: #666;">Muchas gracias por registrarte en Penssum, por favor confirma tu cuenta como ${username}</p>
+                <div style="width: 100%; text-align: center; margin: 30px 0;">
+                    <a href="${process.env.FRONTEND_PENSSUM}/signup/email/verification/${TOKEN}" style="text-decoration: none;">
+                        <button style="border: none; outline: none; border-radius: 40px; padding: 8px 20px; font-size: 22px; font-family: sans-serif; background: #3282B8; color: #FFF; cursor: pointer;">Confirmar</button>
+                    </a>
+                    <p style="color: #666; font-size: 18px; margin: 8px 0;">Si no funciona el boton presiona <a href="http://localhost:3000/signup/email/verification/${TOKEN}" style="color: #3282B8;">Aqui</a></p>
+                </div>
+                <p style="display: block; width: 90%; margin: 0 auto; color: #666; font-size: 18px; text-align: center;">Si no fuiste tu, puedes ignorar este correo. Este correo es un correo automatizado de nuestra plataforma Penssum Lee nuestros terminos y condiciones de uso de nuestra aplicacion. <a href="http://localhost:3000/help/information/mod=terms_and_conditions" style="color: #3282B8;">Terminos y condiciones</a></p>
+            </div>
+        `
+
+        const informationToSend = {
+            to: email,
+            subject: `Confirma tu cuenta de Penssum como ${username}`,
+            html: contentHTML,
+            attachments: [{
+                filename: 'penssum-transparent.png',
+                path: `${process.env.API_PENSSUM}/penssum-transparent.png`,
+                cid: 'penssum'
+            }]
+        };
+
+        const result = await sendEmail(informationToSend);
         const user = await User.findById(id);
 
-        return res.send(user);
+        return res.send({ message: result, user });
     }
 };
 
@@ -208,6 +263,7 @@ ctrl.search = async (req, res) => {
         _id: { $ne: id },
         description: { $ne: '' },
         validated: true,
+        'typeOfUser.user': {$ne: 'block'},
         $or: [
             { firstName: { $regex: '.*' + search + '.*', $options: 'i' } },
             { secondName: { $regex: '.*' + search + '.*', $options: 'i' } },
@@ -266,9 +322,9 @@ ctrl.changePhoto = async (req, res) => {
                 catch (e) { console.log('Image not found') };
 
                 await fs.rename(fileAddress, targetPath);
-                const url = `http://localhost:8080/user/${URLFile + extname}`;
-                await User.findByIdAndUpdate(id, (photoType === 'profile') 
-                    ? { profilePicture: url, 'userImageFileName.profilePicture': URLFile + extname } 
+                const url = `${process.env.API_PENSSUM}/user/${URLFile + extname}`;
+                await User.findByIdAndUpdate(id, (photoType === 'profile')
+                    ? { profilePicture: url, 'userImageFileName.profilePicture': URLFile + extname }
                     : (photoType === 'cover') ? { coverPhoto: url, 'userImageFileName.coverPhoto': URLFile + extname } : {});
                 res.send({
                     fileName: URLFile + extname,

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const http = require('http');
 const express = require('express');
 
@@ -10,7 +11,7 @@ require('./database');
 // Starting the server
 const app = config(express());
 const server = http.createServer(app);
-socket(server); 
+socket(server);
 
 // Listening to the server
 server.listen(app.get('port'), () => {

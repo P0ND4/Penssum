@@ -15,6 +15,7 @@ const event = require('../controllers/event');
 
 module.exports = app => {
     // event
+    app.get('/', (req,res) => { res.send('Api from Penssum'); });
     app.post('/notifications', event.getNotifications);
     app.post('/mark/notification', event.revisedNotification);
     app.post('/unchecked/messages', event.getUncheckedMessages);
@@ -23,6 +24,12 @@ module.exports = app => {
     app.post('/review/blocked', event.reviewBlocked);
     app.post('/remove/block', event.removeBlock);
     app.post('/send/report', event.report);
+    app.post('/send/information/admin', event.sendInformationAdmin);
+    app.post('/suspension/control', event.suspensionControl);
+    app.post('/get/transaction', event.transactions)
+    app.post('/remove/transaction', event.removeTransaction);
+    app.post('/vote', event.vote);
+    app.post('/get/vote', event.getVote)
 
     // users routes
     app.post('/users', user.users);
@@ -54,13 +61,19 @@ module.exports = app => {
     app.post('/product/remove', product.delete);
     app.post('/product/send/quote', product.sendQuote);
     app.post('/filter/product', product.filter);
+    app.post('/change/video_call/URL', product.changeVideoCallURL);
+    app.post('/pay/product', product.payProduct);
+    app.post('/get/banks/available', product.banksAvailable);
+    app.post('/save/transaction', product.saveTransaction);
 
     //admin
     app.post('/admin/information', admin.main);
     app.post('/dashboard/information', admin.dashboard);
     app.post('/administration/change/preference/value', admin.changePreferenceValue);
     app.post('/check/admin/information', admin.checkAdminInformation);
-    app.post('/administration/change/password', admin.changePassword)
+    app.post('/administration/change/password', admin.changePassword);
+    app.post('/send/warning', admin.sendWarning);
+    app.post('/user/status/change', admin.userStatusChange);
 
     app.use(router);
 };

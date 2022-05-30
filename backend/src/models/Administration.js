@@ -11,6 +11,7 @@ const DashboardSchema = new Schema ({
     name: { type: String, default: 'Jack' },
     productReview: { type: Boolean, default: true },
     allowVideoCall: { type: Boolean, default: true },
+    violations: { type: Number, default: 0 },
     views: { type: Number, default: 0 }
 });
 

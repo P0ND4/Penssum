@@ -1,18 +1,57 @@
+const axios = require('axios');
 const fs = require('fs-extra');
 const path = require('path');
 const { randomName } = require('../helpers/libs');
 const helperImg = require('../helpers/resizeImage');
+const md5 = require('md5');
 
 const Product = require('../models/Product');
 const Offer = require('../models/Offer');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const Block = require('../models/Block');
+const Transaction = require('../models/Transaction');
+const Vote = require('../models/Vote');
 
 const ctrl = {};
 
+const getTotalVotes = async (products,res) => {
+    if (products.length === 0) res.send(products)
+    else {
+        const currentProducts = [];
+
+        const getVotes = async product => {
+            let generalVotes = 0;
+            const productVotes = await Vote.find({ productId: product._id });
+                
+            if (productVotes.length !== 0) {
+                productVotes.forEach((productVote,index) => {
+                    generalVotes += productVote.vote;
+
+                    if (index + 1 === productVotes.length) generalVotes = (generalVotes / productVotes.length);
+                });
+            } else { generalVotes = 0 };
+
+            return generalVotes
+        };
+
+        for (let i = 0; i < products.length; i++) {
+            const votes = await getVotes(products[i]);
+            const newProduct = { ...products[i]._doc, votes };
+            currentProducts.push(newProduct);
+        };
+
+        res.send(currentProducts);
+    };
+};
+
 ctrl.products = async (req, res) => {
-    const { username, id, review, blockSearch } = req.body;
+    const { username, id, review, videoCallURL,blockSearch } = req.body;
+
+    if (videoCallURL !== undefined) {
+        const product = await Product.findOne({ videoCall: videoCallURL });
+        return res.send(product);
+    };
 
     if (review !== undefined) {
         const product = await Product.find({ stateActivated: false });
@@ -22,7 +61,7 @@ ctrl.products = async (req, res) => {
     if (id !== undefined) {
         try {
             const product = await Product.findById(id);
-            return res.send(product);
+            res.send(product);
         } catch (e) { return res.send({ error: true, type: 'Product not found' }) };
     };
 
@@ -47,17 +86,26 @@ ctrl.products = async (req, res) => {
                 $and: productsToRemove
             }).sort({ creationDate: -1, views: -1 });
 
-            return res.send(products);
+            await getTotalVotes(products,res);
         } else {
-            const products = await Product.find({ stateActivated: true }).sort({ creationDate: -1, views: -1 });
+            const blockedUsers = await User.find({ 'typeOfUser.user': 'block' });
+            const arraysUsers = [];
+            
+            if (blockedUsers.length > 0) {
+                blockedUsers.forEach(user => arraysUsers.push({ owner: { $ne: user._id } }));
 
-            return res.send(products);
-        }
+                const products = await Product.find({ stateActivated: true, $and: arraysUsers }).sort({ creationDate: -1, views: -1 });
+                await getTotalVotes(products,res);
+            } else {
+                const products = await Product.find({ stateActivated: true }).sort({ creationDate: -1, views: -1 });
+                await getTotalVotes(products,res);
+            };
+        };
     };
 
     if (username !== undefined) {
-        const products = await Product.find({ creatorUsername: username }).sort({ creationDate: -1 });
-        return res.send(products);
+        const products = await Product.find({ creatorUsername: username }).sort({ creationDate: -1, views: -1 });
+        await getTotalVotes(products,res);
     };
 };
 
@@ -93,7 +141,7 @@ ctrl.fileSelection = (req, res) => {
                             fileName: URLFile + extname,
                             uniqueId: URLFile,
                             extname,
-                            url: `http://localhost:8080/temporal/${URLFile + extname}`
+                            url: `${process.env.API_PENSSUM}/temporal/${URLFile + extname}`
                         });
                     } else await putError(fileAddress, 'Invalid size', size);
                 } else await putError(fileAddress, 'Invalid format', fileAddress.originalname);
@@ -106,22 +154,26 @@ ctrl.fileSelection = (req, res) => {
 
 ctrl.removeFiles = async (req, res) => {
     const { files, fileName, activate } = req.body;
-    try {
-        if (files === undefined) {
-            await fs.unlink(path.resolve(`src/public/temporal/${fileName}`));
-            res.send('deleted');
-        } else {
-            if (files !== null) {
-                files.forEach(async (file, index) => {
-                    await fs.unlink(path.resolve(`src/public/${activate !== undefined && activate ? 'services' : 'temporal'}/${file.fileName}`));
-                    if (index + 1 === files.length) return setTimeout(() => res.send('deleted'), 1000);
-                });
-            } else {
-                res.status(404).send({ error: null, type: 'there are no found files to delete', files });
-                console.log('There are no found files to delete');
-            }
-        }
-    } catch (e) { console.log('File not found') };
+    if (files === undefined) {
+        try { await fs.unlink(path.resolve(`src/public/temporal/${fileName}`)); } catch (e) { console.log(e) };
+        res.send('deleted');
+    } else {
+        if (files !== null) {
+            const imagesAllowed = /jpg|png|jpeg|tiff|tif|psd|webp/;
+
+            for (let i = 0; i < files.length; i++) {
+                if (imagesAllowed.test(files[i].extname)) {
+                    await fs.unlink(path.resolve(`src/public/optimize/resize-${files[i].fileName}`));
+                    break;
+                };
+            };
+
+            files.forEach(async (file, index) => {
+                try { await fs.unlink(path.resolve(`src/public/${activate !== undefined && activate ? 'services' : 'temporal'}/${file.fileName}`)); } catch (e) { console.log(e) };
+                if (index + 1 === files.length) return setTimeout(() => res.send('deleted'), 1000);
+            });
+        } else { res.status(404).send({ error: null, type: 'there are no found files to delete', files }) };
+    }
 };
 
 ctrl.create = async (req, res) => {
@@ -130,22 +182,31 @@ ctrl.create = async (req, res) => {
     const imagesAllowed = /jpg|png|jpeg|tiff|tif|psd|webp/;
     let url = '';
     let miniature = '';
+
     for (let i = 0; i < data.files.length; i++) {
         if (imagesAllowed.test(data.files[i].extname)) {
             await helperImg(path.resolve(`src/public/temporal/${data.files[i].fileName}`), data.files[i].fileName);
-            url = `http://localhost:8080/optimize/resize-${data.files[i].fileName}`;
+            url = `${process.env.API_PENSSUM}/optimize/resize-${data.files[i].fileName}`;
             miniature = `resize-${data.files[i].fileName}`;
-
-            try {
-                data.files.forEach(async file => {
-                    file.url = `http://localhost:8080/services/${file.fileName}`;
-                    await fs.rename(`src/public/temporal/${file.fileName}`, `src/public/services/${file.fileName}`);
-                });
-            } catch (e) { console.log(e.message) };
             break;
         } else { url = '/img/document_image.svg' };
     };
 
+    data.files.forEach(async file => {
+        file.url = `${process.env.API_PENSSUM}/services/${file.fileName}`;
+        try { await fs.rename(`src/public/temporal/${file.fileName}`, `src/public/services/${file.fileName}`); } catch (e) { console.log(e.message) };
+    });
+
+    const createURL = async () => {
+        const VideoCallURL = randomName(15);
+
+        const product = await Product.find({ videoCall: VideoCallURL });
+        if (product) createURL();
+
+        return VideoCallURL;
+    };
+
+    data.videoCall = data.videoCall ? await createURL() : null;
     data.linkMiniature = url;
     data.miniature = miniature;
 
@@ -169,7 +230,7 @@ ctrl.makeOffer = async (req, res) => {
             to: data.notification,
             productId: data.mainInformation.product,
             title: 'Tienes una oferta',
-            description: `${user.username} te ha enviado una oferta de ${data.mainInformation.amount}$ a ${product.title} revisa las ofertas pendientes.`,
+            description: `${user.username} te ha enviado una oferta ${data.mainInformation.amount !== 0 ? (`de ${data.mainInformation.amount}$`) : ''} a ${product.title} revisa las ofertas pendientes.`,
             color: 'yellow',
             image: user.profilePicture
         });
@@ -185,7 +246,7 @@ ctrl.getOffer = async (req, res) => {
     if (id_user !== undefined && id_product !== undefined) {
         const result = await Offer.find({ user: id_user, product: id_product });
         return res.send(result.length > 0 ? result[0] : { error: true, type: 'Offer not found' });
-    }
+    };
 
     if (id_product !== undefined) {
         const result = await Offer.find({ product: id_product, acceptOffer: false }).sort({ creationDate: 1 });
@@ -207,7 +268,7 @@ ctrl.removeOffer = async (req, res) => {
             to: id_user,
             productId: id_product,
             title: 'Oferta rechazada',
-            description: `Tu oferta de ${offer.amount}$ ha sido rechazada en el servicio de ${product.title}, trata de hacerle una mejor oferta teniendo en cuenta el valor de referencia !animo!.`,
+            description: `Tu oferta ${offer.amount === 0 ? 'GRATIS' : `de ${offer.amount}$`} ha sido rechazada en el servicio de ${product.title}, trata de hacerle una mejor oferta teniendo en cuenta el valor de referencia !animo!.`,
             color: 'yellow',
             image: user.profilePicture
         });
@@ -244,10 +305,11 @@ ctrl.makeCounteroffer = async (req, res) => {
 ctrl.acceptOffer = async (req, res) => {
     const { from, id_user, id_product } = req.body;
 
-    const offer = await Offer.findOneAndUpdate({ product: id_product, user: id_user }, { acceptOffer: true });
+    const product = await Product.findById(id_product);
+    const offer = await Offer.findOne({ product: id_product, user: id_user });
+    await Offer.findByIdAndUpdate(offer._id, { acceptOffer: true, isThePayment: (product.paymentMethod && offer.amount !== 0) ? false : true });
 
     const user = await User.findById(from);
-    const product = await Product.findById(id_product);
 
     const newNotification = new Notification({
         username: user.username,
@@ -256,8 +318,15 @@ ctrl.acceptOffer = async (req, res) => {
         productId: id_product,
         title: 'Oferta aceptada',
         description: `
-            !Felicidades! tu oferta de ${offer.amount}$ en ${product.title} fue aceptada, habla con el dueño del servicio para
-            que lleguen a un acuerdo. Este es el inicio de algo grande.
+            ${offer.amount !== 0 ? 
+                `
+                    ${!product.paymentMethod ? `
+                        !Felicidades! tu oferta de ${offer.amount}$ en ${product.title} fue aceptada, habla con el dueño del servicio para
+                        que lleguen a un acuerdo. Este es el inicio de algo grande.
+                    ` : `!Felicidades! tu oferta de ${offer.amount}$ en ${product.title} fue aceptada, puedes ir al servicio y pagar por el monto ofertado.` 
+                    }
+                ` : `!Felicidades! !Has entrado gratis al servicio! en ${product.title}`
+            }
         `,
         color: 'green',
         image: user.profilePicture
@@ -265,7 +334,9 @@ ctrl.acceptOffer = async (req, res) => {
 
     await newNotification.save();
 
-    res.send('Offer accepted');
+    const currentOffer = await Offer.findOne({ product: id_product, user: id_user });
+
+    res.send(currentOffer);
 };
 
 ctrl.delete = async (req, res) => {
@@ -293,6 +364,8 @@ ctrl.delete = async (req, res) => {
     };
 
     await Product.findByIdAndRemove(id);
+    await Offer.deleteMany({ product: id });
+    await Notification.deleteMany({ productId: id });
     const remainingProducts = await Product.find({ stateActivated: false });
     res.send(remainingProducts);
 };
@@ -345,10 +418,10 @@ ctrl.sendQuote = async (req, res) => {
         });
 
         if (resultBlock.length > 0) return res.send({ error: true, type: 'you cannot send a quote to a blocked user', data: resultBlock })
-        else if (from === product.owner) return res.send({ error: true, type: 'you cannot send a quote to yourself'})
+        else if (from === product.owner) return res.send({ error: true, type: 'you cannot send a quote to yourself' })
         else {
             files.forEach(async file => {
-                file.url = `http://localhost:8080/quotes/${file.fileName}`;
+                file.url = `${process.env.API_PENSSUM}/quotes/${file.fileName}`;
                 await fs.rename(`src/public/temporal/${file.fileName}`, `src/public/quotes/${file.fileName}`);
             });
 
@@ -398,6 +471,481 @@ ctrl.filter = async (req, res) => {
 
         res.send(products);
     };
+};
+
+ctrl.changeVideoCallURL = (req,res) => {
+    const { post_id } = req.body;
+
+    const createURL = async () => {
+        const newURL = randomName(15);
+
+        const exist = await Product.findOne({ videoCall: newURL });
+
+        if (exist) createURL()
+        else {
+            await Product.findByIdAndUpdate(post_id, { videoCall: newURL });
+
+            const productUpdated = await Product.findById(post_id);
+
+            res.send(productUpdated);
+        };
+    };
+
+    createURL();
+};
+
+ctrl.payProduct = async (req,res) => {
+    const data = req.body;
+
+    const time = Date.now();
+    const encrypt = md5(`4Vj8eK4rloUd272L48hsrarnUA~508029~${data.productName}_${data.category}_${data.customCategory}_${data.identificationNumber}-${time}~${data.amount}~COP`);
+
+    try {
+        const payu = await axios({
+            method: 'POST',
+            url: 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            data: {
+               "test": false,
+               "language": "en",
+               "command": "PING",
+               "merchant": {
+                  "apiLogin": "pRRXKOl8ikMmt9u",
+                  "apiKey": "4Vj8eK4rloUd272L48hsrarnUA"
+               }
+            }
+        });
+
+        console.log(payu.data);
+    } catch (e) {
+        return res.send({ transactionResponse: {
+            state: 'DECLINED',
+            responseCode: 'ERROR_CONECTION',
+            paymentNetworkResponseErrorMessage: 'Error de conexion.'
+        }});
+    };
+
+    if (data.paymentType === 'card') {
+        const result = await axios({
+            method: 'POST',
+            url: 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            data: {
+               "language": "es",
+               "command": "SUBMIT_TRANSACTION",
+               "merchant": {
+                  "apiKey": "4Vj8eK4rloUd272L48hsrarnUA",
+                  "apiLogin": "pRRXKOl8ikMmt9u"
+               },
+               "transaction": {
+                  "order": {
+                     "accountId": "512321",
+                     "referenceCode": `${data.productName}_${data.category}_${data.customCategory}_${data.identificationNumber}-${time}`,
+                     "description": data.productDescription,
+                     "language": "es",
+                     "signature": encrypt,
+                     "buyer": {
+                        "merchantBuyerId": data.userID,
+                        "fullName": data.fullName,
+                        "emailAddress": data.userEmail,
+                        "contactPhone": data.phoneNumber,
+                        "dniNumber": data.documentType,
+                        "shippingAddress": {
+                           "street1": "ONLINE",
+                           "city": data.city,
+                           "state": "ONLINE",
+                           "country": "CO",
+                           "postalCode": "1102",
+                           "phone": data.phoneNumber
+                        }
+                     },
+                     "notifyUrl": "http://www.payu.com/notify",
+                     "additionalValues": {
+                        "TX_VALUE": {
+                           "value": data.amount,
+                           "currency": "COP"
+                     },
+                        "TX_TAX": {
+                           "value": Math.round(data.amount * 0.19),
+                           "currency": "COP"
+                     }
+                     },
+                     "shippingAddress": {
+                        "street1": "ONLINE",
+                        "city": data.city,
+                        "state": "ONLINE",
+                        "country": "CO",
+                        "postalCode": "1102",
+                        "phone": data.phoneNumber
+                     }
+                  },
+                  "payer": {
+                     "merchantPayerId": data.userID,
+                     "fullName": data.fullName,
+                     "emailAddress": data.userEmail,
+                     "contactPhone": data.phoneNumber,
+                     "dniNumber": data.documentType,
+                     "billingAddress": {
+                        "street1": data.city,
+                        "city": data.city,
+                        "state": "ONLINE.",
+                        "country": "CO",
+                        "postalCode": "1102",
+                        "phone": data.phoneNumber
+                     }
+                  },
+                  "type": "AUTHORIZATION_AND_CAPTURE",
+                  "paymentMethod": data.cardType,
+                  "paymentCountry": "CO",
+                  "deviceSessionId": md5(`${data.userID}${time}`),
+                  "ipAddress": "127.0.0.1",
+                  "cookie": `${data.productID}_${data.userID}`,
+                  "userAgent": data.userAgent,
+                  "creditCard": {
+                     "number": data.cardNumber,
+                     "securityCode": data.securityCode,
+                     "expirationDate": `20${data.dueDate.year}/${('0' + data.dueDate.month).slice(-2)}`,
+                     "name": data.fullName
+                  }
+               },
+               "test": true
+            }
+        });
+
+        const dataObtained = result.data;
+
+        if (dataObtained.transactionResponse.state === 'APPROVED') {
+            const user = await User.findById(data.userID);
+            const offer = await Offer.findOne({ product: data.productID, user: data.userID });
+
+            if (offer) await Offer.findByIdAndUpdate(offer._id,{ isThePayment: true, isBought: true })
+            else {
+                const newOffer = new Offer({
+                    product: data.productID,
+                    user: data.userID,
+                    amount: data.amount,
+                    username: user.username,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    acceptOffer: true,
+                    isThePayment: true,
+                    isBought: true,
+                });
+
+                newOffer.save();
+            };
+
+
+            const saveData = {
+                userId: data.userID,
+                ownerId: data.ownerId, 
+                productId: data.productID,
+                amount: data.amount,
+                orderId: dataObtained.transactionResponse.orderId,
+                transactionId: dataObtained.transactionResponse.transactionId,
+                operationDate: dataObtained.transactionResponse.operationDate,
+                paymentType: dataObtained.transactionResponse.additionalInfo.cardType,
+                paymentNetwork: dataObtained.transactionResponse.additionalInfo.paymentNetwork
+            };
+
+            const newTransaction = new Transaction(saveData);
+            await newTransaction.save();
+        };
+
+        res.send(dataObtained);
+    };
+
+    if (data.paymentType === 'PSE') {
+        const result = await axios({
+            method: 'POST',
+            url: 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            data: {
+               "language": "es",
+               "command": "SUBMIT_TRANSACTION",
+               "merchant": {
+                  "apiKey": "4Vj8eK4rloUd272L48hsrarnUA",
+                  "apiLogin": "pRRXKOl8ikMmt9u"
+               },
+               "transaction": {
+                  "order": {
+                     "accountId": "512321",
+                     "referenceCode": `${data.productName}_${data.category}_${data.customCategory}_${data.identificationNumber}-${time}`,
+                     "description": data.productDescription,
+                     "language": "es",
+                     "signature": encrypt,
+                     "notifyUrl": "http://www.payu.com/notify",
+                     "additionalValues": {
+                        "TX_VALUE": {
+                           "value": data.amount,
+                           "currency": "COP"
+                     },
+                        "TX_TAX": {
+                           "value": Math.round(data.amount * 0.19),
+                           "currency": "COP"
+                     }
+                     },
+                     "buyer": {
+                        "merchantBuyerId": data.userID,
+                        "fullName": data.fullName,
+                        "emailAddress": data.userEmail,
+                        "contactPhone": data.phoneNumber,
+                        "dniNumber": data.documentType,
+                        "shippingAddress": {
+                           "street1": "ONLINE",
+                           "city": data.city,
+                           "state": "ONLINE",
+                           "country": "CO",
+                           "postalCode": "1102",
+                           "phone": data.phoneNumber
+                        }
+                     },
+                     "shippingAddress": {
+                        "street1": "ONLINE",
+                        "city": data.city,
+                        "state": "ONLINE",
+                        "country": "CO",
+                        "postalCode": "1102",
+                        "phone": data.phoneNumber
+                     }
+                  },
+                  "payer": {
+                     "merchantPayerId": data.userID,
+                     "fullName": data.fullName,
+                     "emailAddress": data.userEmail,
+                     "contactPhone": data.phoneNumber,
+                     "dniNumber": data.documentType,
+                     "billingAddress": {
+                        "street1": data.city,
+                        "city": data.city,
+                        "state": "ONLINE.",
+                        "country": "CO",
+                        "postalCode": "1102",
+                        "phone": data.phoneNumber
+                     }
+                  },
+                  "extraParameters": {
+                     "RESPONSE_URL": `${process.env.FRONTEND_PENSSUM}/post/information/${data.productID}/transaction/receipt`,
+                     "PSE_REFERENCE1": "127.0.0.1",
+                     "FINANCIAL_INSTITUTION_CODE": "1022"/*data.bank*/,
+                     "USER_TYPE": data.personType,
+                     "PSE_REFERENCE2": data.documentType,
+                     "PSE_REFERENCE3": data.identificationNumber
+                  },
+                  "type": "AUTHORIZATION_AND_CAPTURE",
+                  "paymentMethod": "PSE",
+                  "paymentCountry": "CO",
+                  "deviceSessionId": md5(`${data.userID}${time}`),
+                  "ipAddress": "127.0.0.1",
+                  "cookie": `${data.productID}_${data.userID}`,
+                  "userAgent": data.userAgent
+               },
+               "test": false
+            }
+        });
+
+        res.send(result.data);
+    };
+
+    if (data.paymentType === 'cash' || data.paymentType === 'bank') {
+        const date = new Date();
+        const THREEDAYSLATER = date.setDate(date.getDate() + 3);
+
+        const result = await axios({
+            method: 'POST',
+            url: 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            data: {
+               "language": "es",
+               "command": "SUBMIT_TRANSACTION",
+               "merchant": {
+                  "apiKey": "4Vj8eK4rloUd272L48hsrarnUA",
+                  "apiLogin": "pRRXKOl8ikMmt9u"
+               },
+               "transaction": {
+                  "order": {
+                     "accountId": "512321",
+                     "referenceCode": `${data.productName}_${data.category}_${data.customCategory}_${data.identificationNumber}-${time}`,
+                     "description": data.productDescription,
+                     "language": "es",
+                     "signature": encrypt,
+                     "notifyUrl": "http://www.payu.com/notify",
+                     "additionalValues": {
+                        "TX_VALUE": {
+                           "value": data.amount,
+                           "currency": "COP"
+                     },
+                        "TX_TAX": {
+                           "value": Math.round(data.amount * 0.19),
+                           "currency": "COP"
+                     }
+                     },
+                     "buyer": {
+                        "merchantBuyerId": data.userID,
+                        "fullName": data.fullName,
+                        "emailAddress": data.userEmail,
+                        "contactPhone": data.phoneNumber,
+                        "dniNumber": 'CC',
+                        "shippingAddress": {
+                           "street1": "ONLINE",
+                           "city": data.city,
+                           "state": "ONLINE",
+                           "country": "CO",
+                           "postalCode": "1102",
+                           "phone": data.phoneNumber
+                        }
+                     },
+                     "shippingAddress": {
+                        "street1": "ONLINE",
+                        "city": data.city,
+                        "state": "ONLINE",
+                        "country": "CO",
+                        "postalCode": "1102",
+                        "phone": data.phoneNumber
+                     }
+                  },
+                  "payer": {
+                     "merchantPayerId": data.userID,
+                     "fullName": data.fullName,
+                     "emailAddress": data.userEmail,
+                     "contactPhone": data.phoneNumber,
+                     "dniNumber": data.documentType,
+                     "billingAddress": {
+                        "street1": data.city,
+                        "city": data.city,
+                        "state": "ONLINE.",
+                        "country": "CO",
+                        "postalCode": "1102",
+                        "phone": data.phoneNumber
+                     }
+                  },
+                  "type": "AUTHORIZATION_AND_CAPTURE",
+                  "paymentMethod": data.paymentType === 'cash' ? "EFECTY" : "BALOTO",
+                  "expirationDate": THREEDAYSLATER,
+                  "paymentCountry": "CO",
+                  "ipAddress": "127.0.0.1"
+               },
+               "test": true
+            }
+        });
+
+        console.log(result.data);
+
+        res.send(result.data)
+    };
+};
+
+ctrl.banksAvailable = async (req,res) => {
+    try {
+        const payu = await axios({
+            method: 'POST',
+            url: 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            data: {
+               "test": false,
+               "language": "en",
+               "command": "PING",
+               "merchant": {
+                  "apiLogin": "pRRXKOl8ikMmt9u",
+                  "apiKey": "4Vj8eK4rloUd272L48hsrarnUA"
+               }
+            }
+        });
+
+        console.log(payu.data);
+    } catch (e) { 
+        return res.send({ transactionResponse: {
+            state: 'ERROR',
+            responseCode: 'ERROR_CONECTION',
+            paymentNetworkResponseErrorMessage: 'Error de conexion.'
+        }});
+    };
+
+    const result = await axios({
+        method: 'POST',
+        url: 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        data: {
+           "language": "es",
+           "command": "GET_BANKS_LIST",
+           "merchant": {
+              "apiLogin": "pRRXKOl8ikMmt9u",
+              "apiKey": "4Vj8eK4rloUd272L48hsrarnUA"
+           },
+           "test": false,
+           "bankListInformation": {
+              "paymentMethod": "PSE",
+              "paymentCountry": "CO"
+           }
+        }
+    });
+
+    res.send(result.data);
+};
+
+ctrl.saveTransaction = async (req,res) => {
+    const data = req.body;
+
+    const transaction = await Transaction.find({ transactionId: data.transactionId });
+
+    if (transaction.length === 0) {
+        const offer = await Offer.findOne({ product: data.productId, user: data.userId });
+        const product = await Product.findById(data.productId);
+        const user = await User.findById(data.userId);
+
+        try {
+            if (offer) await Offer.findByIdAndUpdate(offer._id,{ isThePayment: true, isBought: true })
+            else {
+                const newOffer = new Offer({
+                    product: data.productId,
+                    user: data.userId,
+                    amount: data.amount,
+                    username: user.username,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    acceptOffer: true,
+                    isThePayment: true,
+                    isBought: true,
+                });
+
+                newOffer.save();
+            };
+
+            const saveData = {
+                userId: data.userId,
+                ownerId: product.owner, 
+                productId: data.productId,
+                amount: data.amount,
+                transactionId: data.transactionId,
+                operationDate: Date.now(),
+                paymentType: data.paymentType,
+                paymentNetwork: data.paymentNetwork
+            };
+
+            const newTransaction = new Transaction(saveData);
+            const result = await newTransaction.save();
+
+            res.send(result);
+        } catch(e) { res.send(e.message) }
+    } else res.send('Already exists');
 };
 
 module.exports = ctrl;

@@ -1,5 +1,5 @@
 module.exports = {
     database: {
-        URI: 'mongodb://localhost/protech'
+        URI: process.env.URI_MONGODB
     }
 };

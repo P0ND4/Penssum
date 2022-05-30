@@ -1,6 +1,8 @@
 const Administration = require('../models/Administration');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Block = require('../models/Block');
+const Message = require('../models/Message');
 const Notification = require('../models/Notification');
 const Offer = require('../models/Offer');
 
@@ -56,10 +58,12 @@ ctrl.dashboard = async (req, res) => {
         productsToReview: 0,
         reports: 0,
         concreteOffers: 0,
+        videoCallsMade: 0,
         registeredUsers: [0, 0, 0, 0, 0, 0, 0],
         currentProducts: [0, 0, 0, 0, 0, 0, 0],
         lastProducts: [0, 0, 0, 0, 0, 0, 0],
         usersStatus: [0, 0, 0],
+        violationsTotal: administration[0].violations,
         totalViews: administration[0].views,
         firstEmail: administration[0].firstEmail,
         firstPassword: administration[0].firstPassword,
@@ -78,14 +82,17 @@ ctrl.dashboard = async (req, res) => {
     const totalOffers = await Offer.find({ acceptOffer: true });
     mainInformation.concreteOffers = totalOffers.length;
 
+    const totalVideoCallServices = await Product.find({ videoCall: {$ne: null} });
+    mainInformation.videoCallsMade = totalVideoCallServices.length;
+
     const currentUsersStatus = [0, 0, 0];
 
     for (let i = 0; i < users.length; i++) {
         const user = users[i];
 
         if (user.typeOfUser.user === 'free') currentUsersStatus[0] += 1;
-        if (user.typeOfUser.user === 'discontinued') currentUsersStatus[1] += 1;
-        if (user.typeOfUser.user === 'locked') currentUsersStatus[2] += 1;
+        if (user.typeOfUser.user === 'layoff') currentUsersStatus[1] += 1;
+        if (user.typeOfUser.user === 'block') currentUsersStatus[2] += 1;
 
         if (i + 1 === users.length) mainInformation.usersStatus = currentUsersStatus;
     };
@@ -215,6 +222,89 @@ ctrl.changePassword = async (req, res) => {
             return res.send({ error: null, type: 'Second password changed' });
         } else return res.send({ error: true, type: 'Invalid password' });
     };
+};
+
+ctrl.sendWarning = async (req,res) => {
+    const { title, description, to } = req.body;
+
+    const newNotification = new Notification({
+        username: 'Admin',
+        from: 'Admin',
+        to,
+        title: `Admin (${title})`,
+        description,
+        color: 'orange',
+        image: 'admin'
+    });
+
+    await newNotification.save();
+
+    res.send('Warning sent');
+};
+
+ctrl.userStatusChange = async (req,res) => {
+    const { id, typeOfUser, date, eraseEverything } = req.body;
+
+    const administration = await Administration.find();
+
+    await User.findByIdAndUpdate(id,{ 'typeOfUser.user': typeOfUser });
+    
+    if (typeOfUser === 'layoff' || typeOfUser === 'block') await Administration.findByIdAndUpdate(administration[0]._id, { violations: administration[0].violations + 1 });
+    
+    if (date) { await User.findByIdAndUpdate(id,{ 'typeOfUser.suspension': date }) }
+    else { await User.findByIdAndUpdate(id,{ 'typeOfUser.suspension': null }) };
+
+    const user = await User.findById(id);
+
+    if (typeOfUser !== 'block') {
+        const newNotification = new Notification({
+            username: 'Admin',
+            from: 'Admin',
+            to: id,
+            title: `Admin (${typeOfUser})`,
+            description: (typeOfUser === 'free') ? 'Te hemos pasado al modo libre, disculpe las molestias ocacionadas.' : 'Has entrado en un estado de suspencion porque no has cumplido con algunas normas del uso de Penssum, disculpe las molestias, el tiempo de suspencion, aparecera en su perfil',
+            color: (typeOfUser === 'free') ? 'green' : 'orange',
+            image: 'admin'
+        });
+
+        await newNotification.save();
+    } else {
+        if (eraseEverything) {
+            const userNotifications = await Notification.find({ to: id });
+            const products = await Product.find({ owner: id });
+
+            products.forEach(async product => {
+                try { await fs.unlink(path.resolve(`src/public/optimize/${product.miniature}`)); } catch (e) { console.log('Image not found') };
+            });
+
+            if (user.profilePicture !== null) {
+                try { await fs.unlink(path.resolve(`src/public/user/${user.userImageFileName.profilePicture}`)) } catch (e) { console.log('Image not found') };
+            };
+
+            if (user.coverPhoto !== null) {
+                try { await fs.unlink(path.resolve(`src/public/user/${user.userImageFileName.coverPhoto}`)) } catch (e) { console.log('Image not found') };
+            };
+
+            if (userNotifications.length > 0) {
+                userNotifications.forEach(notification => {
+                    const files = notification.files;
+                    files.forEach(async file => {
+                        try { await fs.unlink(path.resolve(`src/public/quotes/${file.fileName}`)) } catch (e) { console.log('Image not found') };
+                    });
+                });
+            };
+
+            await User.findByIdAndUpdate(id, { coverPhoto: null, profilePicture: null });
+            await Product.deleteMany({ owner: id });
+            await Block.deleteMany({ $or: [{ from: id }, { to: id }] });
+            await Message.deleteMany({ $or: [{ transmitter: id }, { receiver: id }] });
+            await Notification.deleteMany({ to: id });
+        }
+
+        await Offer.deleteMany({ user: id, acceptOffer: false });
+    };
+
+    res.send(user);
 };
 
 module.exports = ctrl;

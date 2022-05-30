@@ -38,6 +38,11 @@ const UserSchema = new Schema ({
             suspension: null
         } 
     },
+    bankData: { type: Object, default: {
+        bank: '',
+        accountNumber: '',
+        accountType: ''
+    }},
     city: { type: String, default: null },
     validated: { type: Boolean, default: false },
     token: { type: String, default: null },
