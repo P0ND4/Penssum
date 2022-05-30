@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { changePreferenceValue } from "../../../api";
 import { useParams } from 'react-router';
@@ -6,6 +6,7 @@ import { useParams } from 'react-router';
 import PreferencePart from '../../parts/user/PreferencePart';
 import SecurityPreference from '../../parts/user/SecurityPreference';
 import PreferenceToggle from '../../parts/user/PreferenceToggle';
+import swal from 'sweetalert'
 
 import Cookies from "universal-cookie";
 
@@ -13,19 +14,32 @@ const cookies = new Cookies();
 
 function Preference({ userInformation, setUserInformation }) {
     const { attribute } = useParams();
+    const [bankData,setBankData] = useState({
+        bank: userInformation.bankData.bank,
+        accountNumber: userInformation.bankData.accountNumber,
+        accountType: userInformation.bankData.accountType
+    });
 
-    const changeDescription = async (e, id) => {
+    const descriptionTimer = useRef(null);
+
+    const changeDescription = (e, id) => {
         document.getElementById(id).textContent = `${e.target.value.length}/200`;
 
-        const valueToChange = {
-            id: cookies.get('id'),
-            name: 'description',
-            value: e.target.value
-        };
+        if (descriptionTimer !== null) clearTimeout(descriptionTimer.current);
 
-        const result = await changePreferenceValue(valueToChange);
+        descriptionTimer.current = setTimeout(async () => {
+            const valueToChange = {
+                id: cookies.get('id'),
+                name: 'description',
+                value: e.target.value
+            };
+    
+            const result = await changePreferenceValue(valueToChange);
+    
+            setUserInformation(result);
 
-        setUserInformation(result);
+            descriptionTimer.current = null
+        },2000);
     };
 
     useEffect(() => {
@@ -69,6 +83,7 @@ function Preference({ userInformation, setUserInformation }) {
         if (attribute === 'mod=security') document.querySelector('.security-link').classList.add('preference-active');
         if (attribute === 'mod=profile_information') document.querySelector('.profile-information-link').classList.add('preference-active');
         if (attribute === 'mod=privacy') document.querySelector('.privacy-link').classList.add('preference-active');
+        if (attribute === 'mod=payment') document.querySelector('.payment-link').classList.add('preference-active');
     });
 
     const changeAvailability = () => {
@@ -90,6 +105,29 @@ function Preference({ userInformation, setUserInformation }) {
         };
     };
 
+    const bankDataValueChange = async () => {
+        const error = document.querySelector('.field_value-error-handler');
+        error.classList.remove('showError');
+        
+        if (/^[a-zA-ZÀ-ÿ-0-9\u00f1\u00d1\s|!:,.;?¿$]{0,80}$/.test(bankData.bank) &&
+            /^[0-9]{0,50}$/.test(bankData.accountNumber)) {
+            await changePreferenceValue({ id: cookies.get('id'), name: 'bankData', value: bankData });
+        
+            swal({
+                title: 'Datos actualizados',
+                text: 'Los datos han sido actualizados correctamente.',
+                icon: 'success',
+                timer: '2000',
+                button: false,
+            });
+
+            setUserInformation({
+                ...userInformation,
+                bankData
+            })
+        } else error.classList.add('showError');
+    };
+
     return (
         <div className="preference-container">
             <div className="preference">
@@ -109,6 +147,10 @@ function Preference({ userInformation, setUserInformation }) {
                         <p>Informacion de perfil</p>
                     </Link>
                     <hr />
+                    <Link to="/preference/mod=payment" className="preference-sections payment-link">
+                        <i className="fa-solid fa-money-bills"></i>
+                        <p>Pago</p>
+                    </Link>
                     <Link to="/preference/mod=privacy" className="preference-sections privacy-link">
                         <i className="fas fa-user-lock"></i>
                         <p>Privacidad</p>
@@ -244,7 +286,37 @@ function Preference({ userInformation, setUserInformation }) {
                                     ? <div className="commomStylePadding privacy">
                                         <PreferenceToggle idButton="phone-button-toggle" idContainer="button-toggle-phone" h4="Quien puede ver tu numero de telefono" p="Esto es para facilitar el contacto a traves de la plataforma, los usuarios podran ver su numero de telefono desde su perfil." name="showMyNumber" value={userInformation.showMyNumber} setUserInformation={setUserInformation} />
                                     </div>
-                                    : <Navigate to="/preference/mod=general" />}
+                                    : attribute === 'mod=payment' 
+                                        ? <Link to="/preference/mod=payment_payu" style={{ textDecoration: 'none' }}>
+                                            <div className="commomStylePadding payment" >
+                                                <section className="payment-method-help-card">
+                                                    <img src="/img/payu.png" alt="payu"/>
+                                                    <p>Es una pasarela de pagos con más de 18 años de experiencia en el mercado y se encargará de mediar las transacciones de los clientes de tu servicio y tu banco para poder recibir las ganancias.</p>
+                                                </section>
+                                            </div>
+                                        </Link>
+                                        : attribute === 'mod=payment_payu' ? 
+                                            <div className="commomStylePadding">
+                                                <form onSubmit={e => e.preventDefault()} className="payment_payu-form">
+                                                    <div className="form-control">
+                                                        <input type="text" placeholder="Banco" value={bankData.bank} onChange={e => setBankData({ ...bankData, bank: e.target.value })}/>
+                                                    </div>
+                                                    <div className="form-control">
+                                                        <input type="number" placeholder="Numero de cuenta" value={bankData.accountNumber} onChange={e => setBankData({ ...bankData, accountNumber: e.target.value })} maxLength="50"/>
+                                                    </div>
+                                                    <div className="form-control">
+                                                        <select id="selectAccountType-preference" defaultValue={bankData.accountType} onChange={e => setBankData({ ...bankData, accountType: e.target.value })}>
+                                                            <option value="selectAccountType" hidden>-- Tipo de cuenta --</option>
+                                                            <option value="Ahorro">Ahorro</option>
+                                                            <option value="Corriente">Corriente</option>
+                                                        </select>
+                                                    </div>
+                                                    <p className="field field_value-error-handler" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}>Rellene los campos de forma correcta.</p>
+                                                    <div className="form-control">
+                                                        <button id="typeOfAccound-preference-save" onClick={() => bankDataValueChange()}>Guardar</button>
+                                                    </div>
+                                                </form>
+                                            </div> : <Navigate to="/preference/mod=general" />}
                 </div>
             </div>
         </div>

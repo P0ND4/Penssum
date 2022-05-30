@@ -6,6 +6,7 @@ import Loading from "../../parts/Loading";
 
 function CheckEmail({ setRegistration, userInformation, setUserInformation, registrationProcess }) {
     const [data, setData] = useState('');
+    const [sendingInformation,setSendingInformation] = useState(false);
 
     const regularExpresionMail = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/;
 
@@ -23,19 +24,32 @@ function CheckEmail({ setRegistration, userInformation, setUserInformation, regi
                 document.querySelector('.field_error-change-mail-invalid').classList.add('showError');
                 setTimeout(() => document.querySelector('.field_error-change-mail-invalid').classList.remove('showError'), 2000);
             } else {
+                setSendingInformation(true);
                 const result = await changeMail(userInformation._id, userInformation.username, data);
                 if (result.error) {
                     document.querySelector('.field_error-change-mail-in-use').classList.add('showError');
+                    setTimeout(() => setSendingInformation(false),1000);
                     setTimeout(() => document.querySelector('.field_error-change-mail-in-use').classList.remove('showError'), 2000);
                 } else {
-                    setUserInformation(result);
-                    swal({
-                        title: 'Enviado',
-                        text: 'Revisa tu correo electronico',
-                        icon: 'success',
-                        timer: '2000',
-                        button: false
-                    });
+                    setUserInformation(result.user);
+                    if (result.message.error) {
+                        swal({
+                            title: 'Error',
+                            text: 'Hubo un error al enviar el correo',
+                            icon: 'error',
+                            timer: '2000',
+                            button: false
+                        });
+                    } else {
+                        swal({
+                            title: 'Enviado',
+                            text: 'Revisa tu correo electronico',
+                            icon: 'success',
+                            timer: '2000',
+                            button: false
+                        });
+                    };
+                    setSendingInformation(false);
                 };
             };
         } else {
@@ -66,7 +80,14 @@ function CheckEmail({ setRegistration, userInformation, setUserInformation, regi
                                         <p className="field field_error-change-mail" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}>Escriba un correo electronico diferente</p>
                                         <div className="check-email-change">
                                             <input type="email" id="input-check-email" placeholder="Correo electronico" onChange={e => setData(e.target.value)} />
-                                            <button onClick={() => change()}>Cambiar</button>
+                                            <button 
+                                                style={{ 
+                                                    background: sendingInformation ? '#3282B8' : '', 
+                                                    opacity: sendingInformation ? '.4' : '', 
+                                                    cursor: sendingInformation ? 'not-allowed' : '' 
+                                                }}
+                                                onClick={() => { if (!sendingInformation) change() }}
+                                            >Cambiar</button>
                                         </div>
                                     </div>
                                     <p>3. Espera unos 5 minutos. (dependiendo del correo esto puede llevar unos segundos).</p>

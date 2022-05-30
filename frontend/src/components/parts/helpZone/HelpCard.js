@@ -2,12 +2,13 @@ import { useNavigate } from 'react-router-dom';
 
 function HelpCard(data) {
     const navigate = useNavigate();
+
     return (
         <section className="help-card" onClick={() => {
             if (data.element !== 'Link') {
                 document.getElementById(data.idDark).style.display = 'flex';
-                document.querySelector('body').style.overflow = 'hidden';
-            } else navigate('/help/information/mod=general');
+                data.setIsOpen(true);
+            } else navigate('/help/information/mod=penssum');
         }}>
             <img src={data.src} alt={data.alt} />
             <div>

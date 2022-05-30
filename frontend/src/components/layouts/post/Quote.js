@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { sendQuote } from '../../../api';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { sendQuote, socket } from '../../../api';
 import { fileEvent } from '../../helpers';
 import swal from 'sweetalert';
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-function Quote({ obtainedFiles, setObtainedFiles }) {
+function Quote({ obtainedFiles, setObtainedFiles, isTheUserSuspended, username }) {
     const [id, setId] = useState('');
 
     const navigate = useNavigate();
@@ -53,6 +53,8 @@ function Quote({ obtainedFiles, setObtainedFiles }) {
                     document.getElementById('sereal-id').value = '';
                     setId('');
 
+                    socket.emit('received event', null, id);
+
                     if (result.error) {
                         if (result.type === 'you cannot send a quote to a blocked user') {
                             swal({
@@ -95,7 +97,7 @@ function Quote({ obtainedFiles, setObtainedFiles }) {
         return;
     };
 
-    return (
+    return !isTheUserSuspended ? (
         <div className="quote-container">
             <div className="quote">
                 <div className="quote-form">
@@ -134,7 +136,7 @@ function Quote({ obtainedFiles, setObtainedFiles }) {
                         </div>
                         <div className="quote-section">
                             <div className="form-control">
-                                <input id="sereal-id" type="text" placeholder="Escriba El SEREAL OT o el id del producto" onChange={e => setId(e.target.value)} />
+                                <input id="sereal-id" type="text" placeholder="Escriba El SERIAL OT o el id del producto" onChange={e => setId(e.target.value)} />
                             </div>
                             <div className="form-control">
                                 <button id="send-quote" onClick={() => handlerQuote()}>Enviar Cotizacion</button>
@@ -144,7 +146,7 @@ function Quote({ obtainedFiles, setObtainedFiles }) {
                 </div>
             </div>
         </div>
-    );
+    ) : <Navigate to={`/${username}`}/>;
 };
 
 export default Quote;

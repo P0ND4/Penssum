@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { tokenVerification } from '../../../api';
+import { tokenVerification, socket } from '../../../api';
 import Loading from '../../parts/Loading';
 
 import Cookies from 'universal-cookie';
@@ -22,6 +22,7 @@ function TokenVerification({ setAuth, setUserInformation, setRegistration }) {
                 cookies.set('id', result._id, { path: '/' });
                 setUserInformation(result);
                 setAuth(true);
+                socket.emit('connected', result._id);
                 navigate(`/${result.username}`);
             };
         };

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { productCreate, removeFiles } from '../../../api';
 import { fileEvent } from '../../helpers';
 
-function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
+function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheUserSuspended, username }) {
     const [field, setField] = useState({
         customCategory: false,
         title: false,
@@ -19,8 +19,11 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
         title: '',
         description: '',
         value: '',
-        dateOfDelivery: ''
+        dateOfDelivery: '',
+        videoCallActivated: false,
+        paymentMethod: false
     });
+    const [sendingInformation,setSendingInformation] = useState(false);
 
     const navigate = useNavigate();
 
@@ -39,8 +42,8 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
     });
 
     const activityValidation = {
-        textLimit: /^[a-zA-Za\s]{4,30}$/,
-        description: /^[a-zA-Za\s|!:,.;]{20,120}$/,
+        textLimit: /^[a-zA-ZA-ÿ\u00f1\u00d1\s!:,.;]{3,30}$/,
+        description: /^[a-zA-ZÀ-ÿ-0-9\u00f1\u00d1\s|!:,.;?¿$]{20,120}$/,
         value: /^[0-9]{0,20}$/,
     };
 
@@ -132,10 +135,14 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
                     description: data.description,
                     value: data.value,
                     dateOfDelivery: data.dateOfDelivery,
+                    videoCall: data.videoCallActivated,
+                    paymentMethod: data.paymentMethod,
                     files: obtainedFiles
                 };
 
+                setSendingInformation(true);
                 await productCreate(activityData);
+                setSendingInformation(false);
                 setObtainedFiles(null);
                 navigate(`/${userInformation.username}`);
             } else {
@@ -148,7 +155,7 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
         };
     };
 
-    return (
+    return !isTheUserSuspended ? (
         <div className="post-activity-container">
             <div className="post-activity">
                 <section className="post-photos-container">
@@ -223,11 +230,11 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
                         </div>
                         <div className="form-control">
                             <input type="text" name="customCategory" placeholder="Crea una subcategoria personalizada (CALCULO DIFERENCIAL)" onChange={changeEvent} />
-                            <p className="field field_customCategory">El nombre no puede superar los 30 ni tener menos de 4 caracteres, tener numeros o contener simbolos extraños.</p>
+                            <p className="field field_customCategory">El nombre no puede superar los 30 ni tener menos de 3 caracteres, tener numeros o contener simbolos extraños.</p>
                         </div>
                         <div className="form-control">
                             <input type="text" name="title" placeholder="Titulo Breve (INTEGRALES)" onChange={changeEvent} />
-                            <p className="field field_title">El nombre no puede superar los 30 ni tener menos de 4 caracteres, tener numeros o contener simbolos extraños.</p>
+                            <p className="field field_title">El nombre no puede superar los 30 ni tener menos de 3 caracteres, tener numeros o contener simbolos extraños.</p>
                         </div>
                         <div className="form-control">
                             <div className="post-description-abbreviation">
@@ -240,8 +247,47 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
                             <p className="field field_description">La descripcion no puede superar los 120 caracteres o tener menos de 20 ni numeros o caracteres extraños.</p>
                         </div>
                         <div className="form-control">
-                            <input type="number" name="value" id="post-product-price" placeholder="Introduzca el valor del producto" onChange={changeEvent} />
+                            <input type="number" name="value" id="post-product-price" placeholder="Introduzca el valor del producto en pesos Colombianos (COP)" onChange={changeEvent} />
                             <p className="field field_value">El valor no puede superar los 20 caracteres.</p>
+                        </div>
+                        <div className="pay-options-container">
+                            <section className="pay-options-title-container">
+                                <p className="pay-options-title">Integrar pago en el servicio</p>
+                                <i className="far fa-question-circle">
+                                    <div className="pay-options-information">
+                                    <p> 
+                                        Si seleccionas el metodo de pago necesitaremos verificar su informacion 
+                                        bancaria para la transaccion, puede entrar en configuracion > pagos he ingresar
+                                        sus datos, de lo contrario no podremos
+                                        enviarle el dinero del servicio, recuerde que si no activa la pasarela
+                                        de pago, debe llegar a un acuerdo sobre el pago con el cliente.
+                                    </p>
+                                </div>
+                                </i>
+                            </section>
+                            <section className="pay-options" 
+                                onClick={() => setData({ 
+                                    ...data, 
+                                    paymentMethod: !data.paymentMethod 
+                                })}>
+                                <button style={{ 
+                                    background: !data.paymentMethod ? 'transparent' : '#3282B8',
+                                    border: !data.paymentMethod ? '1px solid #444' : 'transparent'
+                                }}></button>
+                                <img src="/img/payu.png" alt="payu"/>
+                            </section>
+                        </div>
+                        <div className="video_call-option-container">    
+                            <p style={{ color: !data.videoCallActivated ? '#666666' : '#3282B8' }}>{!data.videoCallActivated ? 'No' : 'Si'}</p>
+                            <button style={{ 
+                                    background: !data.videoCallActivated ? 'transparent' : '#3282B8',
+                                    border: !data.videoCallActivated ? '1px solid #444' : 'transparent'
+                                }} 
+                                 onClick={() => setData({ 
+                                    ...data, 
+                                    videoCallActivated: !data.videoCallActivated 
+                                })}></button>
+                            <span>¿Quieres integrar la videollamada?</span>
                         </div>
                         <div className="post-product-data">
                             <div className="dateOfDelivery">
@@ -252,11 +298,18 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
                                 })} />
                             </div>
                         </div>
-                        <h1 id="videoCallLink">Link de videollamada: No disponible (en construccion)</h1>
                         <div className="form-control">
                             <div className="post-button-container">
                                 <Link id="goToProfile" to={`/${userInformation.username}`}>Ir al perfil</Link>
-                                <button id="publish" onClick={() => createActivity()}>Publicar</button>
+                                <button 
+                                    id="publish" 
+                                    style={{ 
+                                        background: sendingInformation ? '#3282B8' : '', 
+                                        opacity: sendingInformation ? '.4' : '', 
+                                        cursor: sendingInformation ? 'not-allowed' : '' 
+                                    }} 
+                                    onClick={() => { if (!sendingInformation) createActivity() }}
+                                >Publicar</button>
                             </div>
                         </div>
                         <p className="field field_fill_in_fields_post_activity" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}></p>
@@ -264,7 +317,7 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles }) {
                 </section>
             </div>
         </div>
-    );
+    ) : <Navigate to={`/${username}`}/>;
 };
 
 export default PostActivity;

@@ -39,7 +39,7 @@ function PreferencePart(data) {
     };
 
     const regularExpression = {
-        textLimit: /^[a-zA-Za]{0,16}$/,
+        textLimit: /^[a-zA-ZÀ-ÿ-0-9\u00f1\u00d1\s|!:,.;?¿$]{0,16}$/,
         numberLimit: /^[0-9]{0,20}$/,
         emailLimit: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/
     };

@@ -6,12 +6,13 @@ function CoverImageInformation(data) {
                 <p>Categoria: {data.category}</p>
                 <p>{data.customCategory}: {data.title}</p>
                 <div className="carousel-image-score-container">
+                    <h1 className="carousel-image-score-title">Puntuacion: {data.votes === 0 ? '' : data.votes % 1 === 0 ? data.votes : data.votes.toFixed(1)}</h1>
                     <div className="carousel-image-score">
-                        <i className="fas fa-star"></i>
-                        <i className="fas fa-star"></i>
-                        <i className="fas fa-star"></i>
-                        <i className="fas fa-star"></i>
-                        <i className="fas fa-star"></i>
+                        <i className="fas fa-star" style={{ color: Math.round(data.votes) === 1 || Math.round(data.votes) === 5 || Math.round(data.votes) === 4 || Math.round(data.votes) === 3 || Math.round(data.votes) === 2 ? '#fbff00' : ''  }}></i>
+                        <i className="fas fa-star" style={{ color: Math.round(data.votes) === 2 || Math.round(data.votes) === 5 || Math.round(data.votes) === 4 || Math.round(data.votes) === 3 ? '#fbff00' : ''  }}></i>
+                        <i className="fas fa-star" style={{ color: Math.round(data.votes) === 3 || Math.round(data.votes) === 5 || Math.round(data.votes) === 4 ? '#fbff00' : ''  }}></i>
+                        <i className="fas fa-star" style={{ color: Math.round(data.votes) === 4 || Math.round(data.votes) === 5 ? '#fbff00' : '' }}></i>
+                        <i className="fas fa-star" style={{ color: Math.round(data.votes) === 5 ? '#fbff00' : '' }}></i>
                     </div>
                     <h1 className="carousel-product-score">No disponible</h1>
                     <h1 className="carousel-date-of-delivery-mobile">Fecha de entrega: {data.dateOfDelivery}</h1>

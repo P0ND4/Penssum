@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { socketio } from './components/helpers';
 
-const API = `http://localhost:8080`;
+const API = process.env.REACT_APP_API_PENSSUM;
 const io = socketio(API);
 
 export const socket = io;
@@ -195,14 +195,74 @@ export const filterProducts = async data => {
 export const checkAdminInformation = async data => {
     const result = await axios.post(`${API}/check/admin/information`, data);
     return await result.data;
-}
+};
 
 export const changeDashboardPreference = async data => {
     const result = await axios.post(`${API}/administration/change/preference/value`, data);
     return await result.data;
-}
+};
 
 export const changeDashboardPassword = async data => {
     const result = await axios.post(`${API}/administration/change/password`, data);
     return await result.data;
-}
+};
+
+export const sendInformationAdmin = async data => {
+    const result = await axios.post(`${API}/send/information/admin`, data);
+    return await result.data;
+};
+
+export const sendWarning = async data => {
+    const result = await axios.post(`${API}/send/warning`, data);
+    return await result.data;
+};
+
+export const userStatusChange = async data => {
+    const result = await axios.post(`${API}/user/status/change`, data);
+    return await result.data;
+};
+
+export const suspensionControl = async data => {
+    const result = await axios.post(`${API}/suspension/control`, data);
+    return await result.data;
+};
+
+export const changeVideoCallURL = async data => {
+    const result = await axios.post(`${API}/change/video_call/URL`, data);
+    return await result.data;
+};
+
+export const payProduct = async data => {
+    const result = await axios.post(`${API}/pay/product`, data);
+    return await result.data;
+};
+
+export const banksAvailable = async () => {
+    const result = await axios.post(`${API}/get/banks/available`);
+    return await result.data;
+};
+
+export const getTransaction = async (data) => {
+    const result = await axios.post(`${API}/get/transaction`, data);
+    return await result.data;
+};
+
+export const removeTransaction = async (data) => {
+    const result = await axios.post(`${API}/remove/transaction`, data);
+    return await result.data;
+};
+
+export const saveTransaction = async (data) => {
+    const result = await axios.post(`${API}/save/transaction`, data);
+    return await result.data;
+};
+
+export const getVote = async (data) => {
+    const result = await axios.post(`${API}/get/vote`, data);
+    return await result.data;
+};
+
+export const vote = async (data) => {
+    const result = await axios.post(`${API}/vote`, data);
+    return await result.data;
+};

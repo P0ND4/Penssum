@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getNotifications } from '../../../api';
-import NotificationSection from '../../parts/user/NotificationSection';
+import NotificationSection from '../../parts/NotificationSection';
 import Loading from '../../parts/Loading';
 import Cookies from 'universal-cookie';
 
@@ -34,6 +34,7 @@ function Notifications() {
                                             creationDate={notification.creationDate}
                                             description={notification.description}
                                             files={notification.files}
+                                            admin={false}
                                         />
                                     </div>
                                 )

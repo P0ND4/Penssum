@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { fileEvent } from '../helpers';
 import swal from 'sweetalert';
-import { getUser, sendReport, blockUser, getProducts, reviewBlocked, removeFiles } from '../../api';
+import { getUser, sendReport, blockUser, getProducts, reviewBlocked, removeFiles, getNotifications } from '../../api';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-function Report({ setReportUsername, reportUsername, obtainedFiles, setObtainedFiles, setProducts }) {
+function Report({ setReportUsername, reportUsername, obtainedFiles, setObtainedFiles, setProducts, setNotifications, setCountInNotification }) {
     const [reportDescription, setReportDescription] = useState('');
+    const [sendingInformation,setSendingInformation] = useState(false);
 
     const navigate = useNavigate();
 
@@ -46,6 +47,7 @@ function Report({ setReportUsername, reportUsername, obtainedFiles, setObtainedF
             && reportDescription.length <= 1000
             && reportUsername.length >= 3
             && reportUsername.length <= 30) {
+            setSendingInformation(true);
             const user = await getUser({ username: reportUsername });
 
             if (!user.error) {
@@ -88,6 +90,17 @@ function Report({ setReportUsername, reportUsername, obtainedFiles, setObtainedF
 
                             const products = await getProducts({ blockSearch: cookies.get('id') });
                             setProducts(products);
+
+                            const briefNotifications = await getNotifications(cookies.get('id'));
+
+                            const currentNotification = [];
+                            let count = 0;
+
+                            for (let i = 0; i < 3; i++) { if (briefNotifications[i] !== undefined) currentNotification.push(briefNotifications[i]) };
+                            for (let i = 0; i < briefNotifications.length; i++) { if (!briefNotifications[i].view) count += 1 };
+
+                            setCountInNotification(count);
+                            setNotifications(currentNotification);
                         } else { await sendReport({ from: cookies.get('id'), userToReport: reportUsername, description: reportDescription, files: obtainedFiles }) }
                         swal({
                             title: '!Exito!',
@@ -99,6 +112,7 @@ function Report({ setReportUsername, reportUsername, obtainedFiles, setObtainedF
                     })
                 }
                 setObtainedFiles(null);
+                setSendingInformation(false);
             } else {
                 swal({
                     title: 'Error',
@@ -165,7 +179,15 @@ function Report({ setReportUsername, reportUsername, obtainedFiles, setObtainedF
                         )}
                     </div>
                     <div className="form-control">
-                        <button id="send-user-report" onClick={() => validateReport()}>Enviar</button>
+                        <button 
+                            id="send-user-report" 
+                            style={{ 
+                                background: sendingInformation ? '#3282B8' : '', 
+                                opacity: sendingInformation ? '.4' : '', 
+                                cursor: sendingInformation ? 'not-allowed' : '' 
+                            }}
+                            onClick={() => { if (!sendingInformation) validateReport() }}
+                        >Enviar</button>
                     </div>
                 </form>
             </div>

@@ -15,8 +15,8 @@ function Footer() {
                         <li><Link className="main-footer-link" to="/help/information/mod=terms_and_conditions">TERMINOS Y CONDICIONES</Link></li>
                         <li><Link className="main-footer-link" to="/help/information/mod=products">VENDE RAPIDO</Link></li>
                         <li><Link className="main-footer-link" to="/help/information/mod=frequent_questions">PREGUNTAS FRECUENTES</Link></li>
-                        <li><Link className="main-footer-link" to="/help/information/mod=protech">ACERCA DE PROTECH</Link></li>
-                        <li><Link className="main-footer-link" to="/help/information/mod=protech">SUMATE A PROTECH</Link></li>
+                        <li><Link className="main-footer-link" to="/help/information/mod=penssum">ACERCA DE PENSSUM</Link></li>
+                        <li><Link className="main-footer-link" to="/help/information/mod=penssum">SUMATE A PENSSUM</Link></li>
                     </ul>
                 </div>
                 <div className="secondary-information-container">
@@ -24,7 +24,7 @@ function Footer() {
                         src="/img/business.svg"
                         title="Compra sin moverte"
                         description="Encuentra lo que necesitas, y coordina el pago y la entrega con el vendedor. Es fácil y rápido. ¡Todos podemos hacerlo!"
-                        link="Cómo comprar en Protech"
+                        link="Cómo comprar en Penssum"
                         navigation="/help/information/mod=products"
                     />
                     <SecondaryInformation
@@ -38,7 +38,7 @@ function Footer() {
                         src="/img/money.svg"
                         title="Vende gratis"
                         description="Miles de personas quieren lo que ofreces. Publica y verás qué pronto llegan las compras. ¡Tú no pagas nada!"
-                        link="Cómo publicar un producto en protech"
+                        link="Cómo publicar un producto en penssum"
                         navigation="/help/information/mod=products"
                     />
                 </div>
@@ -60,7 +60,7 @@ function Footer() {
             </div>
             <div className="copyright">
                 <p>Paises disponible: Colombia</p>
-                <p>TODOS LOS DERECHOS RESERVADOS © 2022 PROTECH-EQUIPO-DE-DESARROLLO-Y3KC3</p>
+                <p>TODOS LOS DERECHOS RESERVADOS © 2022 PENSSUM-EQUIPO-DE-DESARROLLO-Y3KC3</p>
             </div>
         </footer>
     );

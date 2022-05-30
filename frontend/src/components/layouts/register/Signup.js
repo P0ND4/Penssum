@@ -25,6 +25,7 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
         password: '',
         repeatPassword: ''
     });
+    const [sendingInformation,setSendingInformation] = useState(false);
 
     const navigate = useNavigate();
     
@@ -39,8 +40,10 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
             registered: 'facebook'
         };
 
+        setSendingInformation(true);
         const result = await createUser(data);
-            
+        setSendingInformation(false);
+
         if (result.error) {
             const error = document.querySelector('.register_error');
             error.textContent = 'El usuario ya esta registrado, por favor inicie sesion.';
@@ -66,7 +69,9 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
             registered: 'google'
         };
 
+        setSendingInformation(true);
         const result = await createUser(data);
+        setSendingInformation(false);
 
         if (result.error) {
             const error = document.querySelector('.register_error');
@@ -150,19 +155,28 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
     };
 
     const validation = async () => {
+        setSendingInformation(true);
         if (field.firstName && field.lastName && field.username && field.email && field.password && field.repeatPassword) {            
             const result = await createUser(data);
             if (result.error) {
-                if (result.type.user) document.querySelector('.field_error_username').classList.add('showError');
-                if (result.type.email) document.querySelector('.field_error_email').classList.add('showError');
-                return;
+                setTimeout(() => {
+                    setSendingInformation(false);
+                    if (result.type.user) document.querySelector('.field_error_username').classList.add('showError');
+                    if (result.type.email) document.querySelector('.field_error_email').classList.add('showError');
+                    return;
+                },1200);
             } else {
                 setRegistrationProcess({ ...registrationProcess, selection: false });
                 cookies.set('id', result._id, { path: '/' });
                 setUserInformation(result);
                 navigate('/signup/selection');
             };
-        } else { document.querySelector(".field_fill_in_fields").classList.add('showError') };
+        } else { 
+            setTimeout(() => {
+                setSendingInformation(false);
+                document.querySelector(".field_fill_in_fields").classList.add('showError');
+            },800);
+        };
     };
 
     return (
@@ -203,13 +217,21 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
                     </div>
                     <p className="field field_fill_in_fields" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}>Rellene los campos.</p>
                     <div className="form-control">
-                        <button id="signup-button" onClick={() => validation()}>REGISTRARSE</button>
+                        <button 
+                            id="signup-button" 
+                            style={{ 
+                                background: sendingInformation ? '#3282B8' : '', 
+                                opacity: sendingInformation ? '.4' : '', 
+                                cursor: sendingInformation ? 'not-allowed' : '' 
+                            }} 
+                            onClick={() => { if (!sendingInformation) validation() }}
+                        >REGISTRARSE</button>
                     </div>
                     <div className="form-control">
                         <h2 className="signUpUsingTitle">O registrate usando...</h2>
                         <div className="registration-options">
                             <FacebookLogin
-                                appId="374024097393013"
+                                appId={process.env.REACT_APP_FACEBOOK_ID}
                                 autoLoad={false}
                                 fields="name,email,picture"
                                 callback={responseFacebook} 
@@ -217,16 +239,12 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
                                     <button id="signup-wity-facebook" onClick={renderProps.onClick}><img src="/img/icon/facebook_icon.svg" alt="facebook" className="facebook_icon" /> FACEBOOK</button>
                                 )}/>
                             <GoogleLogin
-                                clientId="272273763715-ssk2gsrtevrj8sj9g9ou8calc1umcsd1.apps.googleusercontent.com"
+                                clientId={process.env.REACT_APP_GOOGLE_ID}
                                 render={renderProps => (
                                     <button id="signup-wity-google" onClick={renderProps.onClick} disabled={renderProps.disabled}><img src="/img/icon/google_icon.svg" alt="google" className="google_icon" /> GOOGLE</button>
                                 )}
                                 onSuccess={responseGoogle}
-                                onFailure={() => {
-                                    const error = document.querySelector('.register_error');
-                                    error.textContent = 'Hubo un error al registrarse con Google.';
-                                    error.classList.add('showError');
-                                }}
+                                onFailure={() => console.log('There is an error starting Google')}
                                 cookiePolicy={'single_host_origin'}
                                 />
                         </div>

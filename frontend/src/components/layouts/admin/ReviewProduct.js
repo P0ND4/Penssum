@@ -1,23 +1,29 @@
-import { deleteProduct, acceptProduct, removeOffer } from "../../../api";
+import { deleteProduct, acceptProduct, removeFiles, getProducts, socket } from "../../../api";
 
 function ReviewProduct({ data }) {
     const removeProduct = async () => {
-        await removeOffer({ files: data.product.files });
+        await removeFiles({ files: data.product.files, activate: true });
         const result = await deleteProduct({ id: data.id, notification: true });
         data.setInformation({ ...data.information, productsToReview: result.length });
         data.setProductsToReview(result);
+        const productsObtained = await getProducts();
+        data.setProducts(productsObtained);
+        socket.emit('received event', data.owner);
     };
 
     const allowProduct = async () => {
         const result = await acceptProduct(data.id);
         data.setInformation({ ...data.information, productsToReview: result.length });
         data.setProductsToReview(result);
+        const productsObtained = await getProducts();
+        data.setProducts(productsObtained);
+        socket.emit('received event', data.owner);
     };
 
     return (
-        <section className="product reviewProduct">
-            <div>
-                <a style={{ textDecoration: 'none' }} href={`/post/information/${data.id}`} target="_blank" rel="noreferrer">
+        <section>
+            <a style={{ textDecoration: 'none' }} href={`/post/information/${data.id}`} target="_blank" rel="noreferrer">
+                <div className="product reviewProduct">
                     <div className="product-image" style={{ backgroundImage: data.image }}>
                         <span className="product-delivery-date">Fecha De Entrega: <br />{data.dateOfDelivery}</span>
                     </div>
@@ -27,11 +33,11 @@ function ReviewProduct({ data }) {
                         <p className="description">{data.description}</p>
                     </div>
                     <p className="product-price">Precio: {data.price}</p>
-                </a>
-                <div className="review-products-button">
-                    <button id="approve" onClick={() => allowProduct()}>Aprobar</button>
-                    <button id="disapproved" onClick={() => removeProduct()}>Desaprobar</button>
                 </div>
+            </a>
+            <div className="review-products-button">
+                <button id="approve" onClick={() => allowProduct()}>Aprobar</button>
+                <button id="disapproved" onClick={() => removeProduct()}>Desaprobar</button>
             </div>
         </section>
 

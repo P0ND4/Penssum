@@ -2,20 +2,18 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import Cookies from 'universal-cookie';
-import { getNotifications, markNotification, getUncheckedMessages, markUncheckedMessages } from "../../api";
+import { getNotifications, markNotification, getUncheckedMessages, markUncheckedMessages, socket } from "../../api";
 import PlainNotification from "../parts/PlainNotification";
 
 const cookies = new Cookies();
 
-function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSearch, setFilterNav, filterNav }) {
+function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSearch, setFilterNav, filterNav, notifications, setNotifications, countInNotification, setCountInNotification, countInMessages, setCountInMessages }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isOpenSearch, setIsOpenSearch] = useState(false);
     const [isOpenNoLogin, setIsOpenNotLogin] = useState(false);
     const [isOpenPlainNotification, setIsOpenPlainNotification] = useState(false);
     const [width, setWidth] = useState(window.innerWidth);
-    const [notifications, setNotifications] = useState(null);
-    const [countInNotification, setCountInNotification] = useState(0);
-    const [countInMessages, setCountInMessages] = useState(0);
+    
 
     const navigate = useNavigate();
 
@@ -42,7 +40,7 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
             setNotifications(currentNotification);
         };
         obtainCountInformation();
-    }, [userInformation,setCountInMessages]);
+    }, [userInformation,setCountInMessages,setCountInNotification,setNotifications]);
 
     useEffect(() => document.getElementById('search').value = search, [search]);
 
@@ -61,9 +59,11 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
             (isOpenNoLogin) ? body.style.overflow = 'hidden' : body.style.overflow = 'auto';
 
             const handler = e => {
-                if (!menuNoLogin.current.contains(e.target)) {
-                    setIsOpenNotLogin(false);
-                };
+                if (menuNoLogin.current) {
+                    if (!menuNoLogin.current.contains(e.target)) {
+                        setIsOpenNotLogin(false);
+                    };
+                }
             };
 
             document.addEventListener('mousedown', handler);
@@ -73,11 +73,13 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
             (isOpen && width < 600) ? body.style.overflow = 'hidden' : body.style.overflow = 'auto';
 
             const handler = (element, e) => {
-                if (!element.current.contains(e.target)) {
-                    element === menuRef
-                        ? setIsOpen(false)
-                        : setIsOpenPlainNotification(false);
-                };
+                if (element.current) {
+                    if (!element.current.contains(e.target)) {
+                        element === menuRef
+                            ? setIsOpen(false)
+                            : setIsOpenPlainNotification(false);
+                    };
+                }
             };
 
             document.addEventListener('mousedown', e => handler(menuRef, e));
@@ -91,9 +93,10 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
     });
 
     const logOut = () => {
+        socket.emit('logout', cookies.get('id'));
+        cookies.remove('id');
         setAuth(false);
         setIsOpen(false);
-        cookies.remove('id');
         setUserInformation({});
         navigate('/');
     };
@@ -151,7 +154,7 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
                 </select>
             </div>
             <div className="nav-button-container">
-                {auth ?
+                {auth && userInformation.typeOfUser.user !== 'block' ?
                     <div ref={plainNotificationMenu}>
                         <div className="user-span-container" onClick={() => {
                             if (countInNotification > 0) markNotification(cookies.get('id'));
@@ -165,20 +168,22 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
                             {notifications !== null && notifications.length > 0
                                 ? notifications.map(notification => {
                                     return (
-                                        <Link to="/notifications" style={{ textDecoration: 'none' }} onClick={() => setIsOpenPlainNotification(false)}>
-                                            <PlainNotification
-                                                title={notification.title}
-                                                description={notification.description}
-                                                color={notification.color}
-                                                image={notification.image}
-                                            />
-                                        </Link>
+                                        <div key={notification._id}>
+                                            <Link to="/notifications" style={{ textDecoration: 'none' }} onClick={() => setIsOpenPlainNotification(false)}>
+                                                <PlainNotification
+                                                    title={notification.title}
+                                                    description={notification.description}
+                                                    color={notification.color}
+                                                    image={notification.image}
+                                                />
+                                            </Link>
+                                        </div>
                                     );
                                 }) : <p className="thereAreNoPlainNotification">No hay notificaciones</p>}
                             {notifications !== null && notifications.length > 0 ? <Link to="/notifications" className="notification-view" onClick={() => setIsOpenPlainNotification(false)}>Ver todas las notificaciones</Link> : ''}
                         </div>
                     </div> : <></>}
-                {auth ? (
+                {auth && userInformation.typeOfUser.user !== 'block' ? (
                     <Link to="/messages" className="user-span-container" style={{ textDecoration: 'none' }} onClick={() => {
                         setCountInMessages(0);
                         if (countInMessages > 0) markUncheckedMessages(cookies.get('id'));
@@ -200,12 +205,12 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
                                 <i className="fas fa-chevron-left" onClick={() => setIsOpenNotLogin(false)}></i>
                                 <h1 className="nav-sidebar-name">{(userInformation.firstName === '') ? userInformation.username : userInformation.firstName}</h1>
                             </div>
-                            <div>
-                                <Link to="/signin" className="nav-sidebar-link-divider" onClick={() => setIsOpenNotLogin(false)}><h2 className="nav-sidebar-link">Iniciar Session</h2></Link>
+                            <div className="nav-user-not-register">
+                                <Link to="/signin" className="nav-sidebar-link-divider" onClick={() => setIsOpenNotLogin(false)}><i className="fa-solid fa-arrow-right-to-bracket" ></i><h2 className="nav-sidebar-link">Iniciar Session</h2></Link>
                                 <hr />
-                                <Link className="nav-sidebar-link-divider" to="/signup" onClick={() => setIsOpenNotLogin(false)}><h2 className="nav-sidebar-link">Registrarte</h2></Link>
+                                <Link className="nav-sidebar-link-divider" to="/signup" onClick={() => setIsOpenNotLogin(false)}><i className="fa-solid fa-user" ></i><h2 className="nav-sidebar-link">Registrarte</h2></Link>
                                 <hr />
-                                <Link className="nav-sidebar-link-divider" to="/help" onClick={() => setIsOpenNotLogin(false)}><h2 className="nav-sidebar-link">Ayuda y contacto</h2></Link>
+                                <Link className="nav-sidebar-link-divider" to="/help" onClick={() => setIsOpenNotLogin(false)}><i className="fa-solid fa-circle-question"></i><h2 className="nav-sidebar-link">Ayuda y contacto</h2></Link>
                             </div>
                         </div>
                     </div>
@@ -224,36 +229,40 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
                                     <h1 className="nav-sidebar-name">{(userInformation.firstName === '') ? userInformation.username : userInformation.firstName}</h1>
                                 </div>
                                 <div className="main-nav-sidebar-link">
-                                    <Link to="/improvement/comment" className="nav-sidebar-link-divider" onClick={() => setIsOpen(false)}>
-                                        <i className="far fa-comments"></i>
-                                        <div className="nav-sidebar-link-comment-container">
-                                            <h2 className="nav-sidebar-link-comment">Enviar Comentarios</h2>
-                                            <p>Ayudanos a mejorar la nueva version de Protech</p>
+                                    {userInformation.typeOfUser.user !== 'block' && (
+                                        <div>
+                                            <Link to="/improvement/comment" className="nav-sidebar-link-divider" onClick={() => setIsOpen(false)}>
+                                                <i className="far fa-comments"></i>
+                                                <div className="nav-sidebar-link-comment-container">
+                                                    <h2 className="nav-sidebar-link-comment">Enviar Comentarios</h2>
+                                                    <p>Ayudanos a mejorar la nueva version de Penssum</p>
+                                                </div>
+                                            </Link>
+                                            <hr />
+                                            <div>
+                                                <Link to={`/${userInformation.username}`} className="nav-sidebar-link-divider" onClick={() => setIsOpen(false)}>
+                                                    <i className="far fa-user-circle"></i>
+                                                    <h2 className="nav-sidebar-link">Perfil</h2>
+                                                </Link>
+                                                <Link className="nav-sidebar-link-divider" to="/messages" onClick={() => setIsOpen(false)}>
+                                                    <i className="fas fa-envelope"></i>
+                                                    <h2 className="nav-sidebar-link">Mensajes</h2>
+                                                </Link>
+                                                <Link className="nav-sidebar-link-divider" to="/preference/mod=general" onClick={() => setIsOpen(false)}>
+                                                    <i className="fas fa-cog"></i>
+                                                    <h2 className="nav-sidebar-link">Preferencias</h2>
+                                                </Link>
+                                                <Link className="nav-sidebar-link-divider" to="/report" onClick={() => setIsOpen(false)}>
+                                                    <i className="fas fa-exclamation-triangle"></i>
+                                                    <h2 className="nav-sidebar-link">Reportar</h2>
+                                                </Link>
+                                                <Link className="nav-sidebar-link-divider" to="/help" onClick={() => setIsOpen(false)}>
+                                                    <i className="far fa-question-circle"></i>
+                                                    <h2 className="nav-sidebar-link">Ayuda y soporte</h2>
+                                                </Link>
+                                            </div>
                                         </div>
-                                    </Link>
-                                    <hr />
-                                    <div>
-                                        <Link to={`/${userInformation.username}`} className="nav-sidebar-link-divider" onClick={() => setIsOpen(false)}>
-                                            <i className="far fa-user-circle"></i>
-                                            <h2 className="nav-sidebar-link">Perfil</h2>
-                                        </Link>
-                                        <Link className="nav-sidebar-link-divider" to="/messages" onClick={() => setIsOpen(false)}>
-                                            <i className="fas fa-envelope"></i>
-                                            <h2 className="nav-sidebar-link">Mensajes</h2>
-                                        </Link>
-                                        <Link className="nav-sidebar-link-divider" to="/preference/mod=general" onClick={() => setIsOpen(false)}>
-                                            <i className="fas fa-cog"></i>
-                                            <h2 className="nav-sidebar-link">Preferencias</h2>
-                                        </Link>
-                                        <Link className="nav-sidebar-link-divider" to="/report" onClick={() => setIsOpen(false)}>
-                                            <i className="fas fa-exclamation-triangle"></i>
-                                            <h2 className="nav-sidebar-link">Reportar</h2>
-                                        </Link>
-                                        <Link className="nav-sidebar-link-divider" to="/help" onClick={() => setIsOpen(false)}>
-                                            <i className="far fa-question-circle"></i>
-                                            <h2 className="nav-sidebar-link">Ayuda y soporte</h2>
-                                        </Link>
-                                    </div>
+                                    )}
                                     <hr />
                                     <button className="nav-sidebar-link-divider logout" id="logout" onClick={() => logOut()}>
                                         <i className="fas fa-door-open"></i>

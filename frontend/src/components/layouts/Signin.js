@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, checkAdminInformation } from '../../api';
+import { loginUser, checkAdminInformation, socket } from '../../api';
 
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import GoogleLogin from 'react-google-login';
@@ -14,6 +14,7 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
         email: '',
         password: ''
     });
+    const [sendingInformation,setSendingInformation] = useState(false);
 
     const navigate = useNavigate();
 
@@ -23,7 +24,9 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
             password: response.userID,
         };
 
+        setSendingInformation(true);
         const result = await loginUser(data);
+        setSendingInformation(false);
 
         if (result.error) {
             return document.querySelector('.login_error_registered').classList.add('showError');
@@ -33,6 +36,7 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
                 cookies.set('id', result._id, { path: '/' });
                 setUserInformation(result);
                 setAuth(true);
+                socket.emit('connected', result._id);
                 navigate('/');
             }
         };
@@ -46,7 +50,9 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
             password: user.googleId,
         };
 
+        setSendingInformation(true);
         const result = await loginUser(data);
+        setSendingInformation(false);
 
         if (result.error) {
             return document.querySelector('.login_error_registered').classList.add('showError');
@@ -56,6 +62,7 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
                 cookies.set('id', result._id, { path: '/' });
                 setUserInformation(result);
                 setAuth(true);
+                socket.emit('connected', result._id);
                 navigate('/');
             }
         };
@@ -72,6 +79,7 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
     };
 
     const verification = async () => {
+        setSendingInformation(true);
         const checkInformation = await checkAdminInformation({ security: 1, data });
 
         if (!checkInformation.error) {
@@ -81,13 +89,18 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
 
         const result = await loginUser(data);
 
-        if (result.error) return document.querySelector('.login_error').classList.add('showError')
-        else {
+        if (result.error) {
+            setTimeout(() => {
+                setSendingInformation(false);
+                return document.querySelector('.login_error').classList.add('showError');
+            },800);
+        } else {
             setUserInformation(result);
             if (result.objetive === '') { navigate('/signup/selection') }
             else if (result.validated) {
                 cookies.set('id', result._id, { path: '/' });
                 setAuth(true);
+                socket.emit('connected', result._id);
                 navigate('/');
             } else { navigate('/signup/check/email') };
         };
@@ -111,13 +124,21 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
                         </div>
                     </div>
                     <div className="form-control">
-                        <button id="signin-button" onClick={() => verification()}>Ingresar</button>
+                        <button 
+                            id="signin-button" 
+                            style={{ 
+                                background: sendingInformation ? '#3282B8' : '', 
+                                opacity: sendingInformation ? '.4' : '', 
+                                cursor: sendingInformation ? 'not-allowed' : '' 
+                            }} 
+                            onClick={() => { if (!sendingInformation)  verification() }}
+                        >Ingresar</button>
                     </div>
                     <div className="form-control">
                         <h2 className="signInUsingTitle">O inicia sesion usando...</h2>
                         <div className="registration-options">
                             <FacebookLogin
-                                appId="374024097393013"
+                                appId={process.env.REACT_APP_FACEBOOK_ID}
                                 autoLoad={false}
                                 fields="name,email,picture"
                                 callback={responseFacebook}
@@ -125,12 +146,12 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin }) {
                                     <button id="signup-wity-facebook" onClick={renderProps.onClick}><img src="./img/icon/facebook_icon.svg" alt="facebook" className="facebook_icon" />FACEBOOK</button>
                                 )} />
                             <GoogleLogin
-                                clientId="272273763715-ssk2gsrtevrj8sj9g9ou8calc1umcsd1.apps.googleusercontent.com"
+                                clientId={process.env.REACT_APP_GOOGLE_ID}
                                 render={renderProps => (
                                     <button id="signup-wity-google" onClick={renderProps.onClick} disabled={renderProps.disabled}><img src="./img/icon/google_icon.svg" alt="google" className="google_icon" />GOOGLE</button>
                                 )}
                                 onSuccess={responseGoogle}
-                                onFailure={() => document.querySelector('.login_error').classList.add('showError')}
+                                onFailure={() => console.log('There is an error starting Google')}
                                 cookiePolicy={'single_host_origin'}
                             />
                         </div>

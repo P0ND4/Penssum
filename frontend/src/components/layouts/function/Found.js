@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router';
 import { searchUsers } from '../../../api';
 import Loading from '../../parts/Loading';
@@ -14,16 +14,19 @@ function Found({ filterNav }) {
 
     const { profile_provider } = useParams();
 
+    const searchTimer = useRef();
+
     useEffect(() => {
-        const foundUser = async () => {
+        clearTimeout(searchTimer.current);
+
+        searchTimer.current = setTimeout(async () => {
             const result = await searchUsers({ id: cookies.get('id'), search: profile_provider, filterNav });
             if (result.error) setError(true)
             else {
                 setUsers(result);
                 setError(false);
             };
-        };
-        foundUser();
+        },1000);
     }, [profile_provider,filterNav]);
 
     const name = (firstName, lastName, username) => {
@@ -41,12 +44,12 @@ function Found({ filterNav }) {
                         ? users.map(user => user._id !== cookies.get("id") ? (
                             <div key={user._id} className="profile-provider-container">
                                 <ProfileProvider
+                                    id={user._id}
                                     coverImage={user.coverPhoto === null ? "/img/cover.jpg" : user.coverPhoto}
                                     profileImage={user.profilePicture === null ? "/img/noProfilePicture.png" : user.profilePicture}
                                     name={name(user.firstName, user.lastName, user.username)}
                                     description={user.description}
                                     link={user.username}
-                                    score="5/5"
                                 />
                             </div>) : <></>
                         ) : !error ? <Loading /> : <img src="/img/usersNotFound.svg" alt="user not found" className='img-user-not-found-search' />}
