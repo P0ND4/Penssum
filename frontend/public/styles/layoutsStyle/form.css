@@ -63,14 +63,26 @@
 #filter-state-change,
 #selectAccountType-preference,
 #typeOfAccound-preference-save,
-.pay-service-in-post {
+.pay-service-in-post,
+#filter-faculties-change,
+#filter-subjects-change,
+.complete-form-textarea,
+#cancel-complete-form,
+#save-complete-form,
+#send-data-floating,
+#cancel-data-floating {
     border: none;
     outline: none;
     width: 100%;
     padding: 8px 20px;
 }
 
-.form-control-select select, #filter-city-change, #filter-state-change, #selectAccountType-preference { 
+.form-control-select select, 
+#filter-city-change, 
+#filter-state-change, 
+#selectAccountType-preference,
+#filter-faculties-change,
+#filter-subjects-change { 
     background: #3282B8;
     border-radius: 40px; 
     color: #ffffff;
@@ -78,11 +90,25 @@
     transition: .2s all;
 }
 
-#filter-city-change, #filter-state-change { font-size: 18px; }
+#filter-city-change, 
+#filter-state-change,
+#filter-faculties-change,
+#filter-subjects-change { font-size: 18px; }
 #selectAccountType-preference { font-size: 16px; }
 
-.form-control-select select:hover, #filter-city-change:hover, #filter-state-change:hover, #selectAccountType-preference:hover { background: #0F4C75; }
-.form-control-select select option, #filter-city-change option, #filter-state-change option, #selectAccountType-preference option { background: #ffffff; }
+.form-control-select select:hover, 
+#filter-city-change:hover, 
+#filter-state-change:hover, 
+#selectAccountType-preference:hover,
+#filter-faculties-change:hover,
+#filter-subjects-change:hover { background: #0F4C75; }
+
+.form-control-select select option, 
+#filter-city-change option, 
+#filter-state-change option, 
+#selectAccountType-preference option,
+#filter-faculties-change option,
+#filter-subjects-change option { background: #ffffff; }
 
 .form-control input, 
 .dateOfDelivery input, 
@@ -93,7 +119,8 @@
 .dark-input input,
 .preference-description,
 .textarea-dark,
-#improvementComment-description {
+#improvementComment-description,
+.complete-form-textarea {
     font-size: 18px;
     color: #444;
     background: #ffffff;
@@ -110,7 +137,8 @@
 #report-description,
 .improvementComment-description,
 .preference-description,
-.textarea-dark {
+.textarea-dark,
+.complete-form-textarea {
     border-radius: 25px;
     max-width: 100%;
     min-width: 100%;
@@ -123,7 +151,8 @@
 #letter-count-description-preference,
 #letter-count-report-description,
 #letter-count-improvementComment-description,
-#letter-count-help-description { 
+#letter-count-help-description,
+#letter-count-description-textarea { 
     position: absolute;
     color: #aaaaaa;
     bottom: 10px;
@@ -141,7 +170,11 @@
 .button-thereAreNoProducts,
 #goToProfilePostInformation,
 #typeOfAccound-preference-save,
-.pay-service-in-post {
+.pay-service-in-post,
+#cancel-complete-form,
+#save-complete-form,
+#send-data-floating,
+#cancel-data-floating {
     cursor: pointer;
     font-size: 17px;
     background: #3282B8;
@@ -161,12 +194,17 @@
 .button-thereAreNoProducts:hover,
 #goToProfilePostInformation:hover,
 #typeOfAccound-preference-save:hover,
-.pay-service-in-post:hover {
+.pay-service-in-post:hover,
+#save-complete-form:hover,
+#send-data-floating:hover {
     background: #0F4C75;
 }
 
 .cancel-edit { background: #0F4C75; }
 .cancel-edit:hover { background: #1b262c9e; }
+
+#cancel-complete-form, #cancel-data-floating { background: #1B262C; }
+#cancel-complete-form:hover, #cancel-data-floating:hover { background: #2c373d; }
 
 .uploaded-photo-container, .selected-improvementComment-images-container, .selected-report-images-container { 
     display: flex;
@@ -179,7 +217,8 @@
 
 .uploaded-photo-container div, 
 .selected-report-images-container div, 
-.selected-improvementComment-images-container div { position: relative; } 
+.selected-improvementComment-images-container div,
+.complete-form-description-zone { position: relative; } 
 
 .clearFile {
     position: absolute;
@@ -231,6 +270,50 @@
     100% { opacity: 1; }
 }
 
+.complete-form-container {
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: appearCompleteForm .6s forwards ease-in-out;
+}
+
+@keyframes appearCompleteForm {
+    0% { 
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.complete-form { width: 500px; }
+
+.complete-form-title h1 {
+    color: #3282B8;
+    font-size: 28px;
+}
+
+.complete-form-title p {
+    color: #AAAAAA;
+    font-size: 17px;
+}
+
+.complete-form-button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#cancel-complete-form { 
+    margin-right: 6px; 
+    text-decoration: none;
+    text-align: center;
+}
+#save-complete-form { margin-left: 6px; }
+
 .dark-button-container {
     margin: 10px 0;
     display: flex;
@@ -253,6 +336,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 .registration-options button {
@@ -266,6 +350,14 @@
     transition: 0.2s all;
 }
 
+.registration-options .google-zone-form {
+    width: 80%;
+    position: relative;
+    padding: 4px;
+    background: #ffffff;
+    border-radius: 40px;
+}
+
 .registration-options button img {
     width: 28px;
     margin: 0 5px;
@@ -275,8 +367,7 @@
 .registration-options button:hover {
     color: #3282B8;
 }
-#signup-wity-facebook:hover > .facebook_icon,
-#signup-wity-google:hover > .google_icon {
+#signup-with-facebook:hover > .facebook_icon {
     transform: scale(1.3);
 }
 
@@ -298,13 +389,13 @@
 }
 
 .description-signup p,
-.description-signup p ul li {
+.description-signup ul li {
     color: #eeeeee;
     letter-spacing: 1px;
 }
 
-.description-signup p ul {
-    margin: 10px 0;
+.description-signup ul {
+    margin: 20px 0;
 }
 
 .illustration-signin-container { padding: 40px; }
@@ -319,6 +410,22 @@
 }
 
 .showError { display: block; }
+
+.you-forgot-the-password {
+    display: flex;
+    justify-content: center;
+}
+
+#you-forgot-the-password {
+    text-decoration: none;    
+    color: #3282B8;
+    cursor: pointer;
+    font-size: 18px;
+    margin-bottom: 8px;
+    transition: .2s all ease-in-out;
+}
+
+#you-forgot-the-password:hover { color: #1b262c9e; }
 
 @media only screen and (max-width: 1000px) {
     .signup-container {
@@ -340,6 +447,23 @@
         display: flex;
         justify-content: center;
     }
+    .uploaded-photo-container {
+        margin: 10px 0;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .complete-form-title { text-align: center; }
+    .complete-form-container { padding: 40px 20px; }
+    #cancel-complete-form { 
+        margin-right: 0; 
+        margin: 5px 0;
+    }
+    #save-complete-form { 
+        margin-left: 0; 
+        margin: 5px 0;
+    }
+    .complete-form-button-container { flex-direction: column; }
 }
 
 @media only screen and (max-width: 500px) {
@@ -359,10 +483,11 @@
     .registration-options, .dark-button-container {
         flex-direction: column;
     }
+    .registration-options .google-zone-form { width: 100%; }
 }
 
 @media only screen and (max-width: 400px) {
-    .button-thereAreNoProducts { font-size: 12px; }
+    .uploaded-photo-container { margin: 18px 0; }
     .signup-card, .signin-card {
         padding: 15px 8px;
         width: 100%;

@@ -58,7 +58,122 @@
 .Account-Confirmation button:hover { transform: scale(1.1); }
 .Account-Confirmation_link:hover { background: #ffd900f1; }
 
+.complete-information-card-container {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    border-radius: 40px;
+    cursor: pointer;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 18px;
+    padding: 10px 20px;
+    background: #ffae00;
+    transition: .2s all ease-in-out;
+    z-index: 80;
+    animation: appearCompleteInformation .4s forwards ease-in-out;
+}
+
+.complete-information-card-container:hover { opacity: .5; }
+
+.floating-data-container, .information-container, .payForPenssum-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: #1b262cb1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: appearDark .3s forwards ease-in-out;
+    z-index: 150;
+    transition: .3s;
+}
+
+.payForPenssum-container { background: #1b262c44; }
+
+.floating-data, .information, .payForPenssum {
+    width: 480px;
+    background: #EEEEEE;
+    padding: 20px 30px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.payForPenssum { text-align: initial; }
+
+.information {
+    width: 520px; 
+    padding: 20px;
+}
+
+.floating-data h1, .information h1{ 
+    font-size: 26px;
+    color: #3282B8;
+}
+
+.information h1 { font-size: 42px; }
+
+.floating-data p, .information p {
+    font-size: 17px;
+    color: #888888;
+}
+
+.information p { margin: 10px 0; }
+
+.payForPenssum-button-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.information button, .payForPenssum button {
+    border: none;
+    outline: none;
+    width: 200px;
+    max-width: 100%;
+    padding: 8px 20px;
+    color: #FFFFFF;
+    background: #1b262c;
+    border-radius: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.payForPenssum button { 
+    width: 120px; 
+    margin: 5px 0;
+}
+
+.information button:hover, .payForPenssum button:hover { background: #283841; }
+
+.floating-data-buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#send-data-floating { 
+    margin-left: 10px; 
+    width: 120px;
+}
+#cancel-data-floating { width: 120px; }
+
+@keyframes appearCompleteInformation {
+    0% { transform: translateX(100px) scaleX(.8); }
+    100% { transform: translateX(0) scaleX(1); }
+}
+
 @media only screen and (max-width: 600px) {
+    .complete-information-card-container {
+        width: 100%;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        text-align: center;
+        border-radius: 0;
+    }
     .Account-Confirmation { 
         width: 100%;
         right: 0;
@@ -73,6 +188,30 @@
     .Account-Confirmation button { width: 20%; }
     .Account-Confirmation button, .Account-Confirmation_link { 
         border-radius: 0; 
-        font-size: 20px;
+        font-size: 16px;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .floating-data { 
+        width: 100%; 
+        margin: 5px;
+        padding: 20px;
+    }
+}
+
+@media only screen and (max-width: 400px) {
+    #send-data-floating { 
+        margin-left: 0; 
+        width: 100%;
+        margin: 5px 0;
+    }
+    #cancel-data-floating { 
+        width: 100%; 
+        margin: 5px 0;
+    }
+    .floating-data-buttons-container {
+        flex-direction: column;
+        justify-content: center;
     }
 }

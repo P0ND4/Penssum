@@ -1,9 +1,6 @@
 .user-profile-container { position: relative; }
 
-.edit-user-cover-photo {
-    position: absolute;
-    bottom: 10px;
-    right: 20px;
+.edit-user-cover-photo, .show-more-information {
     background: #FFFFFF;
     padding: 6px 12px;
     border-radius: 40px;
@@ -12,13 +9,19 @@
     display: flex;
 }
 
-.edit-user-cover-photo p {
+.edit-user-cover-photo {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+}
+
+.edit-user-cover-photo p, .show-more-information p {
     margin: 0 5px;
     color: #888888;
     font-size: 16px;
 }
 
-.edit-user-cover-photo:hover { background: #EEEEEE; }
+.edit-user-cover-photo:hover, .show-more-information:hover { background: #EEEEEE; }
 
 .user-profile { 
     width: 100%;
@@ -84,9 +87,8 @@
     transition: .2s all ease-in-out;
 }
 
-.view-user-information {
-    font-size: 30px;
-    color: #FFFFFF;
+.show-more-information {
+    background: #ffffff;
     position: absolute;
     top: 20px;
     right: 20px;
@@ -94,7 +96,7 @@
     transition: .2s all ease-in-out;
 }
 
-.view-user-information:hover {
+.show-more-information:hover {
     color: #EEEEEE;
     transform: scale(1.06);
 }
@@ -104,7 +106,9 @@
     transform: scale(1.06);
 }
 
-.edit-user-profile-picture i, .edit-user-cover-photo i {
+.edit-user-profile-picture i, 
+.edit-user-cover-photo i,
+.view-user-information {
     font-size: 22px;
     color: #888888;
 }
@@ -132,21 +136,35 @@
     margin: 10px 0;
 }
 
-.profile-description { color: #DDDDDD; }
+.profile-description { 
+    color: #DDDDDD;
+    overflow-wrap: break-word;
+}
 
-.profile-money-pit { 
+.profile-money-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 8px 10px;
+    background: #1B262C;
+}
+
+.profile-money-pit, .profile-money-on-hold, .profile-money-total { 
     color: #FFFFFF; 
     font-size: 20px;
     font-weight: 600;
-    margin: 5px 0;
+    margin: 6px 5px;
 }
 
-.profile-money-pit span {
-    background: #1B262C;
+.profile-money-pit span, .profile-money-on-hold span, .profile-money-total span {
     padding: 2px 4px;
     color: #FFFFFF;
     border-radius: 8px;
 }
+
+.profile-money-pit span { background: #D7B51F; }
+.profile-money-on-hold span { background: #3282B8; }
 
 .total-votes {
     text-align: center;
@@ -174,7 +192,7 @@
 
 .profile-score i {
     font-size: 32px;
-    color: #1B262C;
+    color: #AAAAAA;
 }
 
 .profile-development-container {
@@ -328,7 +346,7 @@
 /*product*/
 
 .profile-products-container {
-    width: 60%;
+    width: 56%;
     padding: 0 25px;
 }
 
@@ -359,6 +377,7 @@
 }
 
 .profile-products {
+    margin: 30px 0;
     display: grid;
     grid-template-columns: repeat(3,1fr);
     gap: 40px 10px;
@@ -384,23 +403,6 @@
 }
 
 .unlock-user:hover { background: #0F4C75; }
-
-/*Advertising*/
-
-.advertising-container { 
-    width: 20%; 
-    padding: 0 15px;
-}
-
-.advertising { 
-    width: 100%;
-    height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    background: #3282B8;
-}
 
 /* zone crop */
 
@@ -490,13 +492,100 @@
     color: #AAAAAA;
 }
 
+.product-divider-container {
+    position: relative;
+    margin: 12px;
+}
+
+.product-divider {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.product-divider i {
+    background: #3282B8;
+    margin: 0 2px;
+    color: #FFFFFF;
+    font-size: 20px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.product-divider i:hover { background: #1B262C; }
+
+.thereAreNoProducts-profile {
+    display: block;
+    text-align: center;
+    margin: 20px 0;
+    color: #3282B8;
+    font-size: 28px;
+}
+
+.complete-information {
+    width: 100%;
+    padding: 8px 12px;
+    background: #E8C630;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.complete-information p, .complete-information p i, .complete-information p a {
+    font-size: 18px;
+    color: #FFFFFF;
+    transition: .2s all ease-in-out;
+}
+
+.complete-information p a:hover { color: #1B262C; }
+
+/*Advertising*/
+
+.advertising-container { 
+    width: 24%; 
+    margin: 0 15px;
+}
+
+.advertising { 
+    padding: 15px 30px;
+    width: 100%;
+    color: #fff;
+    background: #DDDDDD;
+    border-radius: 8px;
+}
+
+.advertising section { margin: 15px 0; }
+
+.advertising section h2 {
+    color: #333333;
+    font-size: 20px;
+}
+
+.advertising section p {
+    font-size: 16px;
+    color: #555555;
+    margin: 10px 0;
+}
+
+.advertising section p span {
+    color: #3282B8;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+@media only screen and (max-width: 1400px) { .profile-products { grid-template-columns: repeat(2, 1fr); } }
+
 @media only screen and (max-width: 1250px) {
-    .profile-products { grid-template-columns: repeat(2,1fr); }
+    .advertising { padding: 2px 10px; }
     .profile-products-container { width: 55%; }
     .filter-container { width: 25%; }
     .profile-username { font-size: 24px; }
     .profile-score-title { font-size: 24px; }
     .profile-score i { font-size: 28px; }
+    .complete-information p, .complete-information p i, .complete-information p a { font-size: 16px; }
+    .complete-information p { width: 80%; }
 }
 
 @media only screen and (max-width: 1000px) {
@@ -504,7 +593,6 @@
     .advertising-container { display: none; }
     .profile-products-container { width: 70%; }
     .filter-container { width: 30%; }
-    .profile-products { grid-template-columns: repeat(2,1fr); }
     .profile-username { font-size: 22px; }
     .profile-score-title { font-size: 22px; }
     .profile-score i { font-size: 26px; }
@@ -513,9 +601,15 @@
 
 @media only screen and (max-width: 850px) {
     .filter-container { padding: 6px; }
+    .thereAreNoProducts-profile { text-align: left; }
 }
 
 @media only screen and (max-width: 750px) {
+    .complete-information p { 
+        width: 70%; 
+        text-align: center;
+    }
+    .thereAreNoProducts-profile { font-size: 24px; }
     .userSuspendedContainer {
         padding: 8px 16px;
     }
@@ -532,7 +626,10 @@
         display: block; 
         margin: 20px 0;
     }
-    .profile-products-container { width: 60%; }
+    .profile-products-container { 
+        width: 60%; 
+        padding: 0 20px;
+    }
     .filter-container { width: 40%; }
     .profile-products { grid-template-columns: 1fr; }
     .user-profile {
@@ -570,9 +667,10 @@
         font-size: 14px;
     }
 
-    .edit-user-cover-photo i { font-size: 18px; }
+    .edit-user-cover-photo i,
+    .view-user-information { font-size: 18px; } 
 
-    .view-user-information {
+    .show-more-information{
         top: 20px;
         left: 20px;
         right: initial;
@@ -640,6 +738,13 @@
 }
 
 @media only screen and (max-width: 600px) {
+    .profile-money-pit, .profile-money-on-hold, .profile-money-total { font-size: 18px; }
+    .advertising-container { 
+        display: block; 
+        width: 100%;
+        padding: 0 25px;
+    }
+    .advertising { padding: 15px 30px; } 
     .select-image-crop {
         width: 90%;
         max-width: 90%;
@@ -647,12 +752,12 @@
     }
     .select-image-title { font-size: 20px; }
     .container-crop { width: 300px; }
-    .edit-user-cover-photo p { display: none; }
+    .edit-user-cover-photo p, .show-more-information p { display: none; }
     .container-crop-buttons {
         flex-direction: column;
         align-items: center;
     }
-    .edit-user-cover-photo {
+    .edit-user-cover-photo, .show-more-information {
         padding: 0;
         height: 30px;
         width: 30px;
@@ -660,10 +765,16 @@
         justify-content: center;
         align-items: center;
     }
-    .view-user-information {
+    .show-more-information {
+        background: transparent;
         top: 20px;
         right: 60px;
         left: initial;
+    }
+    .show-more-information:hover { background: transparent; }
+    .view-user-information { 
+        color: #FFFFFF; 
+        font-size: 30px;
     }
     .weeksdays-container { 
         padding-bottom: 10px;
@@ -689,6 +800,9 @@
         justify-content: center;
         flex-direction: column;
     }
+    .complete-information { padding: 10px; }
+    .complete-information p { width: 100%; }
+    .complete-information p, .complete-information p i, .complete-information p a { font-size: 14px; }
 }
 
 @media only screen and (max-width: 500px) {
@@ -705,6 +819,8 @@
 }
 
 @media only screen and (max-width: 400px) {
+    .complete-information p { text-align: justify; }
+    .thereAreNoProducts-profile { width: 40%; }
     .container-crop { width: 200px; }
     .select-image-crop { width: 95%; }
     .edit-user-profile-picture { width: 30px; height: 30px; }

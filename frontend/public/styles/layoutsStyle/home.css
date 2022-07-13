@@ -67,7 +67,7 @@
 
 .carousel-image-score i {
     font-size: 32px;
-    color: #1B262C;
+    color: #AAAAAA;
 }
 
 .right-info {
@@ -79,6 +79,7 @@
 .carousel-image-description {
     font-size: 18px;
     color: #dddddd;
+    overflow-wrap: break-word;
 }
 
 .right-info-union {
@@ -119,6 +120,8 @@
     text-align: center;
     width: 25%;
     background: #3282B8;
+    border: none;
+    outline: none;
     padding: 10px 22px;
     color: #ffffff;
     border-radius: 40px;
@@ -144,6 +147,7 @@
     color: #3282B8;
     font-size: 32px;
     margin: 2px 0;
+    text-align: center;
 }
 
 .button-thereAreNoProducts { 
@@ -172,13 +176,17 @@
     padding: 15px;
     background: #FFFFFF;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
     transition: all .2s;
 }
 
 .product-image {
     position: relative;
     margin: 0 auto;
-    width: auto;
+    width: 100%;
     height: 180px;
     background-size: cover;
     background-position: center;
@@ -217,7 +225,10 @@
     transition: all .7s ease-in-out;
 }
 
+.product-content-container { width: 100%; }
+
 .product-content {
+    width: 100%;
     border-left: 3px solid #1B262C;
     padding: 10px;
     position: relative;
@@ -241,12 +252,14 @@
     padding: 3px 6px;
     margin: 8px 0;
     color: #555;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .product-price {
     display: inline-block;
     margin: 5px 0;
-    font-size: 20px;
+    font-size: 18px;
     padding: 8px 16px;
     background: #3282b8b4;
     color: #ffffff;
@@ -261,8 +274,8 @@
 
 .product:hover { background: #fefefe90; }
 .product:hover > .product-image { transform: rotate(1deg); }
-.product:hover > .product-price { left: 50px; top: 5px ; background: #3282B8; }
-.product:hover > .product-content { top: 10px; }
+.product:hover > .product-content-container .product-price { left: 50px; top: 5px ; background: #3282B8; }
+.product:hover > .product-content-container .product-content { top: 10px; }
 
 .product:hover > .product-image::after { top: 0; left: 0; transform: rotate(0);}
 .product:hover > .product-image .product-delivery-date { 

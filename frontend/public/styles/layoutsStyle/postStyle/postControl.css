@@ -55,10 +55,17 @@
 
 .offer-username h3, .offer-username p {
     display: inline-block;
-    color: #1B262C;
     margin: 0 15px;
     font-size: 22px;
 }
+
+.offer-username p { color: #1B262C; }
+.offer-username h3, .offer-username h3 a { 
+    color: #3282B8; 
+    text-decoration: none; 
+    transition: all .2s ease-in-out;
+}
+.offer-username h3 a:hover { color: #0f2749; }
 
 .offer-value {
     color: #3282B8;

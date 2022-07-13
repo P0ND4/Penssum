@@ -5,6 +5,7 @@
     padding: 15px 30px;
     background: #FFFFFF;
     border-radius: 40px;
+    position: relative;
 }
 
 .general-preference {
@@ -13,17 +14,30 @@
     justify-content: space-between;
 }
 
-.general-preference p, .preference-CI-information p, .preference-city-information p {
+.general-preference p, 
+.preference-CI-information p, 
+.preference-city-information p,
+.preference-faculty-information p,
+.preference-subject-information p {
     font-size: 18px;
     color: #888888;
 }
 
-.general-preference h4, .preference-CI-information h4, .preference-city-information h4 {
+.general-preference h4, 
+.preference-CI-information h4, 
+.preference-city-information h4,
+.preference-faculty-information h4,
+.preference-subject-information h4 {
     font-size: 18px;
     color: #555555;
 }
 
-.general-preference-card button, .security-preference-card button, .preference-CI-container button, .preference-city-container button {
+.general-preference-card button, 
+.security-preference-card button, 
+.preference-CI-container button, 
+.preference-city-container button,
+.preference-faculty-container button,
+.preference-subject-container button {
     border: none;
     outline: none;
     background: transparent;
@@ -33,7 +47,14 @@
     transition: .2s all;
 }
 
-.general-preference-card button:hover, .security-preference-card button:hover, .preference-CI-container button:hover, .preference-city-container button:hover { color: #0F4C75; }
+.general-preference-card button:hover, 
+.security-preference-card button:hover, 
+.preference-CI-container button:hover, 
+.preference-city-container button:hover,
+.preference-faculty-container button:hover,
+.preference-subject-container button:hover { 
+    color: #0F4C75; 
+}
 
 .checkbox-week-day {
     display: grid;
@@ -80,10 +101,17 @@
 }
 
 .privacy-zone { margin: 17px 0; }
-.login-security-container, .preference-CI-container, .preference-city-container, .privacy-zone {
+
+.login-security-container, 
+.preference-CI-container, 
+.preference-city-container, 
+.privacy-zone,
+.preference-faculty-container,
+.preference-subject-container {
     padding: 15px 30px;
     background: #FFFFFF;
     border-radius: 40px;
+    position: relative;
 }
 
 .login-security-container h1 {
@@ -121,7 +149,12 @@
 
 .privacy-zone-information h4 { margin: 6px 0; }
 
-.security-preference-union p, .preference-CI-description, .preference-city-description, .privacy-zone-information p {
+.security-preference-union p, 
+.preference-CI-description, 
+.preference-city-description, 
+.privacy-zone-information p,
+.preference-faculty-description,
+.preference-subject-description {
     color: #AAAAAA;
     font-size: 16px;
 }
@@ -133,15 +166,28 @@
 
 .security-preference-card button { font-size: 22px; }
 
-.preference-CI-container, .privacy-zone, .preference-city-container {
+.preference-CI-container, 
+.privacy-zone, 
+.preference-city-container,
+.preference-faculty-container,
+.preference-subject-container,
+.preference-subject-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.preference-CI-zone, .preference-city-zone { width: 80%; }
+.preference-CI-zone, 
+.preference-city-zone,
+.preference-faculty-zone,
+.preference-subject-zone { 
+    width: 80%; 
+}
 
-.preference-CI-information, .preference-city-information {
+.preference-CI-information, 
+.preference-city-information,
+.preference-faculty-information,
+.preference-subject-information {
     width: 60%;
     display: flex;
     justify-content: space-between;
@@ -181,7 +227,7 @@
     border: none;
     outline: none;
     cursor: pointer;
-    background: #e82626;
+    background: #283841;
     transition: .3s all;
 }
 
@@ -214,13 +260,26 @@
     color: #AAAAAA;
 }
 
+.field-required-icon {
+    position: absolute;
+    color: #DD3D18;
+    left: -8px;
+    top: -5px;
+    font-size: 24px;
+}
+
 @media only screen and (max-width:1150px) {
     .general-preference h4 { display: none; }  
 }
 
 @media only screen and (max-width:1000px) {
-    .preference-CI-information h4, .preference-city-information h4 { display: none; }
-    .preference-CI-description, .preference-city-description { font-size: 14px; }
+    .preference-CI-information h4, 
+    .preference-city-information h4, 
+    .preference-faculty-information h4,
+    .preference-subject-information h4 { display: none; }
+    .preference-CI-description, 
+    .preference-city-description,
+    .preference-subject-description { font-size: 14px; }
     .dark-input { width: 60%; }
     .security-preference i { font-size: 30px; }
     .security-preference-union h4 { font-size: 20px; }
@@ -230,8 +289,13 @@
 
 @media only screen and (max-width: 830px) {
     .dark-input { width: 75%; }
-    .preference-CI-description, .preference-city-description { display: none; }
-    .preference-CI-information, .preference-city-information { width: 90%; }
+    .preference-CI-description, 
+    .preference-city-description,
+    .preference-subject-description { display: none; }
+    .preference-CI-information, 
+    .preference-city-information,
+    .preference-faculty-information,
+    .preference-subject-information { width: 90%; }
     .general-preference { width: 80%; }
     .security-preference-union p { display: none; }
     .security-preference i { font-size: 26px; }

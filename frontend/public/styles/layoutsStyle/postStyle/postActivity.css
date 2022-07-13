@@ -157,8 +157,9 @@
 .pay-options {
     cursor: pointer;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     width: 180px;
     padding: 4px 10px;
     border-radius: 8px;
@@ -178,7 +179,42 @@
 
 .pay-options img { width: 120px; }
 
-.video_call-option-container {
+.pay-options-button, .integrate-video_call-button, .integrate-advancePayment-button {
+    height: 30px;
+    border-radius: 40px;
+    margin: 6px 0 12px 0;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: .2s all ease-in-out;
+}
+
+.pay-options-button { 
+    width: 40%; 
+    background: #EEEEEE;
+}
+
+.integrate-video_call-button, .integrate-advancePayment-button { 
+    margin: 0 10px;
+    width: 63px; 
+    background: #FFFFFF;
+}
+
+.pay-options-button div, .integrate-video_call-button div, .integrate-advancePayment-button div {
+    width: 30px;
+    height: 100%;
+    border-radius: 50%;
+    background: #3282B8;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    transition: .2s all ease-in-out;
+}
+
+.video_call-option-container, .advancePayment-option-container {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -186,23 +222,55 @@
     margin-top: 30px;
 }
 
-.video_call-option-container button, .pay-options button {
-    margin: 0 2px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 1px solid #444;
-    outline: none;
-    cursor: pointer;
-    transition: .2s all ease-in-out;
+.video_call-option-container span, .advancePayment-option-container span { 
+    color: #555555; 
+    font-size: 18px;
 }
 
-.video_call-option-container button:hover { background: #FFFFFF; }
+.advancePayment-option, .video_call-option {
+    max-width: 360px;
+    text-align: center;
+}
 
-.video_call-option-container span, .video_call-option-container p {
-    margin: 0 6px;
-    font-size: 18px;
+.advancePayment-option p, .video_call-option p { color: #777777; }
+
+.payForPenssum ul { list-style: none; }
+
+.payForPenssum ul li {
+    font-size: 17px;
+    color: #888888;
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.payForPenssum ul li i {
+    margin: 0 10px;
+    background: #3282B8;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #FFFFFF;
+    font-size: 20px;
+    border-radius: 50%;
+}
+
+.payForPenssum p { 
+    margin: 10px 0; 
+    font-size: 17px;
+    color: #888888;
+}
+
+.payForPenssum h3 { 
+    font-size: 22px; 
     color: #666666;
+}
+
+.payForPenssum h1 {
+    font-size: 26px;
+    color: #3282B8;
 }
 
 @media only screen and (max-width: 1000px) {
@@ -222,6 +290,8 @@
 }
 
 @media only screen and (max-width: 600px) {
+    #publish_error_handler-file { font-size: 13px; }
+    #publish { margin: 4px 0; }
     .dateOfDelivery { flex-direction: column; }
     .dateOfDelivery input { width: 100%; margin: 10px 0; }
     .post-form-containert-title { font-size: 23px; }
@@ -229,4 +299,14 @@
     .post-activity-container { padding: 20px; }
     .container-to-upload-photos label { font-size: 20px; }
     .container-to-upload-photos { height: 18vh; }
+}
+
+@media only screen and (max-width: 400px) {
+    .video_call-option-container, .advancePayment-option-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .integrate-video_call-button, .integrate-advancePayment-button { margin: 14px 0; }
 }

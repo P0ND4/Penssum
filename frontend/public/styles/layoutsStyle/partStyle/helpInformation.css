@@ -18,9 +18,9 @@
     text-align: justify;
 }
 
-.information-card-content p ul { margin: 8px 25px; }
+.information-card-content ul { margin: 20px 25px; }
 
-.information-card-content p ul li { 
+.information-card-content ul li { 
     color: #888888;
     font-size: 16px; 
 }
@@ -41,7 +41,7 @@
         padding: 0 20px;
     }
 
-    .information-card-content p ul li { font-size: 14px; }
+    .information-card-content ul li { font-size: 14px; }
 }
 
 @media only screen and (max-width: 600px) {

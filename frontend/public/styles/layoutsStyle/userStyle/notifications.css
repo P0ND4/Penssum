@@ -53,6 +53,7 @@
 .notification-body p { 
     color: #AAAAAA; 
     font-size: 20px;
+    overflow-wrap: break-word;
 }
 
 

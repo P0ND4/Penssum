@@ -82,7 +82,7 @@
 
 .support-and-right { width: 48%; }
 
-.law-degree, .support-number {
+.law-degree, .penssum-version {
     color: #aaaaaa;
     font-size: 18px;
     margin: 8px 0;
@@ -135,7 +135,7 @@
 @media only screen and (max-width: 900px) {
     .footer { padding: 20px; }
     .useful-information-title, .social-networks-title { font-size: 24px; }
-    .law-degree, .support-number { font-size: 16px; }
+    .law-degree, .penssum-version { font-size: 16px; }
 }
 
 @media only screen and (max-width: 800px) {
@@ -145,7 +145,7 @@
         gap: 6px;
     }
     .support-and-right { width: 80%; }
-    .law-degree, .support-number { 
+    .law-degree, .penssum-version { 
         font-size: 18px; 
         text-align: center;
     }
@@ -179,6 +179,6 @@
         text-align: center;
     }
     .social-networks i { font-size: 30px; }
-    .copyright p, .law-degree, .support-number { font-size: 15px; }
+    .copyright p, .law-degree, .penssum-version { font-size: 15px; }
     .footer-navigation { padding: 5px 0; }
 }

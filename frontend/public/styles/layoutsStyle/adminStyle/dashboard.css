@@ -400,7 +400,7 @@
     font-size: 26px;
 }
 
-.payment-card-dashboard {
+.payment-card-dashboard, .payment-card-divider-container {
     width: 100%;
     padding: 8px 16px;
     background: #EEEEEE;
@@ -411,13 +411,43 @@
     margin: 5px 0;
 }
 
-.payment-card-dashboard p {
+.payment-card-divider-container {
+    padding: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.payment-card-divider {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.payment-card-dashboard p, .payment-card-divider p {
     font-size: 16px;
     color: #444444;
 }
 
+.payment-card-images-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.payment-card-images-container img {
+    width: 80px;
+    height: 80px;
+    margin: 0 10px;
+}
+
 .payment-card-dashboard-button-container button {
-    margin: 0 4px;
+    margin: 2px 4px;
     border-radius: 8px;
     border: none;
     outline: none;
@@ -429,6 +459,8 @@
 }
 
 .payment-card-dashboard-button-container button:hover { background: #0F4C75; }
+.payment-card-dashboard-button-container .remove-transition-button { background: #1B262C; }
+.payment-card-dashboard-button-container .remove-transition-button:hover { background: #283841; }
 
 .payment-card-dashboard-information {
     position: absolute;
@@ -510,6 +542,16 @@
         width: 90%;
         padding: 20px;
     }
+    .payment-card-dashboard {
+        flex-direction: column;
+        justify-content: center;
+    }
+    .payment-card-dashboard-button-container { width: 100%; }
+    .payment-card-dashboard button { width: 100%; }
+    .payment-card-divider {
+        flex-direction: column;
+        justify-content: center;
+    }
 }
 
 @media only screen and (max-width: 750px) {
@@ -523,6 +565,7 @@
         left: -10px;
     }
     .payment-card-dashboard-information p { font-size: 12px; }
+    .payment-card-images-container img { margin: 0 6px; }
 }
 
 @media only screen and (max-width: 600px) {

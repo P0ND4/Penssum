@@ -95,6 +95,8 @@
 .post-information-card-container { padding: 20px; }
 
 .post-information-card h1, .post-information-date { 
+    word-break: break-word;
+    overflow-wrap: break-word;
     color: #666666;
     font-size: 26px;
 }
@@ -102,6 +104,8 @@
 .post-information-card p { 
     font-size: 20px; 
     color: #666666;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .post-call-video-link { color: #666666; }
@@ -128,6 +132,11 @@
     border-radius: 40px;
     text-align: center;
     margin: 10px 0;
+}
+
+.post-send-offer-container p {
+    color: #666666;
+    font-size: 18px;
 }
 
 .post-send-container { 
@@ -159,7 +168,10 @@
 
 .post-send-container button:hover { background: #0F4C75; }
 
-.post-video_call-zone { width: 100%; }
+.post-video_call-zone { 
+    width: 100%; 
+    margin: 4px 0;
+}
 
 .post-video_call-link {
     text-decoration: none;
@@ -201,8 +213,8 @@
     font-size: 22px;
 }
 
-#delete-product:hover { background: #BB1B05; } 
-#delete-product:active { background: #AA0A03; }
+#delete-product:hover, #report-teacher-post-information:hover { background: #BB1B05; } 
+#delete-product:active, #report-teacher-post-information:active { background: #AA0A03; }
 
 .post-video_call-link-container {
     width: 100%;
@@ -585,10 +597,225 @@
     color: #fbff00;
 }
 
-/*.vote-in-post input#rate-5:checked ~ label i {
-    color: #fe7;
-    text-shadow: 0 0 20px #952;
-}*/
+.main-post-information-payment {
+    padding: 8px 16px;
+    border-radius: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around; 
+    margin-bottom: 10px;
+}
+
+.main-post-information-payment span { color: #FFFFFF; }
+.main-post-information-payment img { width: 40px; }
+
+.post-information-remove-take-button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-information-apply, .post-information-give-up, .post-information-activity, .post-information-finished, .post-information-check-payment {
+    width: 100%;
+    text-align: center;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    padding: 6px 14px;
+    color: #FFFFFF;
+    font-size: 18px;
+    cursor: pointer;
+    background: #3282B8;
+    margin: 2px 0;
+    transition: .2s all ease-in-out;
+}
+
+.post-information-activity:hover, #accordance-yes:hover { background: #0F4C75; }
+.post-information-give-up, #accordance-no, #fa-trash, #fa-flag-checkered, .post-information-check-payment { background: #1B262C; }
+.post-information-apply:hover, .post-information-give-up:hover, #accordance-no:hover, .post-information-finished:hover, .post-information-check-payment:hover { background: #283841; }
+
+#report-teacher-post-information {
+    min-width: 30px;
+    min-height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #FFFFFF;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0 4px;
+    background: #DD3D18;
+    transition: .2s all ease-in-out;
+}
+
+.activity-pictures-post-information-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    flex-direction: column;
+}
+
+.activity-pictures-post-information-container h1 {
+    font-size: 26px;
+    color: #3282B8;
+    margin: 6px 0;
+}
+
+.activity-pictures-post-information {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.activity-pictures-post-information img {
+    margin: 5px;
+    min-width: 90px;
+    min-height: 90px;
+    width: 90px;
+    height: 90px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.activity-pictures-post-information img:hover { opacity: .6; }
+
+.accordance-post-information-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.accordance-post-information-container h2 {
+    color: #666666;
+    font-size: 22px;
+}
+
+.accordance-post-information-container p {
+    color: #888888;
+    font-size: 14px;
+}
+
+.accordance-post-information {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 14px 0;
+}
+
+.accordance-post-information button {
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 17px;
+    cursor: pointer;
+    color: #FFFFFF;
+    transition: .2s all ease-in-out;
+}
+
+#accordance-yes, #fa-trash:hover { background: #3282B8; }
+#accordance-lack, #fa-flag-checkered:hover { background: orange; }
+
+#fa-trash, #fa-flag-checkered {
+    font-size: 22px;
+    color: #FFFFFF;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-left: 6px;
+    transition: .2s all;
+} 
+
+.verificationOfPaymentSent {
+    color: #3282B8;
+    font-size: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+.add-video_call-link-container { 
+    width: 300px; 
+    margin: 10px 0;
+}
+
+.add-video_call-link-container p {
+    color: #AAAAAA;
+    font-size: 16px;
+}
+
+.add-video_call-link-container div { 
+    margin: 10px 0; 
+    display: flex;
+}
+
+.add-video_call-link-container div input {
+    border: none;
+    outline: none;
+    padding: 8px 12px;
+    font-size: 17px;
+    width: 120px;
+    color: #666666;
+    border-radius: 8px 0 0 8px;
+}
+
+.add-video_call-link-container div button {
+    border: none;
+    outline: none;
+    padding: 8px 12px;
+    font-size: 17px;
+    color: #AAAAAA;
+    background: #1B262C;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.add-video_call-link-container div button:hover { background: #283841; }
+
+#delete-url-videoCall { 
+    background: orange; 
+    border-radius: 0 8px 8px 0;
+}
+
+.counter-offer-container { width: 280px; }
+
+.counter-offer-container p {
+    color: #888888;
+    font-size: 16px;
+}
+
+.counter-offer-button-container { 
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.counter-offer-button-container button {
+    padding: 8px 14px;
+    color: #FFFFFF;
+    font-size: 14px;
+    border: none;
+    outline: none;
+    background: #1B262C;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+#accept-counter-offer { border-radius: 8px 0 0 8px; }
+#remove-counter-offer { 
+    border-radius: 0 8px 8px 0; 
+    background: #283841;
+}
+
+.counter-offer-button-container button:hover, #remove-counter-offer:hover { background: orange; }
 
 @keyframes loadingTEXT {
     0% { transform: scale(.95); }
@@ -668,6 +895,7 @@
 }
 
 @media only screen and (max-width: 1000px) {
+    .add-video_call-link-container div input { width: 120px; }
     .post-information { grid-template-columns: 1fr; }
     .post-information-card h1, .post-information-date, .value-information-container h1 { font-size: 26px; }
     .post-information-card p { font-size: 20px; }
@@ -724,6 +952,17 @@
 }
 
 @media only screen and (max-width: 600px) {
+    .add-video_call-link-container { width: 300px; }
+    .add-video_call-link-container div {
+        display: flex;
+        flex-direction: column;
+    }
+    .add-video_call-link-container div input, .add-video_call-link-container div button, #delete-url-videoCall {
+        margin: 2px 0; 
+        width: 100%; 
+        font-size: 16px;
+        border-radius: 8px;
+    }
     .vote-in-post i { font-size: 26px; }
     .payment-method-options-form {
         flex-direction: column;
@@ -792,7 +1031,6 @@
 @media only screen and (max-width: 400px) {
     .post-value-container {
         flex-direction: column;
-        align-items: center;
         justify-content: center;
     }
     .value-information-container {

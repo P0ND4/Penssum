@@ -1,6 +1,6 @@
 .found-container { padding: 40px; }
 
-.main-profile_provider-title { 
+.main-data-title-found { 
     color: #3282B8; 
     font-size: 36px;
     text-align: center;
@@ -9,6 +9,7 @@
 
 .profile_provider-found {
     width: 100%;
+    margin: 0 auto;
     padding: 10px 40px;
     display: flex;
     flex-direction: column;
@@ -57,7 +58,7 @@
 .profile_provider:hover > .profile_provider-image { right: 5px; transform: scale(1.04);}
 .profile_provider:hover > .profile_provider-data { left: 8px; }
 
-.profile_provider-name-and-description { width: 70%; }
+.profile_provider-name-and-description { max-width: 100%; }
 
 .profile_provider-name {
     color: #FFFFFF;
@@ -65,7 +66,10 @@
     margin: 10px 0;
 }
 
-.profile_provider-description { color: #DDDDDD; }
+.profile_provider-description { 
+    color: #DDDDDD;
+    word-break: break-word;
+}
 
 .profile_provider-score-container {
     display: flex;
@@ -76,7 +80,22 @@
 
 .profile_provider-score-container h1 { 
     color: #FFFFFF; 
-    font-size: 28px;
+    font-size: 26px;
+}
+
+.value-per-hour-found-user {
+    margin: 10px 0;
+    padding: 6px 12px;
+    background: #1B262C;
+    color: #FFFFFF;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.value-per-hour-found-user span { 
+    color: #3282B8; 
+    font-weight: 600;
+    font-size: 18px;
 }
 
 .profile_provider-score {
@@ -86,18 +105,37 @@
     margin: 10px 0;
 }
 
-.profile_provider-score i { font-size: 32px; }
+.profile_provider-score i { 
+    font-size: 28px; 
+    color: #AAAAAA;
+}
 
+.products-found-container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.products-found {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+}
+
+.products-found {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+@media only screen and (max-width: 1500px) { .products-found { grid-template-columns: repeat(4, 1fr); } } 
 @media only screen and (max-width: 1220px) { .profile_provider-name-and-description { width: 60%; } }
 
 @media only screen and (max-width: 1050px) {
-    .profile_provider-name-and-description { width: 100%; }
-    .profile_provider-score-container { display: none; }
     .profile_provider-found { padding: 10px; }
-}
-
-@media only screen and (max-width: 750px) {
-    .main-profile_provider-title { font-size: 30px; }
+    .products-found { grid-template-columns: repeat(3, 1fr); }
+    .main-data-title-found { font-size: 30px; }
     .profile_provider-name  { font-size: 24px; }
     .profile_provider-description { font-size: 14px; }
     .profile_provider-image { 
@@ -106,11 +144,20 @@
     }
     .profile_provider-data { padding: 0 10px; }
     .found-container { padding: 40px 10px; }
+    .value-per-hour-found-user { font-size: 15px; }
+    .value-per-hour-found-user span { font-size: 16px; }
 }
 
-@media only screen and (max-width: 550px) {
+@media only screen and (max-width: 800px) { .products-found { grid-template-columns: repeat(2, 1fr); } }
+
+@media only screen and (max-width: 600px) { 
+    .products-found { grid-template-columns: 1fr; }
+    .found-container { padding: 25px 5px; }
+}
+
+@media only screen and (max-width: 700px) {
     .profile_provider { flex-direction: column; }
-    .main-profile_provider-title { font-size: 28px; }
+    .main-data-title-found { font-size: 28px; }
     .profile_provider-name, .profile_provider-score-container h1  { 
         font-size: 22px; 
         text-align: center;
@@ -133,13 +180,12 @@
     .profile_provider:hover > .profile_provider-data { left: 0; }
 }
 
-.img-user-not-found-search { width: 300px; }
+.img-data-not-found-search { width: 300px; }
 
 @media only screen and (max-width: 400px) {
-    .main-profile_provider-title { 
+    .main-data-title-found { 
         font-size: 28px;
         padding: 0; 
     }
     .profile_provider { padding: 25px 5px; }
-    .found-container { padding: 25px 5px; }
 }

@@ -1,0 +1,153 @@
+.recovery-container { 
+	padding: 40px; 
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+	
+.recovery {
+	width: 550px;
+	background: #FFFFFF;
+	padding: 30px 40px;
+	border-radius: 12px;
+	animation: appearCard .6s forwards ease-in-out;
+}
+
+@keyframes appearCard {
+	0% { 
+		transform: translateY(-10px);
+		opacity: 0;
+	}
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.recovery h3 {
+	font-size: 28px;
+	color: #1b262c;
+}
+
+
+.account-recovery-description { margin: 10px 0; }
+
+.recovery-input-form input {
+	background: #EEEEEE;
+}
+
+.recovery-input-code-form {
+	margin: 25px 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.recovery-input-code-form input {
+	background: #EEEEEE;
+	margin-right: 10px;
+}
+
+.recovery-input-code-form p { 
+	font-size: 15px;
+	padding: 0 10px;
+	border-left: 1px solid #aaaaaa;
+}
+
+.recovery p { 
+	font-size: 18px; 
+	color: #AAAAAA;
+}
+
+.account-recovery-button-container {
+	width: 100%;
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 8px;
+}
+
+#cancel-recovery, #accept-recovery, #verify-code {
+	cursor: pointer;
+    font-size: 16px;
+    border-radius: 40px;
+    margin: 10px 4px;
+    border: none;
+    outline: none;
+    padding: 8px 20px;
+    transition: .2s all;
+}
+
+#accept-recovery, #verify-code { 
+	background: #3282B8; 
+	color: #ffffff;
+} 
+
+#accept-recovery:hover, #verify-code:hover { background: #0F4C75; }
+
+#cancel-recovery { 
+	background: #EEEEEE; 
+	color: #666666;
+}
+
+#cancel-recovery:hover { background: #DDDDDD; }
+
+.account-recovery-code-button-container {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 20px;
+}
+
+.account-recovery-code-button-container p {
+	color: #3282B8;
+	font-size: 16px;
+	cursor: pointer;
+	transition: .3s all ease-in-out;
+}
+
+.account-recovery-code-button-container p:hover { color: #0F4C75; }
+
+@media only screen and (max-width: 600px) {
+	.recovery-container {
+		padding: 40px 10px;
+	}
+	.recovery { width: 100%; }
+	.account-recovery-button-container { 
+		justify-content: center; 
+		align-items: center;
+		flex-direction: column;
+	}
+	.account-recovery-button-container a, #cancel-recovery, #accept-recovery, #verify-code {
+		display: block;
+		width: 100%;
+		margin: 4px 0;
+	}
+	.recovery h3 { text-align: center; }
+	.account-recovery-description { text-align: center; }
+	.recovery-input-code-form {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		margin: 8px 0;
+	}
+	.recovery-input-code-form input { margin-right: 0;}
+	.recovery-input-code-form p { 
+		margin: 8px 0;
+		padding: 0;
+		border-left: none;
+	}
+	.account-recovery-code-button-container p {
+		margin: 8px 0;
+	}
+	.account-recovery-code-button-container {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		margin-top: 0;
+	}
+	.account-recovery-code-button { width: 100%; }
+	.recovery { padding: 20px 10px; }
+}
+
+@media only screen and (max-width: 400px) {
+	
+}
