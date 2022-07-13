@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useParams } from 'react-router';
-import { changeDate } from '../../helpers';
+import { changeDate, verificationOfInformation } from '../../helpers';
+import Vote from '../../parts/Vote';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import swal from 'sweetalert';
 
@@ -17,20 +18,33 @@ import {
     socket,
     deleteProduct,
     removeFiles,
+    getTransaction,
     vote,
-    getVote
+    getVote,
+    takePost,
+    getUser,
+    removeTakePost,
+    getTask,
+    requestPayment,
+    teacherPayment,
+    getNotifications,
+    removePayment,
+    removeOffer,
+    acceptOffer
 } from '../../../api';
 import Loading from '../../parts/Loading';
+import Information from '../../parts/Information';
 
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-function PostInformation({ auth, userInformation, isTheUserSuspended, setMainProducts }) {
+function PostInformation({ auth, userInformation, isTheUserSuspended, setMainProducts, setProducts, setReportUsername, setQuoteId, setReportProductId, setCountInNotification, setNotifications, setCountInMessages, setReportTransaction }) {
     const [activatePayment,setActivatePayment] = useState(false);
     const [offerVerification, setOfferVerification] = useState(null);
+    const [offerTeacher,setOfferTeacher] = useState(null);
     const [offer, setOffer] = useState(null);
-    const [product, setProduct] = useState(null);
+    const [productFound, setProductFound] = useState(null);
     const [position, setPosition] = useState(0);
     const [copied, setCopied] = useState(false);
     const [sendingTransaction,setSendingTransaction] = useState(false);
@@ -40,6 +54,18 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
     const [score,setScore] = useState(0);
     const [scoreUpdated,setScoreUpdated] = useState(false);
     const [sendingInformation,setSendingInformation] = useState(false);
+    const [offerInputNumber,setOfferInputNumber] = useState(0);
+    const [offerInputString,setOfferInputString] = useState('');
+    const [teacher,setTeacher] = useState(null);
+    const [teacherUsername, setTeacherUsername] = useState('');
+    const [task,setTask] = useState(null);
+    const [activeVote,setActiveVote] = useState(false);
+    const [handlerVote,setHandlerVote] = useState(false);
+    const [userToVote,setUserToVote] = useState({});
+    const [currentVote,setCurrentVote] = useState(null);
+    const [sentReportTransaction,setSentReportTransaction] = useState(null);
+    const [urlVideoCall,setUrlVideoCall] = useState('');
+    const [activateInformation,setActivateInformation] = useState(false);
 
     const changeWidth = () => setWidth(window.innerWidth);
 
@@ -48,11 +74,35 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
         return (() => window.removeEventListener('resize', changeWidth));
     });
 
+    useEffect(() => {
+        if (productFound !== null && productFound.takenBy) {
+            const checkVote = async () => {
+                const result = await getUser({ id: productFound.takenBy });
+                if (!result.error) setTeacher(result); 
+            };  
+            checkVote();
+        };
+    },[productFound,userInformation]);
+
+    useEffect(() => {
+        if (productFound !== null && productFound.takenBy) {
+            const checkVote = async () => {
+                const result = await getVote({ 
+                    to: userInformation._id,
+                    from: productFound.takenBy,
+                    voteType: 'product'
+                });
+                if (!result.error) setCurrentVote(result); 
+            };  
+            checkVote();
+        };
+    },[productFound,userInformation]);
+
     const [paymentDetails,setPaymentDetails] = useState({
         type: 'select',
         cardType: null,
         name: '',
-        documentType: 'C.C.',
+        documentType: 'CC',
         identificationNumber: '',
         cardNumber: '',
         securityCode: '',
@@ -74,24 +124,95 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
     const closeTimerCopied = useRef();
     const closeTimerScoreUpdated = useRef();
     const eventZone = useRef();
-    const resetVideoCallURL = useRef();
+    //const resetVideoCallURL = useRef();
     const voteTimer = useRef();
 
+    const searchNotifications = useCallback(
+        async () => {
+            const briefNotifications = await getNotifications(cookies.get('id'));
+
+            const currentNotification = [];
+            let count = 0;
+
+            for (let i = 0; i < 3; i++) { if (briefNotifications[i] !== undefined) currentNotification.push(briefNotifications[i]) };
+            for (let i = 0; i < briefNotifications.length; i++) { if (!briefNotifications[i].view) count += 1 };
+
+            setCountInNotification(count);
+            setNotifications(currentNotification);
+        },[setCountInNotification,setNotifications]
+    );
+
     useEffect(() => {
-        const checkVote = async () => {
-            if (product !== null) {
+        socket.on('product updated', async ({ product, global }) => {
+            if (product._id === post_id) {
+                setProductFound(product);
+                if (global) {
+                    const currentProductsCollections = await getProducts({ blockSearch: userInformation._id });
+                    setProducts(currentProductsCollections);
+                };
+            };
+        });
+
+        socket.on('product deleted', ({ finished }) => {
+            if (finished) {
+                swal({
+                    title: 'PAGO ACEPTADO',
+                    text: 'El estudiante ha aceptado la solicitud de pago que has hecho !FELICIDADES! la publicacion sera eliminada.',
+                    icon: 'success',
+                    button: '!Gracias!'
+                }).then(() => navigate(`/${teacherUsername}`));
+            } else {
+                swal({
+                    title: 'PUBLICACION ELIMINADA',
+                    text: 'La publicacion ha sido eliminada por el estudiante, si crees que has sufrido de estafa, por favor reporta.',
+                    icon: 'error',
+                    button: 'Ok'
+                }).then(() => navigate(`/${teacherUsername}`));
+            }
+        });
+
+        socket.on('new offer', async ({ productID }) => { 
+            if (productID === post_id) {
+                const result = await getOffer({ id_product: post_id });
+                if (!result.error) setOffer(result);
+            };
+        });
+
+        socket.on('new_message', () => setCountInMessages(count => count + 1));
+        socket.on('received event', async () => await searchNotifications());
+
+        socket.on('offer event', async ({ productID }) => { 
+            if (productID === post_id) {
+                const result = await getOffer({ id_user: userInformation._id, id_product: post_id });
+                if (!result.error) {
+                    setOfferVerification(result);
+                } else setOfferVerification(null);
+
+                if (productFound.takenBy) {
+                    const result = await getOffer({ id_user: productFound.takenBy, id_product: post_id });
+                    setOfferTeacher(result);
+                };
+            };
+        });
+
+        return (() => socket.off());
+    });
+
+    /*useEffect(() => {
+        if (productFound !== null) {
+            const checkVote = async () => {
                 const result = await getVote({ 
                     from: cookies.get('id'), 
-                    to: product.owner,
-                    productId: product._id,
+                    to: productFound.owner,
+                    productId: productFound._id,
                     voteType: 'product'
                 });
 
-                setScore(result.vote);
+                setCurrentVote(result);
             };
+            checkVote();
         };
-        checkVote();
-    },[product]);
+    },[productFound]);*/
 
     useEffect(() => {
         if (activatePayment) document.querySelector('body').style.overflow = 'hidden';
@@ -106,31 +227,47 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
     },[copied]);
 
     useEffect(() => {
+        if (productFound && userInformation) {
+            if (productFound.owner === userInformation._id) {
+                const checkTransaction = async () => {
+                    const result = await getTransaction({ 
+                        checkVerification: userInformation._id,
+                        post_id
+                    });
+                    if (result.error) setSentReportTransaction(true)
+                    else setSentReportTransaction(false);
+                };
+                checkTransaction();
+            } else setSentReportTransaction(false);
+        };
+    },[userInformation,productFound,post_id]);
+
+    useEffect(() => {
         const searchOffers = async () => {
             const result = await getOffer({ id_product: post_id });
             if (!result.error) setOffer(result);
         };
         searchOffers();
-    }, [post_id]);
+    }, [post_id,productFound]);
 
     useEffect(() => {
         if (auth) {
             const checkOffer = async () => {
                 const result = await getOffer({ id_user: userInformation._id, id_product: post_id });
-                if (!result.error) setOfferVerification({ 
-                    amount: result.amount, 
-                    acceptOffer: result.acceptOffer,
-                    isThePayment: result.isThePayment,
-                    isBought: result.isBought
-                });
+                if (!result.error) setOfferVerification(result);
+
+                if (productFound !== null && productFound.takenBy) {
+                    const result = await getOffer({ id_user: productFound.takenBy, id_product: post_id });
+                    setOfferTeacher(result);
+                };
             };
             checkOffer();
         };
-    }, [auth, post_id, userInformation]);
+    }, [auth, post_id, userInformation, productFound]);
 
     useEffect(() => {
         const watchLock = async () => {
-            const result = await reviewBlocked({ from: userInformation._id, to: post_id, product: true });
+            const result = await reviewBlocked({ from: userInformation._id, to: post_id, productFound: true });
 
             if (result.length > 0) { navigate('/') };
         };
@@ -138,11 +275,36 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
     }, [post_id, userInformation, navigate]);
 
     useEffect(() => {
+        if (productFound !== null && productFound.takenBy !== null) {
+            const checkTask = async () => {
+                const taskObtained = await getTask({ from: productFound.takenBy, to: productFound.owner, productId: post_id });
+                if (taskObtained === null || taskObtained.length === 0 || taskObtained === '') setTask(false)
+                else setTask(taskObtained);
+            };
+            checkTask();
+        } else if (productFound !== null) setTask(false);
+    },[productFound,post_id]);
+
+    useEffect(() => {
+        const checkProduct = async () => {
+            if (productFound !== null && productFound.takenBy !== null) {
+                const teacher = await getUser({ id: productFound.takenBy });
+                setTeacherUsername(teacher.username);
+            };
+        };
+        checkProduct();
+    },[productFound]);
+
+    useEffect(() => {
         const searchProducts = async () => {
             const productObtained = await getProducts({ id: post_id });
             if (productObtained.error || productObtained.length === 0) navigate('/')
             else {
-                setProduct(productObtained);
+                if (productObtained.takenBy !== null) {
+                    const teacher = await getUser({ id: productObtained.takenBy });
+                    setTeacherUsername(teacher.username);
+                };
+                setProductFound(productObtained);
                 if (auth) { await increaseView(post_id) };
             };
         };
@@ -156,24 +318,79 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
         };
     },[scoreUpdated]);
 
+    useEffect(() => {
+        if (productFound !== null && productFound.takenBy) {
+            const searchUserToVote = async () => {
+                const user = await getUser({ id: userInformation._id === productFound.owner ? productFound.takenBy : productFound.owner });
+                setUserToVote(user);
+            };
+            searchUserToVote();
+        };
+    },[productFound, userInformation]);
+
+     const finalize = useCallback(
+        async () => {
+                if (!currentVote) {
+                    await vote({ 
+                        from: cookies.get('id'), 
+                        to: userInformation._id === productFound.owner ? productFound.takenBy : productFound.owner, 
+                        productId: productFound._id, 
+                        vote: score
+                    });
+                };
+
+                if (userInformation._id === productFound.owner) {
+                    socket.emit('product deleted', { userID: productFound.takenBy, finished: true });
+                    setSendingInformation(true);
+                    await teacherPayment({ typeData: 'accept', post_id, user_id: productFound.owner });
+                    await removeFiles({ files: productFound.files, activate: true });
+                    await deleteProduct({ id: post_id, notification: false, finished: true });
+                    socket.emit('received event', productFound.takenBy);
+                    setSendingInformation(false);
+                    swal({
+                        title: '!FELICIDADES!',
+                        text: 'Has mandado el pago al profesor satisfactoriamente, la publicacion ha finalizado exitosamente.',
+                        icon: 'success',
+                        timer: '4000',
+                        button: false,
+                    }).then(() => navigate('/'));
+                } else {
+                    setSendingInformation(true);
+                    await removeFiles({ files: productFound.files, activate: true });
+                    await deleteProduct({ id: post_id, notification: false, finished: true, teacher: true });
+                    socket.emit('received event', productFound.owner);
+                    setSendingInformation(false);
+                    swal({
+                        title: 'FINALIZADO',
+                        text: 'La publicacion ha sido finalizada correctamente.',
+                        icon: 'success',
+                        timer: '2000',
+                        button: false,
+                    }).then(() => navigate('/'));
+                };
+            },[userInformation,navigate,post_id,productFound,score,currentVote]
+    );
+
+    useEffect(() => { if (handlerVote) finalize() },[handlerVote,finalize]);
+
     const createOffer = async () => {
         document.querySelector('.field-make-offer').classList.remove('showError');
         document.querySelector('.field-make-offer-no-input').classList.remove('showError');
-        const value = document.getElementById('make-offer').value;
 
-        if (value === '') return document.querySelector('.field-make-offer-no-input').classList.add('showError');
+        if (offerInputNumber === '') return document.querySelector('.field-make-offer-no-input').classList.add('showError');
 
-        if (/^[0-9]{0,20}$/.test(value)) {
+        if (/^[0-9]{0,20}$/.test(offerInputNumber)) {
             const data = {
                 mainInformation: {
                     product: post_id,
                     user: userInformation._id,
-                    amount: parseInt(value),
+                    amountNumber: offerInputNumber,
+                    amountString: offerInputString,
                     username: userInformation.username,
                     firstName: userInformation.firstName,
                     lastName: userInformation.lastName
                 },
-                notification: product.owner
+                notification: productFound.owner
             };
 
             setSendingInformation(true);
@@ -189,6 +406,7 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                     button: false
                 });
             } else {
+                socket.emit('new offer', { userID: productFound.owner, post_id });
                 swal({
                     title: 'Enviado',
                     text: 'Ha sido enviado satisfactoriamente la oferta',
@@ -197,15 +415,21 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                     button: false
                 });
 
-                setOfferVerification({ amount: parseInt(value), acceptOffer: false });
+                setOfferVerification({ 
+                    amountString: offerInputString,
+                    amountNumber: offerInputNumber, 
+                    acceptOffer: false 
+                });
+                setOfferInputString('');
+                setOfferInputNumber(0);
             };
 
         } else document.querySelector('.field-make-offer').classList.add('showError');
 
-        socket.emit('received event', product.owner);
+        socket.emit('received event', productFound.owner);
     };
 
-    const changeURL = () => {
+    /*const changeURL = () => {
         swal({
             title: '¿Estas seguro?',
             text: '¿Quieres cambiar el link de la videollamada?.',
@@ -215,7 +439,7 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
             if (res) {
                 resetVideoCallURL.current.style.display = 'none';
                 const productUpdated = await changeVideoCallURL({ post_id });
-                setProduct(productUpdated);
+                setProductFound(productUpdated);
                 resetVideoCallURL.current.style.display = 'flex';
                 swal({
                     title: '!Cambiado con exito!',
@@ -226,7 +450,7 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                 });
             };
         });
-    };
+    };*/
 
     const pay = async () => {
         const error = document.querySelector('.incomplete-form');
@@ -245,14 +469,14 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
             const result = await payProduct({
                 paymentType: 'card',
                 productID: post_id,
-                ownerId: product.owner,
+                ownerId: productFound.owner,
                 userID: cookies.get('id'),
-                productName: product.title,
-                productDescription: product.description,
+                name: productFound.title,
+                description: productFound.description,
                 userEmail: userInformation.email,
-                category: product.category,
-                customCategory: product.customCategory,
-                amount: offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value,
+                category: productFound.category,
+                customCategory: productFound.customCategory,
+                amount: offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber,
                 cardType: paymentDetails.cardType,
                 fullName: paymentDetails.name,
                 documentType: paymentDetails.documentType,
@@ -291,7 +515,7 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
             if (result.transactionResponse.state === 'APPROVED') {
                 swal({
                     title: 'APROBADO',
-                    text: `TRANSACCION REALIZADA CORRECTAMENTE, MONTO PAGADO: ${offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value}$ IVA: ${Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value) * 0.19)}$, TOTAL: ${(offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value) + Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value) * 0.19)}$`,
+                    text: `TRANSACCION REALIZADA CORRECTAMENTE, MONTO PAGADO: $${offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber} IVA: $${Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber) * 0.19)}, TOTAL: $${(offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber) + Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber) * 0.19)}`,
                     icon: 'success',
                     button: '!Gracias!',
                 });
@@ -299,7 +523,7 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                 setActivatePayment(false);
                 setOfferVerification({
                     ...offerVerification,
-                    amount: offerVerification.amount ? offerVerification.amount : product.value,
+                    amount: offerVerification.amountNumber ? offerVerification.amountNumber : productFound.valueNumber,
                     acceptOffer: true,
                     isThePayment: true,
                     isBought: true,
@@ -320,15 +544,14 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                 paymentType: 'PSE',
                 productID: post_id,
                 userID: cookies.get('id'),
-                productName: product.title,
-                productDescription: product.description,
+                name: productFound.title,
+                description: productFound.description,
                 userEmail: userInformation.email,
-                category: product.category,
-                customCategory: product.customCategory,
-                amount: offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value,
+                amount: offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber,
                 bank: paymentDetails.bank,
                 nameOfOwner: paymentDetails.name,
                 personType: paymentDetails.personType,
+                RESPONSE_URL: `/post/information/${post_id}/transaction/receipt`,
                 documentType: paymentDetails.documentType,
                 identificationNumber: paymentDetails.identificationNumber,
                 countryCode: paymentDetails.countryCode,
@@ -349,12 +572,10 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                 paymentType: paymentDetails.type,
                 productID: post_id,
                 userID: cookies.get('id'),
-                productName: product.title,
-                productDescription: product.description,
+                name: productFound.title,
+                description: productFound.description,
                 userEmail: userInformation.email,
-                category: product.category,
-                customCategory: product.customCategory,
-                amount: offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value,
+                amount: offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber,
                 city: userInformation.city,
                 phoneNumber: userInformation.phoneNumber,
                 identificationNumber: userInformation.identification,
@@ -404,9 +625,12 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
             buttons: ['Rechazar', 'Aceptar']
         }).then(async res => {
             if (res) {
+                const takenBy = productFound.takenBy;
                 eventZone.current.style.display = 'none';
-                await removeFiles({ files: product.files, activate: true });
+                await removeFiles({ files: productFound.files, activate: true });
                 await deleteProduct({ id: post_id, notification: false });
+                socket.emit('received event', takenBy);
+                socket.emit('product deleted', { userID: productFound.takenBy, finished: false });
                 const products = await getProducts();
                 setMainProducts(products);
                 navigate('/');
@@ -423,8 +647,8 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
         voteTimer.current = setTimeout(async () => {
             await vote({ 
                 from: cookies.get('id'), 
-                to: product.owner, 
-                productId: product._id, 
+                to: productFound.owner, 
+                productId: productFound._id, 
                 vote: currentVote === score ? 0 : currentVote 
             });
 
@@ -432,7 +656,310 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
         },1400);
     };
 
-    return product !== null ? (
+    const engage = () => {
+        swal({
+            title: '¿Quieres postular a la publicacion?',
+            text: '¿Te comprometes a culminar la publicación en el tiempo solicitado, teniendo en cuenta la calidad del trabajo? de eso dependerá su experiencia y su calificacion, para que más estudiantes lo recomienden.',
+            icon: 'warning',
+            buttons: ['No estoy seguro', 'Me compromento']
+        }).then(async res => {
+            if (res) {
+                setSendingInformation(true);
+                const result = await takePost({ post_id, teacher_id: cookies.get('id') });
+                setSendingInformation(false);
+
+                if (result.error) {
+                    if (result.type === 'this post has been taken') {
+                        swal({
+                            title: 'ERROR',
+                            text: 'La publicacion ya lo tomo un profesor',
+                            icon: 'error',
+                            button: 'ok',
+                        });
+                        setProductFound(result.productFound);
+                    };
+                    if (result.type === 'maximum products taken') {
+                        swal({
+                            title: 'ERROR',
+                            text: `
+                                Alcanzaste el limite de publicaciones, resuelve las publicaciones que 
+                                seleccionaste para poder tomar una publicacion.
+                            `,
+                            icon: 'error',
+                            button: 'ok',
+                        });
+                    }
+                } else {
+                    socket.emit('received event', productFound.owner);
+                    socket.emit('product updated', { userID: productFound.owner, post_id, globalProductUpdate: true });
+                    swal({
+                        title: '!EXITO!',
+                        text: `Excelente te has comprometido con la publicacion.`,
+                        icon: 'success',
+                        button: '!Gracias!',
+                    });
+                    setProductFound(result);
+                };
+                const newProductsCollection = await getProducts({ blockSearch: userInformation._id });
+                setProducts(newProductsCollection);
+            };
+        });
+    };
+
+    const removeTake = () => {
+         swal({
+            title: userInformation._id === productFound.owner ? '¿Quieres expulsar al profesor?' : '¿Quieres renunciar?',
+            text: userInformation._id === productFound.owner ? `Recuerda que puedes sacar al profesor si no se comunica con usted, o por algun inconveniente que hayan tenido, no saques a profesores sin ningun motivo porque podria llevar a la suspencion de su cuenta.` : `Puedes renunciar a la publicacion cuando quieras, pero por favor no lo hagas el mismo dia de la entrega, porque podria llevar a la suspencion de su cuenta, y ser reportado a nuestro moderadores.`,
+            icon: 'warning',
+            buttons: ['Mejor no', 'Estoy seguro']
+        }).then(async res => {
+            if (res) {
+                const teacher = productFound.takenBy;
+                setSendingInformation(true);
+                const result = await removeTakePost({ 
+                    post_id, 
+                    typeOfUser: userInformation._id === productFound.owner ? 'students' : 'teacher', 
+                    user_id: userInformation._id 
+                });
+                setOfferTeacher(null);
+                setSendingInformation(false);
+                
+                if (result.error) {
+                    swal({
+                        title: 'ERROR',
+                        text: userInformation._id === productFound.owner ? 'El profesor ya renuncio.' : 'El estudiante de la publicacion ya te expulso.',
+                        icon: 'error',
+                        button: 'ok',
+                    });
+                    setProductFound(result.product);
+                } else {
+                    socket.emit('received event', userInformation._id === productFound.owner ? teacher : productFound.owner);
+                    socket.emit('product updated', { userID: userInformation._id === productFound.owner ? teacher : productFound.owner, product: result, globalProductUpdate: true });
+                    swal({
+                        title: '!EXITO!',
+                        text: userInformation._id === productFound.owner ? `
+                            Has expulsado al profesor, tu publicacion ha sido reposteada.
+                        ` : `
+                            Has renunciado a la publicacion satisfactoriamente.
+                        `,
+                        icon: 'success',
+                        button: '!Gracias!',
+                    });
+                    setProductFound(result);
+                };
+                const newProductsCollection = await getProducts({ blockSearch: userInformation._id });
+                setProducts(newProductsCollection);
+            };
+        });
+    };
+
+    const requestPay = async () => {
+        if (productFound.advancePayment) {
+            setSendingInformation(true);
+            const result = await requestPayment({ post_id, teacher_id: productFound.takenBy });
+            setSendingInformation(false);
+            socket.emit('received event', productFound.owner);
+            socket.emit('product updated', { userID: productFound.owner, post_id });
+            setProductFound(result);
+            swal({
+                title: '!EXITO!',
+                text: `Se ha enviado la peticion de pago con exito, recuerda que el estudiante tiene un maximo de 8 dias para reportarse de lo contrario la tarea se da por terminada, y su pago estara pendiente por realizar, espere la respuesta del estudiante.`,
+                icon: 'success',
+                button: '!Gracias!',
+            });
+        } else {
+            swal({
+                title: 'ATENCION',
+                text: 'Esta publicacion no tiene verificado el pago por medio de PENSSUM, debes llegar a un acuerdo con el estudiante con respecto al pago.',
+                icon: 'info',
+                button: 'Ok',
+            }).then(() => {
+                swal({
+                    title: `ESCRIBE EL MENSAJE PARA ${teacher.firstName ? teacher.firstName : teacher.secondName ? teacher.secondName : teacherUsername}`,
+                    content: {
+                        element: "input",
+                        attributes: {
+                          placeholder: "Mensaje",
+                          type: "text",
+                        },
+                    },
+                    button: 'Enviar'
+                }).then((value) => {
+                    if (value === null) return 
+
+                    if (value) {
+                        socket.emit('send_message', productFound.takenBy, productFound.owner, value);
+                        socket.emit('received event', productFound.owner);
+                        swal({
+                            title: 'Enviado',
+                            text: 'Mensaje enviado con exito',
+                            icon: 'success',
+                            timer: '2000',
+                            button: false,
+                        }).then(() => navigate('/messages'));
+                    };
+                });
+            });
+        };
+    };
+
+    const sendPayToTeacher = () => {
+        swal({
+            title: '¿Ya han terminado con la publicacion?',
+            text: 'Si han terminado la publicacion se eliminara de penssum y se enviara el pago al profesor por el servicio dado.',
+            icon: 'info',
+            buttons: ['No hemos terminado', 'Hemos terminado']
+        }).then(async res => {
+            if (res) {
+                if (!currentVote) setActiveVote(true)
+                else finalize();
+            };
+        });
+    };
+
+    const doNotSendPayment = (why) => {
+        swal({
+            title: 'ATENCION',
+            text: userInformation.objetive === 'Alumno' ? 'Antes de negar el pago por favor explica porque no quieres hacer la transaccion, y que es lo que falta para que la transaccion se realize.' : 'Antes de no aceptar la finalizacion de la publicacion por favor explica porque no quieres, se por favor respetuoso y trata como te gustaria que te tratara.',
+            icon: 'info',
+            buttons: ['Cancelar','Ok']
+        }).then((res) => {
+            if (res) {
+                swal({
+                    title: `ESCRIBE EL MENSAJE PARA ${userInformation === 'Alumno' ? teacher.firstName ? teacher.firstName : teacher.secondName ? teacher.secondName : teacherUsername : 'EL ALUMNO'}`,
+                    content: {
+                        element: "input",
+                        attributes: {
+                          placeholder: "Mensaje",
+                          type: "text",
+                        },
+                    },
+                    button: 'Enviar'
+                }).then(async (value) => {
+                    if (value === null) return 
+
+                    if (value) {
+                        setSendingInformation(true);
+                        const result = await teacherPayment({ typeData: 'declined', post_id, user_id: userInformation.objetive === 'Alumno' ? productFound.owner : productFound.takenBy, why });
+                        socket.emit('send_message', userInformation.objetive === 'Alumno' ? productFound.owner : productFound.takenBy, userInformation.objetive === 'Alumno' ? productFound.takenBy : productFound.owner, value);
+                        socket.emit('received event', userInformation.objetive === 'Alumno' ? productFound.takenBy : productFound.owner);
+                        socket.emit('product updated', { userID: userInformation.objetive === 'Alumno' ? productFound.takenBy : productFound.owner, post_id });
+                        setProductFound(result);
+                        setSendingInformation(false);
+                        swal({
+                            title: 'Enviado',
+                            text: 'Mensaje enviado con exito',
+                            icon: 'success',
+                            timer: '2000',
+                            button: false,
+                        });
+                    };
+                });
+            }
+        });
+    };
+
+    const finalizedPublicaction = () => {
+        swal({
+            title: '¿YA TE PAGARON?',
+            text: 'Si ya te pagaron puedes finalizar la publicacion y darlo por hecho, si no te han pagado y estas sufriendo de estafa por favor reportelo, si esta en espera no de por finalizado la publicacion.',
+            icon: 'info',
+            buttons: ['Cancelar','Si']
+        }).then(async res => {
+            if (res) {
+                if (!currentVote) setActiveVote(true)
+                else finalize();
+            }
+        });
+    };
+
+    const checkAuth = () => {
+        swal({
+            title: 'No estas registrado',
+            text: 'Para hacer uso de este evento necesita tener una cuenta como PROFESOR ¿quieres crear una cuenta?',
+            icon: 'info',
+            buttons: ['No', 'Si']
+        }).then(res => res && navigate("/signup"));
+    };
+
+    const deletePayment = () => {
+        swal({
+            title: '¿Quieres eliminar el pago?',
+            text: 'Si no pagas no tendras la verificacion de pago por medio de nuestra platafoma y tendras que llegar a un acuerdo con el profesor respecto al pago.',
+            icon: 'warning',
+            buttons: ['No estoy seguro','Estoy seguro']
+        }).then(async res => {
+            if (res) {
+                setSendingInformation(true);
+                const productUpdated = await removePayment({ post_id });
+                setProductFound(productUpdated);
+                setSendingInformation(false);
+                swal({
+                    title: '!ELIMINADO!',
+                    text: 'Se ha eliminado el pago pendiente por realizar',
+                    icon: 'success',
+                    timer: '2000',
+                    button: false,
+                });
+            };
+        });
+    };
+
+    const removeCounterOffer = () => {
+        swal({
+            title: '¿Estas seguro?',
+            text: '¿No quieres aceptar la contraoferta?',
+            icon: 'warning',
+            buttons: ['Espera', 'Correcto']
+        }).then(async res => {
+            if (res) {
+                setSendingInformation(true);
+                await removeOffer({ id_user: userInformation._id, id_product: post_id, notification: false, from: userInformation._id });
+                setOfferVerification(null);
+                setSendingInformation(false);
+
+                swal({
+                    title: '!EXITO!',
+                    text: `La contraoferta ha sido cancelada`,
+                    icon: 'success',
+                    timer: '3000',
+                    button: false,
+                });
+            };
+        });
+    };
+
+    const acceptCounterOffer = () => {
+        swal({
+            title: '¿Quieres aceptar la contraoferta?',
+            text: 'Si aceptas la contraoferta podrás obtener la publicación por el precio que acordaron',
+            icon: 'info',
+            buttons: ['No', 'Si']
+        }).then(async res => {
+            if (res) {
+                setSendingInformation(true);
+                const result = await acceptOffer({ id_user: userInformation._id, id_product: post_id });
+                setOfferVerification(result.offer);
+                setSendingInformation(false);
+
+                if (!productFound.advancePayment) {
+                    socket.emit('send_message',productFound.owner, userInformation._id, `
+                        Hola soy el dueño del servicio ${productFound.title}, me parece bien la oferta propuesta de ${offerVerification.amountNumber === 0 ? 'Gratis' : `$${offerVerification.amountString}`} me gustaría
+                        llegar a un acuerdo con usted de como se haría realidad la implementación del servicio propuesto.
+                    `);
+                };
+
+                swal({
+                    title: 'EXITO',
+                    text: '!Has aceptado la oferta satisfactoriamente!',
+                    icon: 'success',
+                    button: true,
+                });
+            };
+        });
+    };
+
+    return productFound !== null && task !== null && sentReportTransaction !== null ? (
         <div className="post-information-container">
             {loadingGeneral && <Loading 
                 center={true}
@@ -442,12 +969,13 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                     colorText: "#FFFFFF",
                     fontSize: '26px'
             }}/>}
+            {activeVote && <Vote required={true} setActiveVote={setActiveVote} setHandlerVote={setHandlerVote} setVote={setScore} postInformation={true} userToVote={userToVote}/>}
             <div className="post-information">
                 <section>
                     <div className="post-information-photos-container">
                         {position !== 0 ? <i className="fa-solid fa-circle-arrow-left" id="fa-circle-arrow-left-post-information-photos" onClick={() => setPosition(position - 1)}></i> : <></>}
-                        <div className="post-information-photos" style={{ width: `${product.files.length}00%` }}>
-                            {product.files.map(file => {
+                        <div className="post-information-photos" style={{ width: `${productFound.files.length}00%` }}>
+                            {productFound.files.map(file => {
                                 return (
                                     <div className='post-photo' key={file.uniqueId} style={{ transform: `translateX(-${position}00%)` }}>
                                         <a href={file.url} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
@@ -461,61 +989,301 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                                 );
                             })}
                         </div>
-                        {position + 1 !== product.files.length ? <i className="fa-solid fa-circle-arrow-right" id="fa-circle-arrow-right-post-information-photos" onClick={() => setPosition(position + 1)}></i> : <></>}
+                        {position + 1 !== productFound.files.length ? <i className="fa-solid fa-circle-arrow-right" id="fa-circle-arrow-right-post-information-photos" onClick={() => setPosition(position + 1)}></i> : <></>}
                     </div>
-                    <p id="post_id">SERIAL: {product === null ? 'Cargando...' : product._id}</p>
-                    {product.owner === userInformation._id && product.stateActivated
+                    <p id="post_id">ID: {productFound === null ? 'Cargando...' : productFound._id}</p>
+                    {productFound.owner === userInformation._id && productFound.stateActivated
                         ? <Link className="service-offer-post-information" to={`/post/information/${post_id}/control`}>Panel de control {offer !== null ? <span id="count-offers">{offer.length}</span> : ''}</Link>
                         : <></>}
                 </section>
                 <section className="post-information-card-container">
                     <div className="post-information-card">
-                        {!product.stateActivated ? <h1 style={{ color: '#ff9900', margin: '10px 0' }}><i className="fas fa-history" style={{ color: '#ff9900', fontSize: '35px' }}></i> Este producto se encuentra en revision.</h1> : ''}
-                        {product.owner === userInformation._id && (
+                        {!productFound.stateActivated ? <h1 style={{ color: '#ff9900', margin: '10px 0' }}><i className="fas fa-history" style={{ color: '#ff9900', fontSize: '35px' }}></i> Este producto se encuentra en revision.</h1> : ''}
+                        {productFound.owner === userInformation._id && (productFound.paymentType === "PSE" || productFound.paymentType === "cash" || productFound.paymentType === "bank") && !productFound.advancePayment && ( 
+                            <h1 style={{ color: '#ff9900' }}>PAGO PENDIENTE 
+                                {!sendingInformation && (
+                                    <a 
+                                        disabled={sendingInformation}
+                                        href={productFound.paymentLink} 
+                                        target="_BLANK" 
+                                        rel="noreferrer" 
+                                        title={productFound.paymentType === "cash" || productFound.paymentType === "bank" ? "Recibo" : "Finalizar pago"}
+                                        ><i 
+                                            className="fa-solid fa-flag-checkered" 
+                                            id="fa-flag-checkered"
+                                        ></i>
+                                    </a> 
+                                )}
+                                <i 
+                                    className="fa-solid fa-trash" 
+                                    id="fa-trash" 
+                                    title="Eliminar pago" 
+                                    style={{ 
+                                        background: sendingInformation ? '#3282B8' : '', 
+                                        opacity: sendingInformation ? '.4' : '', 
+                                        cursor: sendingInformation ? 'not-allowed' : '' 
+                                    }}
+                                    onClick={() => { if (!sendingInformation) deletePayment() }}>
+                                </i>
+                            </h1>
+                        )}
+                        {productFound.advancePayment && <h1 className="main-post-information-payment"><img src="/img/penssum-transparent.png" alt="icon-logo"/><span>PAGO VERIFICADO</span> <i className="fa fa-check" style={{ fontSize: '40px', color: '#3282B8' }}></i></h1>}
+                        {productFound.owner === userInformation._id && (
                             <div className="main-post-information" ref={eventZone}>
-                                <h1 className="main-post-information-category">Categoria: <span>{product.category}</span></h1>
-                                <button title="Borrar producto" id="delete-product" onClick={() => removeProduct()}><i className="fa-solid fa-trash-can"></i></button>
+                                <h1 className="main-post-information-category">{/*Categoria: */}<span>{productFound.category}</span></h1>
+                                {task === false && <button title="Borrar producto" id="delete-product" onClick={() => removeProduct()}><i className="fa-solid fa-trash-can"></i></button>}
                             </div>
                         )}
-                        <h1 className="main-post-information-subcategory">Subcategoria: <span>{product.subCategory}</span></h1>
-                        <h1 className="post-information-subcategory">Subcategoria Personalizada: <span>{product.customCategory}</span></h1>
-                        <h1 className="post-information-title">Titulo: <span>{product.title}</span></h1>
-                        <p className="post-information-description">{product.description}</p>
+                        <h1 className="main-post-information-subcategory">{/*Subcategoria: */}<span>{productFound.subCategory}</span></h1>
+                        <h1 className="post-information-subcategory">{/*Categoria personalizada: */}<span>{productFound.customCategory}</span></h1>
+                        <h1 className="post-information-title">Tema: <span>{productFound.title}</span></h1>
+                        <p className="post-information-description">{productFound.description}</p>
                     </div>
                     <div className="post-value-container">
                         <div className="value-information-container">
                             <label>Valor del producto</label>
-                            <h1 className="post-producto-value">{product.value === null ? 'Negociable' : `${product.value}$`}</h1>
+                            <h1 className="post-producto-value">{offerVerification !== null && offerVerification.acceptOffer ? `$${offerVerification.amountString}` : offerTeacher !== null && offerTeacher.acceptOffer ? `$${offerTeacher.amountString}` : productFound.valueNumber === 0 ? 'Negociable' : `$${productFound.valueString}`}</h1>
+                            {(auth && productFound.stateActivated && ((productFound.advancePayment && productFound.owner === userInformation._id) || (!productFound.advancePayment && productFound.takenBy === userInformation._id))  && task !== false && productFound.paymentRequest.active === true) && (
+                                <div className="accordance-post-information-container">
+                                    <h2>¿Estas conforme?</h2>
+                                    <p>{userInformation.objetive === "Alumno" ? '¿Quieres enviarle el pago al profesor?' : 'Quieres dar por finalizado la publicacion?'}</p>
+                                    <div className="accordance-post-information">
+                                        <button 
+                                            style={{ 
+                                                background: sendingInformation ? '#3282B8' : '', 
+                                                opacity: sendingInformation ? '.4' : '', 
+                                                cursor: sendingInformation ? 'not-allowed' : '' 
+                                            }}
+                                            id="accordance-yes" 
+                                            onClick={() => { if (!sendingInformation) userInformation.objetive === 'Alumno' ? sendPayToTeacher() : finalizedPublicaction() }}>Si</button>
+                                        <button 
+                                            style={{ 
+                                                background: sendingInformation ? '#3282B8' : '', 
+                                                opacity: sendingInformation ? '.4' : '', 
+                                                cursor: sendingInformation ? 'not-allowed' : '' 
+                                            }}
+                                            id="accordance-lack" 
+                                            onClick={() => { if (!sendingInformation) doNotSendPayment('Falta de informacion') }}>Aun falta</button>
+                                        <button 
+                                            style={{ 
+                                                background: sendingInformation ? '#3282B8' : '', 
+                                                opacity: sendingInformation ? '.4' : '', 
+                                                cursor: sendingInformation ? 'not-allowed' : '' 
+                                            }}
+                                            id="accordance-no" 
+                                            onClick={() => { if (!sendingInformation) doNotSendPayment('Rechazado') }}>No</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="date-and-call-video-container">
-                            <h1 className="post-information-date">Fecha: {product.dateOfDelivery === null ? 'Indefinido' : changeDate(product.dateOfDelivery)}</h1>
-                            {auth && product.stateActivated && ((offerVerification !== null && offerVerification.acceptOffer && offerVerification.isThePayment) || (product.owner === userInformation._id)) && product.videoCall && (
+                            <h1 className="post-information-date">Fecha: {productFound.dateOfDelivery === null ? 'Indefinido' : changeDate(productFound.dateOfDelivery)}</h1>
+                            {productFound.owner === userInformation._id && (productFound.paymentType === "cash" || productFound.paymentType === "bank") && !productFound.advancePayment && sentReportTransaction && (
+                                <button 
+                                    className="post-information-check-payment" 
+                                    style={{ 
+                                        background: sendingInformation ? '#3282B8' : '', 
+                                        opacity: sendingInformation ? '.4' : '', 
+                                        cursor: sendingInformation ? 'not-allowed' : '' 
+                                    }}
+                                    onClick={() => { 
+                                        if (!sendingInformation) {
+                                            navigate('/report')
+                                            setReportProductId(post_id);
+                                            setReportTransaction(true);
+                                        };
+                                    }}
+                                >Comprobar pago</button>
+                            )}
+
+                            {(productFound.stateActivated && productFound.owner !== userInformation._id && (offerVerification === null || offerVerification.acceptOffer)  && (userInformation.objetive === 'Profesor' || !auth) && productFound.takenBy === null && (productFound.valueNumber > 0 || (offerVerification !== null && productFound.valueNumber === 0))) && <button 
+                                className="post-information-apply" 
+                                style={{ 
+                                    background: sendingInformation ? '#3282B8' : '', 
+                                    opacity: sendingInformation ? '.4' : '', 
+                                    cursor: sendingInformation ? 'not-allowed' : '' 
+                                }}
+                                onClick={() => { if (!sendingInformation) auth ? verificationOfInformation(userInformation.objetive,userInformation) ? setActivateInformation(true) : navigate("/complete/information") : checkAuth() }}>Postularse</button>}
+
+                            {(auth && productFound.stateActivated && productFound.takenBy === userInformation._id && task !== false && productFound.paymentRequest.active === false) && <button 
+                                className="post-information-give-up" 
+                                style={{ 
+                                    background: sendingInformation ? '#3282B8' : '', 
+                                    opacity: sendingInformation ? '.4' : '', 
+                                    cursor: sendingInformation ? 'not-allowed' : '' 
+                                }}
+                                onClick={() => { if (!sendingInformation) requestPay() }}>Solicitar pago</button>}
+
+                            {(auth && productFound.stateActivated && !productFound.advancePayment && productFound.owner === userInformation._id && task !== false && !productFound.advancePayment) && productFound.paymentRequest.active === false && <button 
+                                className="post-information-finished" 
+                                style={{ 
+                                    background: sendingInformation ? '#3282B8' : '', 
+                                    opacity: sendingInformation ? '.4' : '', 
+                                    cursor: sendingInformation ? 'not-allowed' : '' 
+                                }}
+                                onClick={async () => {
+                                    setSendingInformation(true);
+                                    const result = await requestPayment({ post_id, teacher_id: productFound.owner });
+                                    setSendingInformation(false);
+                                    socket.emit('received event', productFound.takenBy);
+                                    socket.emit('product updated', { userID: productFound.takenBy, post_id });
+                                    setProductFound(result);
+                                    swal({
+                                        title: '!EXITO!',
+                                        text: `Se ha enviado la peticion de finalizacion de la publicacion, espere la respuesta del profesor.`,
+                                        icon: 'success',
+                                        button: '!Gracias!',
+                                    });
+                                }}>Finalizado</button>}
+                            
+                            {(auth && productFound.stateActivated && productFound.takenBy !== null && (productFound.takenBy === userInformation._id || productFound.owner === userInformation._id)) && (
+                                <div className="post-information-remove-take-button-container">
+                                    <i 
+                                        className="fa-solid fa-flag" 
+                                        id="report-teacher-post-information" 
+                                        title={productFound.takenBy !== userInformation._id ? "Reportar profesor" : "Reportar alumno"}
+                                        style={{ 
+                                            width: task === false ? '' : '100%',
+                                            background: sendingInformation ? '#3282B8' : '', 
+                                            opacity: sendingInformation ? '.4' : '', 
+                                            cursor: sendingInformation ? 'not-allowed' : ''
+                                        }}
+                                        onClick={() => {
+                                            if (!sendingInformation) {
+                                                setReportUsername(productFound.takenBy !== userInformation._id ? teacherUsername : productFound.creatorUsername);
+                                                setReportProductId(post_id);
+                                                navigate('/report');
+                                            }
+                                        }}></i>
+                                    {(task === false || productFound.takenBy === userInformation._id) && <button 
+                                        className="post-information-give-up" 
+                                        style={{ 
+                                            background: sendingInformation ? '#3282B8' : '', 
+                                            opacity: sendingInformation ? '.4' : '', 
+                                            cursor: sendingInformation ? 'not-allowed' : '' 
+                                        }}
+                                        onClick={() => { if (!sendingInformation) removeTake() }}>{productFound.takenBy === userInformation._id ? 'Renunciar' : 'Expulsar profesor'}</button>}
+                                </div>
+                            )}
+
+                            {(auth && productFound.stateActivated && productFound.takenBy !== null && productFound.takenBy === userInformation._id) && <button 
+                                className="post-information-activity" 
+                                style={{ 
+                                    background: sendingInformation ? '#3282B8' : '', 
+                                    opacity: sendingInformation ? '.4' : '', 
+                                    cursor: sendingInformation ? 'not-allowed' : '' 
+                                }}
+                                onClick={() => {
+                                    if (!sendingInformation) {
+                                        setQuoteId(post_id);
+                                        navigate('/send/quote');
+                                    }
+                                }}>Enviar actividad</button>}
+                            
+                            {productFound.owner === userInformation._id && (
+                                <div className="add-video_call-link-container">
+                                    <p>¿Quiere integrar una videollamada externa?</p>
+                                    <div className="add-video_call-link">
+                                        <input 
+                                            type="url" 
+                                            placeholder="Agrega el link de la videollamada" 
+                                            style={{ width: productFound.videoCall ? '' : '100%' }}
+                                            value={urlVideoCall} 
+                                            onChange={e => setUrlVideoCall(e.target.value)}/>
+                                        <button 
+                                            style={{ 
+                                                background: sendingInformation ? '#3282B8' : '', 
+                                                opacity: sendingInformation ? '.4' : '', 
+                                                cursor: sendingInformation ? 'not-allowed' : '',
+                                                borderRadius: productFound.videoCall ? '' : '8px'
+                                            }}
+                                            onClick={async () => {
+                                                if (!sendingInformation && /^(ftp|http|https):\/\/[^ "]+$/.test(urlVideoCall)) {
+                                                    const productUpdated = await changeVideoCallURL({ post_id, url: urlVideoCall });
+                                                    setProductFound(productUpdated);
+                                                    swal({
+                                                        title: '!Cambiado con exito!',
+                                                        text: `La nueva url es ${productUpdated.videoCall}.`,
+                                                        icon: 'success',
+                                                        timer: '3000',
+                                                        button: false,
+                                                    });
+                                                    socket.emit('product updated', { userID: productFound.takenBy, post_id });
+                                                    setUrlVideoCall('');
+                                                } else {
+                                                    swal({
+                                                        title: '!OOPS!',
+                                                        text: `Necesita ingresar una url valida.`,
+                                                        icon: 'info',
+                                                        button: "Gracias",
+                                                    });
+                                                };
+                                            }}
+                                        >Guardar</button>
+                                        {productFound.videoCall && (
+                                            <button 
+                                                style={{ 
+                                                    background: sendingInformation ? '#3282B8' : '', 
+                                                    opacity: sendingInformation ? '.4' : '', 
+                                                    cursor: sendingInformation ? 'not-allowed' : ''
+                                                }}
+                                                id="delete-url-videoCall"
+                                                onClick={() => {
+                                                    if (!sendingInformation) {
+                                                        swal({
+                                                            title: '¿Estas seguro?',
+                                                            text: '¿Quieres eliminar la Link de la videollamada?.',
+                                                            icon: 'warning',
+                                                            buttons: ['No', 'Si']
+                                                        }).then(async res => {
+                                                            if (res) {
+                                                                const productUpdated = await changeVideoCallURL({ post_id, remove: true });
+                                                                setProductFound(productUpdated);
+                                                                swal({
+                                                                    title: '!EXITO!',
+                                                                    text: `La url ha sido eliminado correctamente`,
+                                                                    icon: 'success',
+                                                                    timer: '3000',
+                                                                    button: false,
+                                                                });
+                                                                socket.emit('product updated', { userID: productFound.takenBy, post_id });
+                                                            };
+                                                        });
+                                                    };
+                                                }}
+                                            >Remover</button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                            {auth && productFound.stateActivated && ((offerVerification !== null && offerVerification.acceptOffer && offerVerification.isThePayment) || (productFound.owner === userInformation._id) || (productFound.takenBy === userInformation._id)) && productFound.videoCall && (
                                 <div className="post-video_call-zone">
                                     <p className="post-call-video-link">Link de la videollamada:</p>
                                     <div className="post-video_call-link-container">
-                                        <Link className="post-video_call-link" to={`/video_call/meeting/${product.videoCall}`}>{product.videoCall}</Link>
+                                        <a href={productFound.videoCall} target="_BLANK" rel="noreferrer" className="post-video_call-link">{productFound.videoCall.length > 20 ? productFound.videoCall.slice(0,22) + '...' : productFound.videoCall}</a>
+                                        {/*<Link className="post-video_call-link" to={`/video_call/meeting/${productFound.videoCall}`}>{productFound.videoCall}</Link>*/}
                                         <div className="option-post-video_call">
                                             <CopyToClipboard 
-                                                text={`http://localhost:3000/video_call/meeting/${product.videoCall}`} 
+                                                text={`${/*process.env.REACT_APP_FRONTEND_PENSSUM}/video_call/meeting/${productFound.videoCall*/productFound.videoCall}`} 
                                                 onCopy={() => setCopied(true)}>
                                                 <i className="fa-solid fa-copy" title="Copiar"></i>
                                             </CopyToClipboard>
-                                            {product.owner === userInformation._id && <i className="fa-solid fa-arrow-rotate-left" title="Cambiar URL" ref={resetVideoCallURL} onClick={() => changeURL()}></i>}
+                                            {/*productFound.owner === userInformation._id && <i className="fa-solid fa-arrow-rotate-left" title="Cambiar URL" ref={resetVideoCallURL} onClick={() => changeURL()}></i>*/}
                                         </div>
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
-                    {((offerVerification === null && product.value !== null) || (offerVerification !== null && !offerVerification.isThePayment && !offerVerification.isBought && offerVerification.acceptOffer)) && auth && product.owner !== userInformation._id && product.stateActivated && product.paymentMethod && (
+                    {((offerVerification === null && productFound.valueString !== null) || (offerVerification !== null && !offerVerification.isThePayment && !offerVerification.isBought && offerVerification.acceptOffer)) && auth && productFound.owner !== userInformation._id && productFound.stateActivated && productFound.paymentMethod && (
                         <div className="pay-method-post">
                             <p className="pay-method-post-title">Metodo de pago del servicio.</p>
                             <section className="pay-options-post" onClick={() => { setActivatePayment(true); setPaymentDetails({ ...paymentDetails, type: 'select' }) }}><img src="/img/payu.png" alt="payu"/></section>
                         </div>
                     )}
-                    {offerVerification !== null && offerVerification.isThePayment && (product.owner !== userInformation._id) && (
+                    {offerVerification !== null && offerVerification.isThePayment && (productFound.owner !== userInformation._id) && (
                         <div className="vote-in-post-container">
-                            <h1>Puntuar a {product.creatorUsername}</h1>
+                            <h1>Puntuar a {productFound.creatorUsername}</h1>
                             <div className="vote-in-post">
                                 <i className="fas fa-star" style={{ color: score === 5 ? '#fe7' : '',  textShadow: score === 5 ? '0 0 20px #952' : '' }} onClick={() => voteUser(5)}></i>
                                 <i className="fas fa-star" style={{ color: score === 4 || score === 5 ? score !== 5 ? '#fbff00' : '#fe7' : '', textShadow: score === 5 ? '0 0 20px #952' : ''  }} onClick={() => voteUser(4)}></i>
@@ -525,37 +1293,114 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                             </div>
                         </div>
                     )}
-                    {offerVerification === null && auth && (product.owner !== userInformation._id && product.stateActivated)
-                        ? !isTheUserSuspended ? (
-                            <div className="post-send-container">
-                                <input type="number" placeholder="Hacer una oferta" id="make-offer" onChange={() => {
-                                    document.querySelector('.field-make-offer').classList.remove('showError');
-                                    document.querySelector('.field-make-offer-no-input').classList.remove('showError');
-                                }}/>
-                                <button
+                    {(auth && productFound.stateActivated && productFound.takenBy !== null && task !== false && (productFound.takenBy === userInformation._id || userInformation._id === productFound.owner)) 
+                        && <div className="activity-pictures-post-information-container">
+                            <h1>Actividad enviada</h1>
+                            <div className="activity-pictures-post-information">
+                                {task.files.map(file => (
+                                    <a href={file.url} rel="noreferrer" target="_blank" key={file.uniqueId}>
+                                        <img src={
+                                            (file.extname === '.pdf')
+                                                ? '/img/pdf_image.svg'
+                                                : (file.extname === '.doc' || file.extname === '.docx')
+                                                    ? '/img/word_image.svg'
+                                                    : (file.extname === '.epub' || file.extname === '.azw' || file.extname === '.ibook')
+                                                        ? '/img/document_image.svg'
+                                                        : file.url
+                                        }
+                                            referrerPolicy="no-referrer"
+                                            alt="selected_image"
+                                        />
+                                    </a>
+                                ))}
+                            </div>
+                        </div>}
+                    {productFound.takenBy !== null && teacher !== null &&
+                        <p 
+                            className="field" 
+                            style={{ 
+                                display: 'block', 
+                                color: '#3282B8', 
+                                fontSize: '22px', 
+                                margin: '20px auto', 
+                                textAlign: 'center' 
+                            }}>
+                            Publicacion tomado por un profesor <Link 
+                                style={{ color: '#3282B8' }} 
+                                to={`/${teacherUsername}`}
+                            >{teacher.firstName ? teacher.firstName : teacher.secondName ? teacher.firstName : teacherUsername }</Link>
+                        </p>}
+                    {(offerVerification !== null && offerVerification.counterOffer) && (
+                        <div className="counter-offer-container">
+                            <p>El estudiante de la publicacion ha creado una contraoferta.</p>
+                            <div className="counter-offer-button-container">
+                                <button 
+                                    id="accept-counter-offer" 
+                                    title="Aceptar contraoferta" 
                                     style={{ 
                                         background: sendingInformation ? '#3282B8' : '', 
                                         opacity: sendingInformation ? '.4' : '', 
                                         cursor: sendingInformation ? 'not-allowed' : '' 
-                                    }}  
-                                    onClick={() => { if (!sendingInformation) createOffer() }}
-                                >Enviar</button>
+                                    }}
+                                    onClick={() => { if (!sendingInformation) acceptCounterOffer() 
+                                }}>CONTRAOFERTA ${offerVerification.amountString}</button>
+                                <button 
+                                    id="remove-counter-offer" 
+                                    title="Negar contraoferta" 
+                                    style={{ 
+                                        background: sendingInformation ? '#3282B8' : '', 
+                                        opacity: sendingInformation ? '.4' : '', 
+                                        cursor: sendingInformation ? 'not-allowed' : '' 
+                                    }}
+                                    onClick={() => { if (!sendingInformation) removeCounterOffer() }}>X</button>
                             </div>
-                        ) : <p className="youAreSuspended">Estas suspendido, no puedes hacer una oferta</p>
-                        : auth && product.owner !== userInformation._id && <p className="field" style={{ display: 'block', color: '#3282B8', fontSize: '22px', margin: '20px auto', textAlign: 'center' }}>{
-                                offerVerification.isBought && offerVerification.isThePayment 
-                                    ? `Compraste este servicio por ${offerVerification.amount}$` 
-                                    : `Su oferta ${offerVerification.amount !== 0 ? `de ${offerVerification.amount}$` : 'GRATIS'} ${offerVerification.acceptOffer 
-                                        ? `ha sido aceptada${!offerVerification.isThePayment ? ', Por favor page el servicio' : ''}`
-                                        : 'esta en revision'
-                                    }`
-                                }
-                            .</p>
-                        }
+                        </div>
+                    )}
+                    {(userInformation.objetive === 'Profesor' || !auth) ? 
+                        offerVerification === null && productFound.takenBy === null && (productFound.owner !== userInformation._id && productFound.stateActivated)
+                            ? !isTheUserSuspended ? (
+                                <section className="post-send-offer-container">
+                                    <p>¿No estas de acuerdo con el precio?</p>
+                                    <div className="post-send-container">
+                                        <input type="text" value={offerInputString} placeholder="Has una oferta" id="make-offer" onChange={e => {
+                                            document.querySelector('.field-make-offer').classList.remove('showError');
+                                            document.querySelector('.field-make-offer-no-input').classList.remove('showError');
+                                            var num = e.target.value.replace(/\./g,'');
+                                            if(!isNaN(num)){
+                                                setOfferInputNumber(parseInt(e.target.value.replace(/\./g, '')));
+                                                num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1.');
+                                                num = num.split('').reverse().join('').replace(/^[.]/,'');
+                                                setOfferInputString(num);
+                                            } else setOfferInputString(e.target.value.replace(/[^\d.]*/g,''));
+                                        }}/>
+                                        <button
+                                            style={{ 
+                                                background: sendingInformation ? '#3282B8' : '', 
+                                                opacity: sendingInformation ? '.4' : '', 
+                                                cursor: sendingInformation ? 'not-allowed' : '' 
+                                            }}  
+                                            onClick={() => { if (!sendingInformation) auth ? verificationOfInformation(userInformation.objetive,userInformation) ? createOffer() : navigate("/complete/information") : checkAuth() }}
+                                        >Enviar</button>
+                                    </div>  
+                                </section>
+                            ) : <p className="youAreSuspended">Estas suspendido, no puedes hacer una oferta</p>
+                            : auth && productFound.owner !== userInformation._id && productFound.takenBy === null && userInformation.objetive !== 'Alumno' && <p className="field" style={{ display: 'block', color: '#3282B8', fontSize: '22px', margin: '20px auto', textAlign: 'center' }}>{
+                                    offerVerification.isBought && offerVerification.isThePayment 
+                                        ? `Compraste este servicio por $${offerVerification.amountString}` 
+                                        : !offerVerification.counterOffer 
+                                            ? `Su oferta ${offerVerification.amountNumber !== 0 ? `de $${offerVerification.amountString}` : 'GRATIS'} ${offerVerification.acceptOffer 
+                                                ? `ha sido aceptada${/*!offerVerification.isThePayment ? ', Por favor page el servicio' : ''*/''}`
+                                                : 'esta en revision'
+                                            }`
+                                        : ''
+                                    }
+                                </p>
+                        : <></>}
+                    {productFound.owner === userInformation._id && (productFound.paymentType === "cash" || productFound.paymentType === "bank") && !productFound.advancePayment && !sentReportTransaction && <p className="verificationOfPaymentSent">Comprobante de pago enviado, espera a que los moderadores revisén su reporte de transacción.</p>}
                     <p className="field field-make-offer-no-input">Escriba un valor.</p>
                     <p className="field field-make-offer">La oferta no debe tener mas de 10 caracteres.</p>
                     <div style={{ marginTop: '20px' }}>
-                        <Link to={`/${product.creatorUsername}`} style={{ textDecoration: 'none' }}><button id="goToProfile">Ir al perfil del creador</button></Link>
+                        <Link to={`/${productFound.creatorUsername}`} style={{ textDecoration: 'none' }}><button id="goToProfile">Ir al perfil del creador</button></Link>
                     </div>
                 </section>
             </div>
@@ -650,7 +1495,7 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                                             {paymentDetails.type !== 'cash' && <img src="/img/payment_gateway/payu/cash/LaPerla.png" alt="La perla" style={{ boxShadow: paymentDetails.type === 'cash' ? '0px 6px 12px #3282B8aa' : '' }} onClick={() => setPaymentDetails({ ...paymentDetails, type: 'cash' })}/>}
                                             {paymentDetails.type !== 'cash' && <img src="/img/payment_gateway/payu/cash/ApuestaUnidad.jpg" alt="Apuesta Unidad" style={{ boxShadow: paymentDetails.type === 'cash' ? '0px 6px 12px #3282B8aa' : '' }} onClick={() => setPaymentDetails({ ...paymentDetails, type: 'cash' })}/>}
                                             {paymentDetails.type !== 'cash' && <img src="/img/payment_gateway/payu/cash/Jer.jpg" alt="Jer" style={{ boxShadow: paymentDetails.type === 'cash' ? '0px 6px 12px #3282B8aa' : '' }} onClick={() => setPaymentDetails({ ...paymentDetails, type: 'cash' })}/>}
-                                            {product.value >= 20000 && paymentDetails.type !== 'cash' && <img src="/img/payment_gateway/payu/cash/Efecty.png" alt="Efecty" style={{ boxShadow: paymentDetails.type === 'cash' ? '0px 6px 12px #3282B8aa' : '' }} onClick={() => setPaymentDetails({ ...paymentDetails, type: 'cash' })}/>}
+                                            {productFound.valueNumber >= 20000 && paymentDetails.type !== 'cash' && <img src="/img/payment_gateway/payu/cash/Efecty.png" alt="Efecty" style={{ boxShadow: paymentDetails.type === 'cash' ? '0px 6px 12px #3282B8aa' : '' }} onClick={() => setPaymentDetails({ ...paymentDetails, type: 'cash' })}/>}
                                         </div>
                                     </div>
                                 )}
@@ -924,11 +1769,11 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
                                         <h2>Resumen de la venta</h2>
                                     </div>
                                     <div className="purchase-information-description">
-                                        <p>Descripcion: {product.description}</p>
+                                        <p>Descripcion: {productFound.description}</p>
                                         <p>Correo: {userInformation.email}</p>
-                                        <p>Total compra: ________ ${offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value},00 COP</p>
-                                        <p>IVA: ${Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value) * 0.19)},00 COP</p>
-                                        <p>Total a cobrar: ${(offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value) + Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amount : product.value) * 0.19)},00 COP</p>
+                                        <p>Total compra: ________ ${offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber},00 COP</p>
+                                        <p>IVA: ${Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber) * 0.19)},00 COP</p>
+                                        <p>Total a cobrar: ${(offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber) + Math.round((offerVerification !== null && offerVerification.acceptOffer ? offerVerification.amountNumber : productFound.valueNumber) * 0.19)},00 COP</p>
                                     </div>
                                 </div>
                             </div>
@@ -938,6 +1783,13 @@ function PostInformation({ auth, userInformation, isTheUserSuspended, setMainPro
             )}
             {copied && <span className="copied-span">Copiado</span>}
             {scoreUpdated && <span className="scoreUpdated-span">Voto actualizado</span>}
+            {activateInformation && (
+                <Information 
+                    userInformation={userInformation}
+                    callback={engage}
+                    controller={setActivateInformation}
+                />
+            )}
         </div>
     ) : <div style={{ paddingTop: '40px' }}><Loading margin="auto" /></div>;
 };

@@ -23,7 +23,7 @@ function TokenVerification({ setAuth, setUserInformation, setRegistration }) {
                 setUserInformation(result);
                 setAuth(true);
                 socket.emit('connected', result._id);
-                navigate(`/${result.username}`);
+                navigate("/complete/information");
             };
         };
         loadToken();

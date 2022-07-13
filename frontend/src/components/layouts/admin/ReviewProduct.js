@@ -1,23 +1,30 @@
 import { deleteProduct, acceptProduct, removeFiles, getProducts, socket } from "../../../api";
+import { thousandsSystem } from '../../helpers';
 
 function ReviewProduct({ data }) {
     const removeProduct = async () => {
         await removeFiles({ files: data.product.files, activate: true });
         const result = await deleteProduct({ id: data.id, notification: true });
+        socket.emit('received event', data.owner);
         data.setInformation({ ...data.information, productsToReview: result.length });
         data.setProductsToReview(result);
         const productsObtained = await getProducts();
         data.setProducts(productsObtained);
-        socket.emit('received event', data.owner);
     };
 
     const allowProduct = async () => {
         const result = await acceptProduct(data.id);
+        socket.emit('received event', data.owner);
         data.setInformation({ ...data.information, productsToReview: result.length });
         data.setProductsToReview(result);
         const productsObtained = await getProducts();
         data.setProducts(productsObtained);
-        socket.emit('received event', data.owner);
+    };
+
+    const sizes = ["", "Billon", "Trillon", "Cuatrillon", "Quintillon", "Sextillon"];
+    const reduce = value => {
+        const i = parseInt(Math.floor(Math.log(value) / Math.log(1000000000)));
+        return "$" + thousandsSystem(Math.round(value / Math.pow(1000000000, i), 2)) + " " + sizes[i];
     };
 
     return (
@@ -32,7 +39,7 @@ function ReviewProduct({ data }) {
                         <p className="product-category">{data.category}: {data.title}</p>
                         <p className="description">{data.description}</p>
                     </div>
-                    <p className="product-price">Precio: {data.price}</p>
+                    <p className="product-price">Precio: {reduce(data.price)}</p>
                 </div>
             </a>
             <div className="review-products-button">

@@ -91,7 +91,7 @@ function CheckEmail({ setRegistration, userInformation, setUserInformation, regi
                                         </div>
                                     </div>
                                     <p>3. Espera unos 5 minutos. (dependiendo del correo esto puede llevar unos segundos).</p>
-                                    <p>4. ¿No ha llegado nada? por favor contactanos y explicanos el problema <Link className="check-email-link-help" to="help">Ayuda</Link></p>
+                                    <p>4. ¿No ha llegado nada? por favor contactanos y explicanos el problema <Link className="check-email-link-help" to="/help">Ayuda</Link></p>
                                 </div>
                             </div>
                         </div>

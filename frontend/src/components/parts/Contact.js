@@ -25,10 +25,10 @@ function Contact({ active, username, firstName, lastName, time, message, idUser,
             <div className={`user-connection ${active}`}></div>
             <div className="brief-information">
                 <div className="message-name-and-time">
-                    <h2>{firstName === '' ? username === undefined ? '' : username.slice(0,14) + '...' : `${firstName} .${lastName === undefined ? '' : lastName.slice(0,1)}`}</h2>
+                    <h2>{firstName === undefined || firstName === '' || firstName === null ? username === undefined || username === null ? 'ELIMINADO' : username.slice(0,14) + '...' : `${firstName.slice(0,10)} .${lastName === undefined ? '' : lastName.slice(0,1)}`}</h2>
                     <p>{time}</p>
                 </div>
-                <p className="short-paragrahp">{message.slice(0, 20) + '...'}</p>
+                <p className="short-paragrahp">{message.slice(0, 20)}{message.length > 20 ? '...' : ''}</p>
             </div>
         </div>
     );

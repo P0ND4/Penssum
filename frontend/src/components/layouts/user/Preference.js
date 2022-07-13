@@ -23,14 +23,14 @@ function Preference({ userInformation, setUserInformation }) {
     const descriptionTimer = useRef(null);
 
     const changeDescription = (e, id) => {
-        document.getElementById(id).textContent = `${e.target.value.length}/200`;
+        document.getElementById(id).textContent = `${e.target.value.length}/250`;
 
         if (descriptionTimer !== null) clearTimeout(descriptionTimer.current);
 
         descriptionTimer.current = setTimeout(async () => {
             const valueToChange = {
                 id: cookies.get('id'),
-                name: 'description',
+                name: 'originalDescription',
                 value: e.target.value
             };
     
@@ -39,34 +39,35 @@ function Preference({ userInformation, setUserInformation }) {
             setUserInformation(result);
 
             descriptionTimer.current = null
-        },2000);
+        },1500);
     };
 
-    useEffect(() => {
-        if (attribute === 'mod=general') {
-            document.getElementById('first-name-input').value = userInformation.firstName;
-            document.getElementById('second-name-input').value = userInformation.secondName;
-            document.getElementById('last-name-input').value = userInformation.lastName;
-            document.getElementById('second-surname-input').value = userInformation.secondSurname;
-            document.getElementById('preference-description-input').value = userInformation.description;
-        };
-
-        if (attribute === 'mod=profile_information') {
-            document.getElementById('CI-input').value = userInformation.identification;
-            document.getElementById('years-experience-input').value = userInformation.yearsOfExperience;
-            document.getElementById('phone-number-input').value = userInformation.phoneNumber;
-        };
-    }, [userInformation, attribute]);
-
     const changeInformation = async (name, information) => {
-        document.getElementById("CI").style.display = 'none';
-        document.getElementById("city").style.display = 'none';
+        if (document.getElementById("CI")) document.getElementById("CI").style.display = 'none';
+        if (document.getElementById("city")) document.getElementById("city").style.display = 'none';
         document.querySelector('body').style.overflow = 'auto';
 
         const valueToChange = {
             id: cookies.get('id'),
             name: name,
             value: information
+        };
+
+        const result = await changePreferenceValue(valueToChange);
+
+        setUserInformation(result);
+    };
+
+    const changeProffesorInformation = async (name,information, containerId) => {
+        document.getElementById(containerId).style.display = 'none';
+        document.querySelector('body').style.overflow = 'auto';
+
+        const nameVerify = (name === 'subjects') ? [information] : [information];
+
+        const valueToChange = {
+            id: cookies.get('id'),
+            name: name,
+            value: nameVerify
         };
 
         const result = await changePreferenceValue(valueToChange);
@@ -83,7 +84,7 @@ function Preference({ userInformation, setUserInformation }) {
         if (attribute === 'mod=security') document.querySelector('.security-link').classList.add('preference-active');
         if (attribute === 'mod=profile_information') document.querySelector('.profile-information-link').classList.add('preference-active');
         if (attribute === 'mod=privacy') document.querySelector('.privacy-link').classList.add('preference-active');
-        if (attribute === 'mod=payment') document.querySelector('.payment-link').classList.add('preference-active');
+        if (attribute === 'mod=payment' && userInformation.objetive === 'Profesor') document.querySelector('.payment-link').classList.add('preference-active');
     });
 
     const changeAvailability = () => {
@@ -147,10 +148,12 @@ function Preference({ userInformation, setUserInformation }) {
                         <p>Informacion de perfil</p>
                     </Link>
                     <hr />
-                    <Link to="/preference/mod=payment" className="preference-sections payment-link">
-                        <i className="fa-solid fa-money-bills"></i>
-                        <p>Pago</p>
-                    </Link>
+                    {userInformation.objetive === 'Profesor' && (
+                        <Link to="/preference/mod=payment" className="preference-sections payment-link">
+                            <i className="fa-solid fa-money-bills"></i>
+                            <p>Pago</p>
+                        </Link>
+                    )}
                     <Link to="/preference/mod=privacy" className="preference-sections privacy-link">
                         <i className="fas fa-user-lock"></i>
                         <p>Privacidad</p>
@@ -160,14 +163,15 @@ function Preference({ userInformation, setUserInformation }) {
                     <i className="fas fa-chevron-left" id="fa-chevron-left-preference" onClick={() => document.querySelector('.preference-sections-container').classList.remove('preference-sections-container-in-mobile')}></i>
                     {attribute === 'mod=general'
                         ? <div className="commomStylePadding general">
-                            <PreferencePart property="Primer Nombre" value={userInformation.firstName === '' ? 'No definido' : userInformation.firstName} id="edit-first-name" inputType="text" placeholder="Ejemplo: Jose" idInput="first-name-input" name="firstName" setUserInformation={setUserInformation} />
-                            <PreferencePart property="Segundo Nombre" value={userInformation.secondName === '' ? 'No definido' : userInformation.secondName} id="edit-second-name" inputType="text" placeholder="Ejemplo: Samuel" idInput="second-name-input" name="secondName" setUserInformation={setUserInformation} />
-                            <PreferencePart property="Primer Apellido" value={userInformation.lastName === '' ? 'No definido' : userInformation.lastName} id="edit-last-name" inputType="text" placeholder="Ejemplo: Mendez" idInput="last-name-input" name="lastName" setUserInformation={setUserInformation} />
-                            <PreferencePart property="Segundo Apellido" value={userInformation.secondSurname === '' ? 'No definido' : userInformation.secondSurname} id="edit-second-surname" inputType="text" placeholder="Ejemplo: Perez" idInput="second-surname-input" name="secondSurname" setUserInformation={setUserInformation} />
+                            <PreferencePart property="Primer Nombre" value={userInformation.firstName === '' ? 'No definido' : userInformation.firstName} id="edit-first-name" inputType="text" placeholder="Ejemplo: Jose" idInput="first-name-input" name="firstName" setUserInformation={setUserInformation} typeOfUser={userInformation.objetive} required={true} requiredFor="both"/>
+                            <PreferencePart property="Segundo Nombre" value={userInformation.secondName === '' ? 'No definido' : userInformation.secondName} id="edit-second-name" inputType="text" placeholder="Ejemplo: Samuel" idInput="second-name-input" name="secondName" setUserInformation={setUserInformation} typeOfUser={userInformation.objetive} required={true} requiredFor="teacher"/>
+                            <PreferencePart property="Primer Apellido" value={userInformation.lastName === '' ? 'No definido' : userInformation.lastName} id="edit-last-name" inputType="text" placeholder="Ejemplo: Mendez" idInput="last-name-input" name="lastName" setUserInformation={setUserInformation} typeOfUser={userInformation.objetive} required={true} requiredFor="teacher"/>
+                            <PreferencePart property="Segundo Apellido" value={userInformation.secondSurname === '' ? 'No definido' : userInformation.secondSurname} id="edit-second-surname" inputType="text" placeholder="Ejemplo: Perez" idInput="second-surname-input" name="secondSurname" setUserInformation={setUserInformation} typeOfUser={userInformation.objetive} required={true} requiredFor="teacher"/>
                             <div className="preference-description-container">
                                 <div className="preference-description-zone">
-                                    <textarea className="preference-description" maxLength={200} placeholder="Has una breve descripcion sobre ti" id="preference-description-input" onChange={e => changeDescription(e, 'letter-count-description-preference')}></textarea>
-                                    <span id="letter-count-description-preference">0/200</span>
+                                    {userInformation.objetive === 'Profesor' && !userInformation.originalDescription && <i className="fa-solid fa-circle-exclamation field-required-icon" title="Campo requerido"></i>}
+                                    <textarea className="preference-description" maxLength={250} placeholder="Una breve descripción sobre las asignaturas que manejas y los temas de dichas asignaturas, de esta manera los estudiantes podrán encontrarte con facilidad. TE DESEAMOS EXÍTOS." id="preference-description-input" onChange={e => changeDescription(e, 'letter-count-description-preference')} defaultValue={userInformation.originalDescription}></textarea>
+                                    <span id="letter-count-description-preference">0/250</span>
                                 </div>
                             </div>
                         </div>
@@ -184,42 +188,46 @@ function Preference({ userInformation, setUserInformation }) {
                             </div>
                             : attribute === 'mod=profile_information'
                                 ? <div className="commomStylePadding profile_information">
-                                    <div className="preference-CI-container">
-                                        <div className="preference-CI-zone">
-                                            <div className="preference-CI-information">
-                                                <p>Numero de cedula</p>
-                                                <h4>{userInformation.identification === null ? 'No definido' : userInformation.identification}</h4>
+                                    {userInformation.objetive === 'Profesor' && (
+                                        <div className="preference-CI-container">
+                                            {userInformation.identification === null && <i className="fa-solid fa-circle-exclamation field-required-icon" title="Campo requerido"></i>}
+                                            <div className="preference-CI-zone">
+                                                <div className="preference-CI-information">
+                                                    <p>Numero de cedula</p>
+                                                    <h4>{userInformation.identification === null ? 'No definido' : userInformation.identification}</h4>
+                                                </div>
+                                                <p className="preference-CI-description">
+                                                    El numero de cedula es para llevar el control de los usuarios,
+                                                    tambien para evitar el mal uso de nuestra aplicacion, esto nadie
+                                                    lo podra ver solo usted. (este campo es obligatorio para el proveedor).
+                                                </p>
                                             </div>
-                                            <p className="preference-CI-description">
-                                                El numero de cedula es para llevar el control de los usuarios,
-                                                tambien para evitar el mal uso de nuestra aplicacion, esto nadie
-                                                lo podra ver solo usted. (este campo es obligatorio para el proveedor).
-                                            </p>
+                                            <button id="edit-CI" onClick={() => {
+                                                document.getElementById("CI").style.display = 'flex';
+                                                document.querySelector('body').style.overflow = 'hidden';
+                                            }}>Editar</button>
                                         </div>
-                                        <button id="edit-CI" onClick={() => {
-                                            document.getElementById("CI").style.display = 'flex';
-                                            document.querySelector('body').style.overflow = 'hidden';
-                                        }}>Editar</button>
-                                    </div>
-                                    <div className="dark" id="CI">
-                                        <div className="dark-input">
-                                            <h1>Introduce el Numero de cedula</h1>
-                                            <input type="number" placeholder="Introduzca su numero de indentidad" id="CI-input" />
-                                            <div className="dark-button-container">
-                                                <button className="save-edit" id="edit-ci" onClick={() => changeInformation('identification', document.getElementById('CI-input').value)}>Guardar</button>
-                                                <button className="cancel-edit" onClick={() => {
-                                                    document.getElementById("CI").style.display = 'none';
-                                                    document.querySelector('body').style.overflow = 'auto';
-                                                }}>Cancelar</button>
+                                    )}
+                                    {userInformation.objetive === 'Profesor' && (
+                                        <div className="dark" id="CI">
+                                            <div className="dark-input">
+                                                <h1>Introduce el Numero de cedula</h1>
+                                                <input type="number" placeholder="Introduzca su numero de indentidad" id="CI-input" defaultValue={userInformation.identification}/>
+                                                <div className="dark-button-container">
+                                                    <button className="save-edit" id="edit-ci" onClick={() => changeInformation('identification', document.getElementById('CI-input').value)}>Guardar</button>
+                                                    <button className="cancel-edit" onClick={() => {
+                                                        document.getElementById("CI").style.display = 'none';
+                                                        document.querySelector('body').style.overflow = 'auto';
+                                                    }}>Cancelar</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-
+                                    )}
                                     <div className="preference-city-container" style={{ marginTop: '10px' }}>
                                         <div className="preference-city-zone">
                                             <div className="preference-city-information">
                                                 <p>Ciudad</p>
-                                                <h4>{userInformation.city === null ? 'No definido' : userInformation.city}</h4>
+                                                <h4>{(userInformation.city === null || userInformation.city === 'city') ? 'No definido' : userInformation.city}</h4>
                                             </div>
                                             <p className="preference-city-description">La ciudad es importante para que aparezca en los filtros de busquedad.</p>
                                         </div>
@@ -276,9 +284,111 @@ function Preference({ userInformation, setUserInformation }) {
                                             </div>
                                         </div>
                                     </div>
-                                    <PreferencePart property="Años de experiencia" value={userInformation.yearsOfExperience === null ? 'No definido' : userInformation.yearsOfExperience} id="edit-preference-years-experience" width="74%" inputType="number" placeholder="Ejemplo: 6" idInput="years-experience-input" name="yearsOfExperience" setUserInformation={setUserInformation} />
-                                    <PreferencePart property="Numero de telefono" value={userInformation.phoneNumber === null ? 'No definido' : userInformation.phoneNumber} id="edit-preference-phone-number" width="74%" inputType="number" placeholder="Ejemplo: 5722329200" idInput="phone-number-input" name="phoneNumber" setUserInformation={setUserInformation} />
+                                    {userInformation.objetive === 'Profesor' && <PreferencePart property="Años de experiencia" value={userInformation.yearsOfExperience === null ? 'No definido' : userInformation.yearsOfExperience} id="edit-preference-years-experience" width="74%" inputType="number" placeholder="Ejemplo: 6" idInput="years-experience-input" name="yearsOfExperience" setUserInformation={setUserInformation}/>}
+                                    <PreferencePart property="Numero de telefono" value={userInformation.phoneNumber === null ? 'No definido' : userInformation.phoneNumber} id="edit-preference-phone-number" width="74%" inputType="number" placeholder="Ejemplo: 5722329200" idInput="phone-number-input" name="phoneNumber" setUserInformation={setUserInformation} typeOfUser={userInformation.objetive} required={true} requiredFor="both"/>
                                     <PreferencePart property="Disponibilidad" value={changeAvailability()} id="edit-availability" width="74%" inputType="checkbox" informationType="days" name="availability" userInformation={userInformation} setUserInformation={setUserInformation} />
+                                    {userInformation.objetive === 'Profesor' && (
+                                        <div className="preference-faculty-container" style={{ marginTop: '10px' }}>
+                                            <div className="preference-faculty-zone">
+                                                <div className="preference-faculty-information">
+                                                    <p>Facultad</p>
+                                                    <h4>{userInformation.faculties.length === 0 ? 'No definido' : userInformation.faculties[0]}</h4>
+                                                </div>
+                                                <p className="preference-faculty-description">La facultad te define a que grupo te especializas a dar clases.</p>
+                                            </div>
+                                            <button id="edit-faculty" onClick={() => {
+                                                document.getElementById("faculties").style.display = 'flex';
+                                                document.querySelector('body').style.overflow = 'hidden';
+                                            }}>Editar</button>
+                                        </div>
+                                    )}
+                                    {userInformation.objetive === 'Profesor' && (
+                                        <div className="dark" id="faculties">
+                                            <div className="dark-input">
+                                                <h1>¿A que facultad te diriges?</h1>
+                                                <select id="filter-faculties-change" defaultValue="-- Seleccione facultad --">
+                                                    <option value="-- Seleccione facultad --" hidden>-- Seleccione facultad --</option>
+                                                    <option value="Infantil">Infantil</option>
+                                                    <option value="Primaria">Primaria</option>
+                                                    <option value="Secundaria">Secundaria</option>
+                                                    <option value="Media superior">Media superior</option>
+                                                    <option value="Superior">Superior</option>
+                                                    <option value="Post universitaria">Post universitaria</option>
+                                                    <option value="Universitaria">Universitaria</option>
+                                                    <option value="Ingenieria">Ingenieria</option>
+                                                </select>
+                                                <div className="dark-button-container">
+                                                    <button className="save-edit" id="edit-ci" onClick={() => changeProffesorInformation('faculties', document.getElementById('filter-faculties-change').value,'faculties')}>Guardar</button>
+                                                    <button className="cancel-edit" onClick={() => {
+                                                        document.getElementById("faculties").style.display = 'none';
+                                                        document.querySelector('body').style.overflow = 'auto';
+                                                    }}>Cancelar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {userInformation.objetive === 'Profesor' && <PreferencePart property="Valor por hora" value={userInformation.valuePerHour === null || userInformation.valuePerHour === 0 ? 'No definido' : userInformation.valuePerHour}  id="edit-value-per-hour" inputType="text" thousandsSystem={true} placeholder="Ejemplo: 11" idInput="value-per-hour-input" name="valuePerHour" setUserInformation={setUserInformation} />}
+                                    {/*userInformation.objetive === 'Profesor' && (
+                                        <div className="preference-subject-container" style={{ marginTop: '10px' }}>
+                                            <div className="preference-subject-zone">
+                                                <div className="preference-subject-information">
+                                                    <p>Asignatura</p>
+                                                    <h4>{userInformation.subjects.length === 0 ? 'No definido' : userInformation.subjects[0]}</h4>
+                                                </div>
+                                                <p className="preference-subject-description">Puedes elejir la asignatura en el cual te especializas.</p>
+                                            </div>
+                                            <button id="edit-faculty" onClick={() => {
+                                                document.getElementById("subjects").style.display = 'flex';
+                                                document.querySelector('body').style.overflow = 'hidden';
+                                            }}>Editar</button>
+                                        </div>
+                                    )*/}
+                                    {/*userInformation.objetive === 'Profesor' && (
+                                        <div className="dark" id="subjects">
+                                            <div className="dark-input">
+                                                <h1>¿Que asignatura das?</h1>
+                                                <select id="filter-subjects-change" defaultValue="-- Seleccione asignatura --">
+                                                    <option value="-- Seleccione asignatura --" hidden>-- Seleccione asignatura --</option>
+                                                    <option value="Ciencias">Ciencias</option>
+                                                    <option value="Fisica">Física</option>
+                                                    <option value="Biologia">Biología</option>
+                                                    <option value="Anatomia y fisiología">Anatomía y fisiología</option>
+                                                    <option value="Matematicas">Matemáticas</option>
+                                                    <option value="Quimica">Química</option>
+                                                    <option value="Ecologia">Ecología</option>
+                                                    <option value="Metodologia de la investigacion">Metodología de la investigación</option>
+                                                    <option value="Ciencias sociales">Ciencias sociales</option>
+                                                    <option value="Geografia">Geografía</option>
+                                                    <option value="Economia">Economía</option>
+                                                    <option value="Medio ambiente">Medio ambiente</option>
+                                                    <option value="Biografias">Biografías</option>
+                                                    <option value="Arte">Arte</option>
+                                                    <option value="Historia del arte">Historia del arte</option>
+                                                    <option value="Filosofia">Filosofía</option>
+                                                    <option value="Etica y valores">Ética y valores</option>
+                                                    <option value="Literatura">Literatura</option>
+                                                    <option value="Castellano">Castellano</option>
+                                                    <option value="Ingles">Inglés</option>
+                                                    <option value="Informatica">Informática</option>
+                                                    <option value="Psicologia">Psicología</option>
+                                                    <option value="Educacion fisica">Educación física</option>
+                                                    <option value="Tecnologia">Tecnología</option>
+                                                    <option value="Politica">Política</option>
+                                                    <option value="Religion">Religión</option>
+                                                    <option value="Salud">Salud</option>
+                                                    <option value="Educacion">Educación</option>
+                                                    <option value="Otro">Otro</option>
+                                                </select>
+                                                <div className="dark-button-container">
+                                                    <button className="save-edit" id="edit-ci" onClick={() => changeProffesorInformation('subjects', document.getElementById('filter-subjects-change').value,'subjects')}>Guardar</button>
+                                                    <button className="cancel-edit" onClick={() => {
+                                                        document.getElementById("subjects").style.display = 'none';
+                                                        document.querySelector('body').style.overflow = 'auto';
+                                                    }}>Cancelar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )*/}
                                     <PreferenceToggle idButton="class-button-toggle" idContainer="button-toggle-class" h4="Clases virtuales" p="¿Tienes la disponibilidad de tener clases virtuales?" name="virtualClasses" value={userInformation.virtualClasses} setUserInformation={setUserInformation} />
                                     <PreferenceToggle idButton="presentClass-button-toggle" idContainer="button-toggle-presentClass" h4="Clases presencial" p="¿Tienes la disponibilidad de tener clases presenciales?" name="faceToFaceClasses" value={userInformation.faceToFaceClasses} setUserInformation={setUserInformation} />
                                 </div>
@@ -286,7 +396,7 @@ function Preference({ userInformation, setUserInformation }) {
                                     ? <div className="commomStylePadding privacy">
                                         <PreferenceToggle idButton="phone-button-toggle" idContainer="button-toggle-phone" h4="Quien puede ver tu numero de telefono" p="Esto es para facilitar el contacto a traves de la plataforma, los usuarios podran ver su numero de telefono desde su perfil." name="showMyNumber" value={userInformation.showMyNumber} setUserInformation={setUserInformation} />
                                     </div>
-                                    : attribute === 'mod=payment' 
+                                    : attribute === 'mod=payment' && userInformation.objetive === 'Profesor' 
                                         ? <Link to="/preference/mod=payment_payu" style={{ textDecoration: 'none' }}>
                                             <div className="commomStylePadding payment" >
                                                 <section className="payment-method-help-card">

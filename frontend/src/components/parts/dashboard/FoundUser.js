@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import swal from 'sweetalert'
-import { changeDate } from '../../helpers/';
+import { changeDate, defineName } from '../../helpers/';
 import { deleteUser, getProducts, getUsers, removeFiles, socket, sendWarning, userStatusChange } from "../../../api";
 
-function FoundUser({ id, username, date, data, setUsers, setProducts }) {
+function FoundUser({ id, username, userInformation, date, data, setUsers, setProducts }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [userStateSelect, setUserStateSelect] = useState('free');
@@ -179,7 +179,7 @@ function FoundUser({ id, username, date, data, setUsers, setProducts }) {
     return (
         <div className="found-user">
             <i className="fa-solid fa-circle-exclamation icon-exclamation" title="Informacion" onClick={() => document.getElementById(data.property).style.display = 'block'}></i>
-            <h4>{username}</h4>
+            <h4>{defineName(userInformation,true)}</h4>
             <p className="date-found-user-dashboard">{date}</p>
             <div className="found-options">
                 <button title="Envia un mensaje a este usuario" onClick={() => sendMessage('Admin', id)}><i className="fa-solid fa-envelope"></i></button>

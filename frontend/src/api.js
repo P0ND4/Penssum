@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { socketio } from './components/helpers';
 
-const API = process.env.REACT_APP_API_PENSSUM;
+const API = process.env.REACT_APP_API_PENSSUM || '';
 const io = socketio(API);
 
 export const socket = io;
@@ -32,6 +32,11 @@ export const loginUser = async (data) => {
     return await result.data;
 };
 
+export const recoveryPassword = async (data) => {
+    const result = await axios.post(`${API}/user/recovery/password`, data);
+    return await result.data;
+};
+
 export const accountAuthentication = async (data) => {
     const result = await axios.post(`${API}/user/signup/authentication`, data);
     return await result.data;
@@ -44,6 +49,11 @@ export const tokenVerification = async (token) => {
 
 export const changePreferenceValue = async (data) => {
     const result = await axios.post(`${API}/user/change/preference/value`, data);
+    return await result.data;
+};
+
+export const sendCompleteInformation = async (data) => {
+    const result = await axios.post(`${API}/user/complete/information`, data);
     return await result.data;
 };
 
@@ -86,6 +96,16 @@ export const acceptProduct = async (id) => {
     const result = await axios.post(`${API}/product/accept`, { id });
     return await result.data;
 }
+
+export const takePost = async (data) => {
+    const result = await axios.post(`${API}/product/take`, data);
+    return await result.data;
+};
+
+export const removeTakePost = async (data) => {
+    const result = await axios.post(`${API}/product/remove/take`, data);
+    return await result.data;
+};
 
 export const fileSelection = async (data) => {
     const result = await axios.post(`${API}/product/file/selection`, data);
@@ -264,5 +284,40 @@ export const getVote = async (data) => {
 
 export const vote = async (data) => {
     const result = await axios.post(`${API}/vote`, data);
+    return await result.data;
+};
+
+export const searchProducts = async (data) => {
+    const result = await axios.post(`${API}/search/products`, data);
+    return await result.data;
+};
+
+export const getTask = async (data) => {
+    const result = await axios.post(`${API}/get/task`, data);
+    return await result.data;
+};
+
+export const requestPayment = async (data) => {
+    const result = await axios.post(`${API}/product/request/payment`, data);
+    return await result.data;
+};
+
+export const teacherPayment = async (data) => {
+    const result = await axios.post(`${API}/product/teacher/payment`, data);
+    return await result.data;
+};
+
+export const rejectionVote = async (data) => {
+    const result = await axios.post(`${API}/rejection/vote`, data);
+    return await result.data;
+};
+
+export const removePayment = async (data) => {
+    const result = await axios.post(`${API}/remove/payment`, data);
+    return await result.data;
+};
+
+export const sendTransactionVerification = async data => {
+    const result = await axios.post(`${API}/send/transaction/verification`, data);
     return await result.data;
 };

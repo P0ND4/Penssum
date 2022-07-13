@@ -16,7 +16,7 @@ function HelpInformation() {
         if (attribute === 'mod=security') document.querySelector('.security-help-link').classList.add('helpInformation-active');
         if (attribute === 'mod=accounts') document.querySelector('.accounts-help-link').classList.add('helpInformation-active');
         if (attribute === 'mod=products') document.querySelector('.products-help-link').classList.add('helpInformation-active');
-        if (attribute === 'mod=call_video') document.querySelector('.call_video-help-link').classList.add('helpInformation-active');
+        //if (attribute === 'mod=call_video') document.querySelector('.call_video-help-link').classList.add('helpInformation-active');
         if (attribute === 'mod=frequent_questions') document.querySelector('.frequent_questions-help-link').classList.add('helpInformation-active');
         if (attribute === 'mod=terms_and_conditions') document.querySelector('.terms_and_conditions-help-link').classList.add('helpInformation-active');
     });
@@ -42,10 +42,10 @@ function HelpInformation() {
                     <i className="fas fa-store-alt"></i>
                     <p>Servicios</p>
                 </Link>
-                <Link to="/help/information/mod=call_video" className="helpInformation-sections call_video-help-link">
+                {/*<Link to="/help/information/mod=call_video" className="helpInformation-sections call_video-help-link">
                     <i className="fas fa-video"></i>
                     <p>Videollamadas</p>
-                </Link>
+                </Link>*/}
                 <hr/>
                 <Link to="/help/information/mod=frequent_questions" className="helpInformation-sections frequent_questions-help-link">
                     <i className="far fa-question-circle"></i>
@@ -62,11 +62,7 @@ function HelpInformation() {
                     ?   <div className="commomStylePadding protech">
                             <InformationCard 
                                 title="Penssum" 
-                                content="Somos una plataforma de comercio electronico basado en ofertas y contraofertas,
-                                nuestro principal objetivo es dar la mayor facilidad y calidad a nuestros usuarios
-                                de poder conseguir a los mejores profesores del mundo, consiga los mejores precios
-                                en nuestra plataforma, todas sus dudas pueden ser respondidas por profesores en un ambito
-                                profesional en el area, disfrute del uso completo de nuestra aplicacion web." 
+                                content="Penssum es una plataforma de asistencia académica, que permite a los estudiantes conectarse con los mejores docentes en soluciones inmediatas a las actividades diarias currículares más exigentes, es el mejor aliado estratégico para fortalecer y obtener conocimientos y las mejores calificaciones de una manera fácil ágil y segura." 
                                 />
                             <InformationCard 
                                 title="¿Porque elegirnos?" 
@@ -82,26 +78,24 @@ function HelpInformation() {
                                 />
                             <div className="information-card-content">
                                 <h1>Ventajas de usar Penssum</h1>
-                                <p>
-                                    Hemos preparado una lista de las ventajas de usar nuestra aplicacion estas son:
-                                    <ul>
-                                        <li>Seguridad 100% garantizada</li>
-                                        <li>Publicacion de servicio rompiendo record en velocidad</li>
-                                        <li>Los mejores precios del mercado</li>
-                                        <li>Posibilidad de ofertas y contraoferta</li>
-                                        <li>Comunicacion dentro de la aplicacion</li>
-                                        <li>Libertad de comunicacion fuera de la plataforma</li>
-                                        <li>Atencion al cliente las 24 horas</li>
-                                        <li>Prohibicion de servicios o contenido obseno en nuestra aplicacion</li>
-                                        <li>Facil navegavilidad</li>
-                                        <li>Configuracion de su perfil</li>
-                                        <li>Acceso a videollamada</li>
-                                        <li>Registro sencillo con validacion</li>
-                                        <li>Registro como alumno y profesor</li>
-                                        <li>Uso confiable de nuestra plataforma</li>
-                                    </ul>
-                                    Y mucho mas para asegurarle la mejor experiencia de usuario que jamas haya tenido.
-                                </p>
+                                <p>Hemos preparado una lista de las ventajas de usar nuestra aplicacion estas son: </p>
+                                <ul>
+                                    <li>Seguridad 100% garantizada</li>
+                                    <li>Publicacion de servicio rompiendo record en velocidad</li>
+                                    <li>Los mejores precios del mercado</li>
+                                    <li>Posibilidad de ofertas y contraoferta</li>
+                                    <li>Comunicacion dentro de la aplicacion</li>
+                                    <li>Libertad de comunicacion fuera de la plataforma</li>
+                                    <li>Atencion al cliente las 24 horas</li>
+                                    <li>Prohibicion de servicios o contenido obseno en nuestra aplicacion</li>
+                                    <li>Facil navegavilidad</li>
+                                    <li>Configuracion de su perfil</li>
+                                    <li>Acceso a videollamada</li>
+                                    <li>Registro sencillo con validacion</li>
+                                    <li>Registro como alumno y profesor</li>
+                                    <li>Uso confiable de nuestra plataforma</li>
+                                </ul>
+                                <p>Y mucho mas para asegurarle la mejor experiencia de usuario que jamas haya tenido.</p>
                             </div>
                         </div> 
                     : attribute === 'mod=security'
@@ -117,32 +111,32 @@ function HelpInformation() {
                                     <p>
                                         Tu seguridad es importante para nosotros al usar nuestra plataforma, por lo
                                         que es obligatorio para nosotros aportar a tu seguridad. Te damos unos ejemplos
-                                        de como te protegemos.
-                                        <ul>
-                                            <li>Toda tu informacion esta cifrada</li>
-                                            <li>Todas las conversaciones que tengas son solo para ti</li>
-                                            <li>Cualquier conducta inadecuada lo puedes reportar y nosotros actuaremos</li>
-                                            <li>Las transacciones que hagas por medio de la plataforma son seguras</li>
-                                            <li>Te protegemos de enlaces maliciosos en nuestra aplicacion</li>
-                                            <li>100% libre de virus</li>
-                                            <li>Toda la informacion de los servicios son revisados antes de ser publicados para evitar malware</li>
-                                        </ul>
-                                        Esto y mas son unos ejemplos de como aportamos a tu seguridad en nuestra aplicacion web.
+                                        de como te protegemos. 
                                     </p>
+                                    <ul>
+                                        <li>Toda tu informacion esta cifrada</li>
+                                        <li>Todas las conversaciones que tengas son solo para ti</li>
+                                        <li>Cualquier conducta inadecuada lo puedes reportar y nosotros actuaremos</li>
+                                        <li>Las transacciones que hagas por medio de la plataforma son seguras</li>
+                                        <li>Te protegemos de enlaces maliciosos en nuestra aplicacion</li>
+                                        <li>100% libre de virus</li>
+                                        <li>Toda la informacion de los servicios son revisados antes de ser publicados para evitar malware</li>
+                                    </ul>
+                                    <p>Esto y mas son unos ejemplos de como aportamos a tu seguridad en nuestra aplicacion web.</p>
                                 </div>
                                 <div className="information-card-content">
                                     <h1>Consejos de seguridad</h1>
                                     <p>
                                         Nosotros aportamos a tu seguridad, pero no podemos evitar muchas cosas dentro de la plataforma,
-                                        te damos unos consejos que deberias seguir.
-                                        <ul>
-                                            <li>No compartas tu ubicacion exacta</li>
-                                            <li>Si un usuario te pide descargar un programa he instalarlo, NO LO HAGAS</li>
-                                            <li>Si se ponen de acuerdo para ver clases presencial, siempre ande acompañado, y digale a sus familiares donde piensa ir</li>                                            
-                                            <li>No comparta informacion privada</li>
-                                        </ul>
-                                        Estas son unas de las recomendaciones para contribuir a su seguridad.
+                                        te damos unos consejos que deberias seguir. 
                                     </p>
+                                    <ul>
+                                        <li>No compartas tu ubicacion exacta</li>
+                                        <li>Si un usuario te pide descargar un programa he instalarlo, NO LO HAGAS</li>
+                                        <li>Si se ponen de acuerdo para ver clases presencial, siempre ande acompañado, y digale a sus familiares donde piensa ir</li>                                            
+                                        <li>No comparta informacion privada</li>
+                                    </ul>
+                                    <p>Estas son unas de las recomendaciones para contribuir a su seguridad.</p>
                                 </div>
                             </div>
                         : attribute === 'mod=accounts'
@@ -156,41 +150,90 @@ function HelpInformation() {
                                                 servicios de los profesores, si tienes una tarea que no entiendes puedes publicar
                                                 un servicio de categoria (resolver) para que alguien te ayude en tu tarea." 
                                     />
+
+                                    <InformationCard
+                                        title="Configuracion de la cuenta" 
+                                        content="La configuracion de la cuenta no es tan compleja si tiene la session iniciada podra ir seleccionando la 
+                                        barra de navegacion de su cuenta y seleccionar PREFERENCIAS una vez estando dentro, tendra la libertad de decidir
+                                        que va hacer con su cuenta, y personalizala a su gusto, si quiere cambiar la foto de perfil o foto de portada,
+                                        podra hacerlo navegando hacia la seccion de su perfil y seleccionando el icono de un lapiz a la imagen que desee 
+                                        cambiar."
+                                    />
+
+                                    <div className="information-card-content">
+                                        <h1>Informacion requerida</h1>
+                                        <p>
+                                            Para utilizar tu cuenta con libertad deberas llenar informacion basica,
+                                            esta informacion se utiliza para hacer una breve descripcion de quien eres,
+                                            por ende facilitamos la busquedad entre alumnos y profesores, la descripcion
+                                            es importante para facilitar la busquedad, da tu mejor descripcion.
+
+                                            Configuracion necesaria para el alumno:
+                                        </p>           
+                                        <ul>
+                                            <li>Primer nombre</li>
+                                            <li>Primer Apellido</li>
+                                            <li>Descripcion</li>
+                                            <li>Numero de telefono</li>
+                                        </ul>
+                                            
+                                        <p>Configuracion necesaria para el profesor:</p>
+                                        <ul>
+                                            <li>Primer nombre</li>
+                                            <li>Segundo nombre</li>
+                                            <li>Primer apellido</li>
+                                            <li>Segundo Apellido</li>
+                                            <li>Descripcion</li>
+                                            <li>Cedula de identidad</li>
+                                            <li>Numero de telefono</li>
+                                            <li>Ciudad</li>
+                                        </ul>
+                                        <p>Te ayudaremos a identificar el campo obligatorio con este icono <i className="fa-solid fa-circle-exclamation field-required-icon" style={{ position: 'initial', top: 0, left: 0 }} title="Campo requerido"></i> en la configuracion de tu cuenta.</p>
+                                        <br/><br/><Link to="/preference/mod=general" style={{ color: '#3282B8' }}>Ir a la configuracion de mi cuenta</Link>
+                                    </div>
+
                                     <div className="information-card-content">
                                         <h1>Tipos de suspencion a las cuentas</h1>
-                                        <p>Existe 3 tipos de suspencion de una cuenta
-                                            <ul>
-                                                <li>Advertencia a traves de la plataforma</li>
-                                                <li>Suspencion de cuenta temporal</li>
-                                                <li>Bloqueo permanete de la cuenta</li>
-                                            </ul>
-                                            Estas suspenciones tienen su motivo pero vamos a detallar por que pasan.
+                                        <p>Existe 3 tipos de suspencion de una cuenta</p>
+                                        <ul>
+                                            <li>Advertencia a traves de la plataforma</li>
+                                            <li>Suspencion de cuenta temporal</li>
+                                            <li>Bloqueo permanete de la cuenta</li>
+                                        </ul>
+                                        <p>Estas suspenciones tienen su motivo pero vamos a detallar por que pasan.</p>
                                             <br/><br/>
-                                            <b>Advertencia a traves de la plataforma</b>: Esta mas que una suspencion como dice su nombre
-                                            es una advertencia debido a violaciones menores en nuestra plataforma, esta puede ser reclamos
-                                            de usuarios a su cuenta, no cumplir con una clase por videollamada, palabras ofensivas, entre
-                                            otras, la repeticion de la misma advertencia podria llevar a cabo la suspencion temporal de la
-                                            cuenta.
+                                            <p>
+                                                <b>Advertencia a traves de la plataforma</b>: Esta mas que una suspencion como dice su nombre
+                                                es una advertencia debido a violaciones menores en nuestra plataforma, esta puede ser reclamos
+                                                de usuarios a su cuenta, no cumplir con una clase por videollamada, palabras ofensivas, entre
+                                                otras, la repeticion de la misma advertencia podria llevar a cabo la suspencion temporal de la
+                                                cuenta.
+                                            </p>
                                             <br/><br/>
-                                            <b>Suspencion de cuenta temporal</b>: Esta es una suspencion a la cuenta por un periodo de tiempo 
-                                            por violaciones medianas del uso de nuestra aplicacion web, podria ser provocada por repeticiones de
-                                            advertencia, imagenes no adecuadas en los servicios, entre otros, el tiempo estimado para que la 
-                                            cuenta pueda ser desbloqueada dependera de la gravedad de la violaciones a las reglas de la plataforma,
-                                            se puede tener una cierta tolerancia a las faltas, pero si se repiten las misma violacion otra vez el 
-                                            tiempo de espera podria ser mucho mayor.
+                                            <p>
+                                                <b>Suspencion de cuenta temporal</b>: Esta es una suspencion a la cuenta por un periodo de tiempo 
+                                                por violaciones medianas del uso de nuestra aplicacion web, podria ser provocada por repeticiones de
+                                                advertencia, imagenes no adecuadas en los servicios, entre otros, el tiempo estimado para que la 
+                                                cuenta pueda ser desbloqueada dependera de la gravedad de la violaciones a las reglas de la plataforma,
+                                                se puede tener una cierta tolerancia a las faltas, pero si se repiten las misma violacion otra vez el 
+                                                tiempo de espera podria ser mucho mayor.
+                                            </p>
                                             <br/><br/>
-                                            <b>Bloqueo permanente de la cuenta</b>: Esta es la suspencion mayor que una cuenta prodria tener, esto
-                                            se debe a violaciones mayores a las reglas de nuestra plataforma, podria ser provocada por: amenazas 
-                                            contra los usuarios, extorsion, falsos servicios, links engañosos con contenido pornografico, virus o
-                                            otro programa que rompen las buenas costumbre de nuestra aplicacion, el bloqueo de la cuenta es permanente,
-                                            y no se podra volver a registrar teniendo en cuenta los datos guardados en la base de datos, se le dara la
-                                            oportunidad al usuario de poder defenderse, en llegado caso de no tener sentido el argumento se le quitara 
-                                            la opcion de defensa y quedara bloqueado permanentemente en la aplicacion.
+                                            <p>
+                                                <b>Bloqueo permanente de la cuenta</b>: Esta es la suspencion mayor que una cuenta prodria tener, esto
+                                                se debe a violaciones mayores a las reglas de nuestra plataforma, podria ser provocada por: amenazas 
+                                                contra los usuarios, extorsion, falsos servicios, links engañosos con contenido pornografico, virus o
+                                                otro programa que rompen las buenas costumbre de nuestra aplicacion, el bloqueo de la cuenta es permanente,
+                                                y no se podra volver a registrar teniendo en cuenta los datos guardados en la base de datos, se le dara la
+                                                oportunidad al usuario de poder defenderse, en llegado caso de no tener sentido el argumento se le quitara 
+                                                la opcion de defensa y quedara bloqueado permanentemente en la aplicacion.
+                                            </p>
                                             <br/><br/>
-                                            Si sigues las normas, reglas y las politicas de privacidad correctamente no deberia tener ninguna llamada 
-                                            de atencion, queremos que nuestra plataforma sea la mejor experiencia de usuario y no queremos que tenga 
-                                            inconvenientes con usuarios que no respetan nuestras buenas costumbres.
-                                        </p>
+                                            <p>
+                                                Si sigues las normas, reglas y las politicas de privacidad correctamente no deberia tener ninguna llamada 
+                                                de atencion, queremos que nuestra plataforma sea la mejor experiencia de usuario y no queremos que tenga 
+                                                inconvenientes con usuarios que no respetan nuestras buenas costumbres.
+                                            </p>
                                     </div>
                                     <InformationCard
                                         title="Bloquear o demandar cuenta" 
@@ -205,14 +248,6 @@ function HelpInformation() {
                                         ser mentira la demanda podria traer como consecuencia la suspencion de la cuenta temporal, o una advertencia por
                                         medio de la plataforma, si un usuario lo bloqueo porque lo quiere evadir, no le quiere pagar, o algo que considere 
                                         comuniquese con nosotros y actuaremos."
-                                    />
-                                    <InformationCard
-                                        title="Configuracion de la cuenta" 
-                                        content="La configuracion de la cuenta no es tan compleja si tiene la session iniciada podra ir seleccionando la 
-                                        barra de navegacion de su cuenta y seleccionar PREFERENCIAS una vez estando dentro, tendra la libertad de decidir
-                                        que va hacer con su cuenta, y personalizala a su gusto, si quiere cambiar la foto de perfil o foto de portada,
-                                        podra hacerlo navegando hacia la seccion de su perfil y seleccionando el icono de un lapiz a la imagen que desee 
-                                        cambiar."
                                     />
                                 </div>
                             : attribute === 'mod=products'
@@ -266,7 +301,7 @@ function HelpInformation() {
                                             </p>
                                         </div>
                                     </div>
-                                : attribute === 'mod=call_video'
+                                : /*attribute === 'mod=call_video'
                                     ?   <div className="commomStylePadding call_video-help-information">
                                             <InformationCard
                                                 title="Como organizar una videollamada"
@@ -287,7 +322,7 @@ function HelpInformation() {
                                                 terminado la reunion."
                                             />
                                         </div>
-                                    : attribute === 'mod=frequent_questions'
+                                    :*/ attribute === 'mod=frequent_questions'
                                         ?   <div className="commomStylePadding frequent_questions">
                                                 <InformationCard
                                                     title="Cuanto tiempo dura una videollamada"

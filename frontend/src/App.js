@@ -1,28 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { 
   getUser, 
   getProducts, 
   socket,
   getAdminInformation, 
   suspensionControl, 
-  userStatusChange, 
-  getNotifications,
-  getUncheckedMessages
+  userStatusChange,
+  getVote
 } from './api';
-import { getRemainTime } from './components/helpers';
+import { getRemainTime, verificationOfInformation } from './components/helpers';
 
 import Nav from './components/partials/Nav';
 import Home from './components/layouts/Home';
 import Footer from './components/partials/Footer';
 
-import Signin from './components/layouts/Signin';
 import Error404 from './components/layouts/Error404';
 
 import Report from './components/layouts/Report';
 import Help from './components/layouts/Help';
 import HelpInformation from './components/parts/helpZone/HelpInformation';
 import ImprovementComment from './components/layouts/ImprovementComment';
+
+import CompleteInformation from './components/layouts/CompleteInformation';
+
+// login
+import Signin from './components/layouts/login/Signin';
+import Recovery from './components/layouts/login/Recovery';
 
 // Register
 import Signup from './components/layouts/register/Signup';
@@ -44,7 +48,8 @@ import Quote from './components/layouts/post/Quote';
 import PostControl from './components/layouts/post/PostControl';
 
 //Functionalities
-import VideoCall from './components/layouts/function/VideoCall';
+
+//import VideoCall from './components/layouts/function/VideoCall';
 import Found from './components/layouts/function/Found';
 import EventHandler from './components/layouts/EventHandler';
 import TransactionReceipt from './components/layouts/function/TransactionReceipt';
@@ -57,6 +62,8 @@ import Dashboard from './components/layouts/admin/Dashboard';
 import Cookies from 'universal-cookie';
 import LoadingZone from './components/layouts/LoadingZone';
 
+import Vote from './components/parts/Vote';
+
 const cookies = new Cookies();
 
 function App() {
@@ -68,16 +75,23 @@ function App() {
   const [search, setSearch] = useState('');
   const [products, setProducts] = useState(null);
   const [reportUsername, setReportUsername] = useState('');
+  const [quoteId,setQuoteId] = useState('');
   const [notifications, setNotifications] = useState(null);
   const [countInNotification, setCountInNotification] = useState(0);
   const [countInMessages, setCountInMessages] = useState(0);
   const [userErrorHandler,setUserErrorHandler] = useState(false);
   const [isTheUserSuspended,setIsTheUserSuspended] = useState(false);
   const [deadline, setDeadline] = useState(null); 
+  const [reportProductId,setReportProductId] = useState(null);
+  const [votePending,setVotePending] = useState([]);
+  const [repeatVote,setRepeatVote] = useState(true);
+  const [pendingInformation,setPendingInformation] = useState(false);
+  const [reportTransaction,setReportTransaction] = useState(false);
 
   const [filterNav, setFilterNav] = useState({
     city: 'ciudad',
-    user: 'usuario'
+    classType: 'classType',
+    category: 'categoria'
   });
 
   const [registration, setRegistration] = useState(false);
@@ -102,26 +116,6 @@ function App() {
     };
     checkSuspension();
   },[]);
-
-  useEffect(() => {
-    if (auth) {
-      socket.on('received event', async () => {
-        const briefNotifications = await getNotifications(cookies.get('id'));
-        const briefMessages = await getUncheckedMessages(cookies.get('id'));
-
-        setCountInMessages(briefMessages.length);
-
-        const currentNotification = [];
-        let count = 0;
-
-        for (let i = 0; i < 3; i++) { if (briefNotifications[i] !== undefined) currentNotification.push(briefNotifications[i]) };
-        for (let i = 0; i < briefNotifications.length; i++) { if (!briefNotifications[i].view) count += 1 };
-
-        setCountInNotification(count);
-        setNotifications(currentNotification);
-      });
-    };
-  },[auth]);
 
   useEffect(() => {
     socket.on('suspension-ended', () => setIsTheUserSuspended(false));
@@ -157,11 +151,11 @@ function App() {
 
   useEffect(() => {
     const searchProducts = async () => {
-      const productsObtained = await getProducts({ blockSearch: userInformation._id });
+      const productsObtained = await getProducts({ blockSearch: cookies.get('id') });
       setProducts(productsObtained);
     };
     searchProducts();
-  }, [auth, userInformation]);
+  }, [auth]);
 
   useEffect(() => {
     const getInformation = async () => { await getAdminInformation() };
@@ -201,47 +195,81 @@ function App() {
       dateTimer();
   },[userInformation,deadline,setIsTheUserSuspended]);
 
+  useEffect(() => {
+    if (auth) {
+      const searchVotePending = async () => {
+        const result = await getVote({ from: userInformation._id, voteType: 'pending' });
+        console.log(result);
+        if (result.error) return
+        else setVotePending(result);
+      };
+      searchVotePending();
+    };
+  },[auth,userInformation]);
+
+  useEffect(() => {
+    if (!setRepeatVote) {
+      setTimeout(() => {
+        setRepeatVote(true);
+      },1000);
+    }
+  },[repeatVote]);
+
+  useEffect(() => {
+    if (auth && userInformation !== null) {
+      if (!verificationOfInformation(userInformation.objetive,userInformation)) setPendingInformation(true)
+      else setPendingInformation(false);
+    } else setPendingInformation(false);
+  },[userInformation,auth]);
+
   return (
     <div>
       <Router>
         <LoadingZone auth={auth} products={products}>
-          <EventHandler setDashboard={setDashboard} validated={userInformation.validated} userErrorHandler={userErrorHandler} setRegistration={setRegistration} setSearch={setSearch} obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles}>
+          <EventHandler setDashboard={setDashboard} setPendingInformation={setPendingInformation} userInformation={userInformation} validated={userInformation.validated} userErrorHandler={userErrorHandler} setRegistration={setRegistration} setSearch={setSearch} obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} setReportProductId={setReportProductId} setReportTransaction={setReportTransaction}>
             {!dashboard && products !== null ? <Nav auth={auth} userInformation={userInformation} setAuth={setAuth} setUserInformation={setUserInformation} search={search} setSearch={setSearch} filterNav={filterNav} setFilterNav={setFilterNav} notifications={notifications} setNotifications={setNotifications} setCountInNotification={setCountInNotification} countInNotification={countInNotification} countInMessages={countInMessages} setCountInMessages={setCountInMessages}/> : <></>}
+            {auth && pendingInformation && <Link className="complete-information-card-container" to="/complete/information">Completar Información</Link>}
             <AccountConfirmationCard registration={registration} userInformation={userInformation} setRegistration={setRegistration} setUserInformation={setUserInformation} />
-            <Routes>
-              <Route path="/" element={<Home auth={auth} userErrorHandler={userErrorHandler} username={userInformation.username} products={products} productsToPut={productsToPut} isTheUserSuspended={isTheUserSuspended}/>} />
-              <Route path="/help" element={<Help obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} auth={auth} />} />
-              <Route path="/help/information/:attribute" element={<HelpInformation />} />
-              <Route path="/report" element={auth ? <Report reportUsername={reportUsername} setReportUsername={setReportUsername} obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} setProducts={setProducts} setNotifications={setNotifications} setCountInNotification={setCountInNotification} /> : <Navigate to="/signin" />} />
+            {votePending.length > 0 && repeatVote && <Vote setVotePending={setVotePending} votePending={votePending} firstUser={votePending[0]} setRepeatVote={setRepeatVote} pending={true}/>}
+            <main>
+              <Routes>
+                <Route path="/" element={<Home userInformation={userInformation} auth={auth} userErrorHandler={userErrorHandler} username={userInformation.username} products={products} productsToPut={productsToPut} isTheUserSuspended={isTheUserSuspended}/>} />
+                <Route path="/help" element={<Help obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} auth={auth} />} />
+                <Route path="/help/information/:attribute" element={<HelpInformation />} />
+                <Route path="/report" element={auth ? <Report reportUsername={reportUsername} setReportUsername={setReportUsername} obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} setProducts={setProducts} setNotifications={setNotifications} setCountInNotification={setCountInNotification} reportProductId={reportProductId} setReportProductId={setReportProductId} setReportTransaction={setReportTransaction} reportTransaction={reportTransaction}/> : <Navigate to="/signin" />} />
 
-              <Route path="/signin" element={!auth ? <Signin setAuth={setAuth} setUserInformation={setUserInformation} setSigninAdmin={setSigninAdmin} /> : <Navigate to="/" />} />
-              <Route path="/signup" element={!auth ? <Signup setUserInformation={setUserInformation} setRegistrationProcess={setRegistrationProcess} registrationProcess={registrationProcess} /> : <Navigate to="/" />} />
+                <Route path="/signin" element={!auth ? <Signin setAuth={setAuth} setUserInformation={setUserInformation} setSigninAdmin={setSigninAdmin} setRegistrationProcess={setRegistrationProcess} registrationProcess={registrationProcess} /> : <Navigate to="/" />} />
+                <Route path="/signin/recovery" element={!auth ? <Recovery setUserInformation={setUserInformation} setAuth={setAuth} /> : <Navigate to="/" />} />
+                
+                <Route path="/signup" element={!auth ? <Signup setUserInformation={setUserInformation} setRegistrationProcess={setRegistrationProcess} registrationProcess={registrationProcess} /> : <Navigate to="/" />} />
+                <Route path="/signup/selection" element={<Selection setUserInformation={setUserInformation} userInformation={userInformation} setAuth={setAuth} setRegistrationProcess={setRegistrationProcess} registrationProcess={registrationProcess} setRegistration={setRegistration} />} />
+                <Route path="/signup/check/email" element={<CheckEmail setRegistration={setRegistration} userInformation={userInformation} setUserInformation={setUserInformation} registrationProcess={registrationProcess} />} />
 
-              <Route path="/signup/selection" element={<Selection setUserInformation={setUserInformation} userInformation={userInformation} setAuth={setAuth} setRegistrationProcess={setRegistrationProcess} registrationProcess={registrationProcess} setRegistration={setRegistration} />} />
-              <Route path="/signup/check/email" element={<CheckEmail setRegistration={setRegistration} userInformation={userInformation} setUserInformation={setUserInformation} registrationProcess={registrationProcess} />} />
+                <Route path="/complete/information" element={auth ? <CompleteInformation setUserInformation={setUserInformation} userInformation={userInformation}/> : <Navigate to="/signin"/>}/>
 
-              <Route path="/signup/email/verification/:token" element={<TokenVerification setAuth={setAuth} setUserInformation={setUserInformation} setRegistration={setRegistration} />} />
+                <Route path="/signup/email/verification/:token" element={<TokenVerification setAuth={setAuth} setUserInformation={setUserInformation} setRegistration={setRegistration} />} />
 
-              <Route path="/improvement/comment" element={auth ? <ImprovementComment obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} /> : <Navigate to="/signin" />} />
-              <Route path="/search/:profile_provider" element={<Found filterNav={filterNav} />} />
-              <Route path="/post/activity" element={auth ? <PostActivity userInformation={userInformation} obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} isTheUserSuspended={isTheUserSuspended} username={userInformation.username} /> : <Navigate to="/signin" />} />
-              <Route path="/post/information/:post_id" element={<PostInformation auth={auth} userInformation={userInformation} isTheUserSuspended={isTheUserSuspended} setMainProducts={setProducts}/>} />
-              <Route path="/post/information/:post_id/transaction/receipt" element={auth ? <TransactionReceipt userInformation={userInformation} /> : <Navigate to="/signin" />} />
+                <Route path="/improvement/comment" element={auth ? <ImprovementComment obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} /> : <Navigate to="/signin" />} />
+                <Route path="/search/:profile_provider" element={<Found userInformation={userInformation} filterNav={filterNav} auth={auth}/>} />
+                <Route path="/post/activity" element={auth && userInformation && userInformation.objetive !== 'Profesor' && verificationOfInformation(userInformation.objetive,userInformation) ? <PostActivity userInformation={userInformation} obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} isTheUserSuspended={isTheUserSuspended} username={userInformation.username} /> : <Navigate to="/signin" />} />
+                <Route path="/post/information/:post_id" element={<PostInformation auth={auth} userInformation={userInformation} isTheUserSuspended={isTheUserSuspended} setMainProducts={setProducts} setProducts={setProducts} setReportUsername={setReportUsername} setQuoteId={setQuoteId} setReportProductId={setReportProductId} setNotifications={setNotifications} setCountInNotification={setCountInNotification} setCountInMessages={setCountInMessages} setReportTransaction={setReportTransaction}/>} />
+                <Route path="/post/information/:post_id/transaction/receipt" element={auth ? <TransactionReceipt userInformation={userInformation} /> : <Navigate to="/signin" />} />
 
-              <Route path="/post/information/:post_id/control" element={auth ? <PostControl userInformation={userInformation} /> : <Navigate to="/" />} />
+                <Route path="/post/information/:post_id/control" element={auth ? <PostControl userInformation={userInformation} setCountInMessages={setCountInMessages} setCountInNotification={setCountInNotification} setNotifications={setNotifications}/> : <Navigate to="/" />} />
 
-              <Route path="/video_call/meeting/:meeting_id" element={auth ? <VideoCall userInformation={userInformation}/> : <Navigate to="/signin" /> } />
-              <Route path="/messages" element={auth ? <Messages setProducts={setProducts} setNotifications={setNotifications} setCountInNotification={setCountInNotification} /> : <Navigate to="/signin" />} />
-              <Route path="/notifications" element={auth ? <Notifications /> : <Navigate to="/signin" />} />
-              <Route path="/preference/:attribute" element={auth ? <Preferences userInformation={userInformation} setUserInformation={setUserInformation} /> : <Navigate to="/signin" />} />
-              <Route path="/send/quote" element={auth ? <Quote obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} isTheUserSuspended={isTheUserSuspended} username={userInformation.username} /> : <Navigate to="/signin" />} />
+                {/*<Route path="/video_call/meeting/:meeting_id" element={auth ? <VideoCall userInformation={userInformation}/> : <Navigate to="/signin" /> } />*/}
+                <Route path="/messages" element={auth ? <Messages setProducts={setProducts} setNotifications={setNotifications} setCountInNotification={setCountInNotification} /> : <Navigate to="/signin" />} />
+                <Route path="/notifications" element={auth ? <Notifications /> : <Navigate to="/signin" />} />
+                <Route path="/preference/:attribute" element={auth ? <Preferences userInformation={userInformation} setUserInformation={setUserInformation} /> : <Navigate to="/signin" />} />
+                <Route path="/send/quote" element={auth && userInformation.objetive !== 'Alumno' && verificationOfInformation(userInformation.objetive,userInformation) ? <Quote obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} isTheUserSuspended={isTheUserSuspended} username={userInformation.username} quoteId={quoteId} setQuoteId={setQuoteId}/> : verificationOfInformation(userInformation.objetive,userInformation) ? <Navigate to="/complete/information" /> : <Navigate to="/signin" />} />
 
-              <Route path="/signin/admin" element={signinAdmin ? <AdminLogin setDashboard={setDashboard} /> : <Navigate to="/signin" />} />
+                <Route path="/signin/admin" element={signinAdmin ? <AdminLogin setDashboard={setDashboard} /> : <Navigate to="/signin" />} />
 
-              <Route path="/dashboard/:attribute" element={dashboard ? <Dashboard setProducts={setProducts} /> : <Navigate to="/" />} />
-              <Route path="/:username" element={<Profile mainUsername={userInformation.username} userInformation={userInformation} setUserInformation={setUserInformation} auth={auth} setProducts={setProducts} setReportUsername={setReportUsername} setNotifications={setNotifications} setCountInNotification={setCountInNotification} isTheUserSuspended={isTheUserSuspended} deadline={deadline}/>} />
-              <Route path="*" element={<Error404 />} />
-            </Routes>
+                <Route path="/dashboard/:attribute" element={dashboard ? <Dashboard setProducts={setProducts} /> : <Navigate to="/" />} />
+                <Route path="/:username" element={<Profile mainUsername={userInformation.username} userInformation={userInformation} setUserInformation={setUserInformation} auth={auth} setProducts={setProducts} setReportUsername={setReportUsername} setNotifications={setNotifications} setCountInNotification={setCountInNotification} isTheUserSuspended={isTheUserSuspended} deadline={deadline}/>} />
+                <Route path="*" element={<Error404 />} />
+              </Routes>
+            </main>
             {!dashboard && products !== null ? <Footer /> : <></>}
           </EventHandler>
         </LoadingZone>

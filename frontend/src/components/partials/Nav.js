@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import Cookies from 'universal-cookie';
@@ -13,7 +13,6 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
     const [isOpenNoLogin, setIsOpenNotLogin] = useState(false);
     const [isOpenPlainNotification, setIsOpenPlainNotification] = useState(false);
     const [width, setWidth] = useState(window.innerWidth);
-    
 
     const navigate = useNavigate();
 
@@ -23,12 +22,9 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
 
     const changeWidth = () => setWidth(window.innerWidth);
 
-    useEffect(() => {
-        const obtainCountInformation = async () => {
+    const searchNotifications = useCallback(
+        async () => {
             const briefNotifications = await getNotifications(cookies.get('id'));
-            const briefMessages = await getUncheckedMessages(cookies.get('id'));
-
-            setCountInMessages(briefMessages.length);
 
             const currentNotification = [];
             let count = 0;
@@ -38,9 +34,24 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
 
             setCountInNotification(count);
             setNotifications(currentNotification);
+        },[setCountInNotification,setNotifications]
+    );
+
+    useEffect(() => {
+        socket.on('new_message', () => setCountInMessages(count => count + 1));
+        socket.on('received event', async () => await searchNotifications());
+
+        return (() => socket.off());
+    });
+
+    useEffect(() => {
+        const obtainCountInformation = async () => {
+            const briefMessages = await getUncheckedMessages(cookies.get('id'));
+            setCountInMessages(briefMessages.length);
+            searchNotifications()
         };
         obtainCountInformation();
-    }, [userInformation,setCountInMessages,setCountInNotification,setNotifications]);
+    }, [searchNotifications,auth,setCountInMessages]);
 
     useEffect(() => document.getElementById('search').value = search, [search]);
 
@@ -94,7 +105,7 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
 
     const logOut = () => {
         socket.emit('logout', cookies.get('id'));
-        cookies.remove('id');
+        cookies.remove('id',{ path: '/' });
         setAuth(false);
         setIsOpen(false);
         setUserInformation({});
@@ -110,9 +121,10 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
         <nav className="nav-container">
             <Link to="/" className="main-logo"><img src="/img/penssum-transparent.png" alt="icon-logo"/> Penssum</Link>
             <div className="search-provider" style={{ display: (isOpenSearch && width < 600) ? 'flex' : (width > 600) ? 'flex' : 'none' }}>
-                <input type="text" placeholder="Encuentra Profesores O Estudiantes" id="search" value={search} autoComplete="off" onChange={e => changeSearch(e)} />
+                <input type="text" placeholder={userInformation.objetive === 'Profesor' && auth ? "Encuentra Publicaciones" : "Encuentra Profesores"} id="search" value={search} autoComplete="off" onChange={e => changeSearch(e)} />
                 <select id="filter-city" defaultValue="ciudad" onChange={e => setFilterNav({ ...filterNav, city: e.target.value })}>
                     <option value="ciudad">Ciudad</option>
+                    <option value="ciudad">Cualquier ciudad</option>
                     <option value="Bogota">Bogota</option>
                     <option value="Valle del cauca">Valle del cauca</option>
                     <option value="Antioquia">Antioquia</option>
@@ -147,11 +159,22 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
                     <option value="Vaupes">Vaupes</option>
                     <option value="Vichada">Vichada</option>
                 </select>
-                <select id="filter-user" defaultValue="usuario" onChange={e => setFilterNav({ ...filterNav, user: e.target.value })}>
-                    <option value="usuario">Usuario</option>
-                    <option value="Profesor">Profesor</option>
-                    <option value="Alumno">Alumno</option>
-                </select>
+                {(userInformation.objetive === 'Alumno' || !auth) && (
+                    <select id="filter-user" defaultValue="classType" onChange={e => setFilterNav({ ...filterNav, classType: e.target.value })}>
+                        <option value="classType">Tipo de clases</option>
+                        <option value="virtual">Virtual</option>
+                        <option value="presencial">Presencial</option>
+                        <option value="classType">Ambos</option>
+                    </select>
+                )}
+                {userInformation.objetive === 'Profesor' && auth && (
+                    <select id="filter-user" defaultValue="Facultad" onChange={e => setFilterNav({ ...filterNav, category: e.target.value })}>
+                        <option value="categoria">Categoria</option>
+                        <option value="Virtual">Virtual</option>
+                        <option value="Presencial">Presencial</option>
+                        <option value="Ambos">Ambos</option>
+                    </select>
+                )}
             </div>
             <div className="nav-button-container">
                 {auth && userInformation.typeOfUser.user !== 'block' ?

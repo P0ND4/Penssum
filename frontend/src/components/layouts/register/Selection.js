@@ -34,7 +34,7 @@ function Selection({ userInformation, setUserInformation, setAuth, setRegistrati
             cookies.set('id', result._id, { path: '/' });
             setAuth(true);
             socket.emit('connected', result._id);
-            navigate(`/${userInformation.username}`);
+            navigate("/complete/information");
         } else { navigate('/signup/check/email') };
     };
 
@@ -47,7 +47,7 @@ function Selection({ userInformation, setUserInformation, setAuth, setRegistrati
                         <div className="selection">
                             <h1 className="selection-title">SELECCIONE EL TIPO DE USUARIO</h1>
                             <div className="card-selection-container">
-                                <CardSelection title="Estudiante" description="Busque a personas que enseñen lo que necesite." src="/img/illustration/client.svg" alt="Alumno" sendUserSelection={sendUserSelection} sendingInformation={sendingInformation}/>
+                                <CardSelection title="Estudiante" description="Busque a profesores que enseñen lo que necesite." src="/img/illustration/client.svg" alt="Alumno" sendUserSelection={sendUserSelection} sendingInformation={sendingInformation}/>
                                 <CardSelection title="Profesor" description="Publique sus servicios como profesor." src="/img/illustration/supplier.svg" alt="Profesor" sendUserSelection={sendUserSelection} sendingInformation={sendingInformation}/>
                             </div>
                         </div>

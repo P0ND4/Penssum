@@ -30,6 +30,8 @@ function Notifications() {
                                         <NotificationSection
                                             productId={notification.productId}
                                             username={notification.username}
+                                            firstName={notification.firstName}
+                                            lastName={notification.lastName}
                                             title={notification.title}
                                             creationDate={notification.creationDate}
                                             description={notification.description}

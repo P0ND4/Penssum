@@ -1,15 +1,15 @@
 import { changeDate } from '../helpers';
 import { Link } from 'react-router-dom';
 
-function NotificationSection({ productId, username, title, creationDate, description, files, admin }) {
+function NotificationSection({ productId, username, firstName, lastName, title, creationDate, description, files, admin }) {
     return (
         <section className="notification-section">
             <div className="notification-header">
                 {username !== 'Admin' 
-                    ? !admin ? <Link to={`/${username}`} className="notification-header-title"><h2>@{username}</h2></Link> : <a href={`http://localhost:3000/${username}`} className="notification-header-title" rel="noreferrer" target="_blank"><h2>@{username}</h2></a>  
+                    ? !admin ? <Link to={`/${username}`} className="notification-header-title"><h2>@{firstName ? `${firstName} .${lastName.slice(0,1)}` : username}</h2></Link> : <a href={`http://localhost:3000/${username}`} className="notification-header-title" rel="noreferrer" target="_blank"><h2>@{firstName ? `${firstName} .${lastName.slice(0,1)}` : username}</h2></a>  
                     : <h2 className="notification-header-title-admin">{username}</h2>}
                 <h4>{title}</h4>
-                <p>{changeDate(creationDate)}</p>
+                <p>{changeDate(creationDate,true)}</p>
             </div>
             <hr />
             <div className="notification-body">

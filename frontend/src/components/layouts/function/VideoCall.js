@@ -61,15 +61,15 @@ function VideoCall({ userInformation }) {
                 owner.current = product.owner;
                 setExists(true);
                 const user = await getOffer({ id_user: userInformation._id, id_product: product._id });
-                if (userInformation._id !== product.owner && (user.error || user.acceptOffer === false)) navigate('/');
+                if (userInformation._id !== product.owner && (user.error || user.acceptOffer === false) && product.takenBy !== userInformation._id) navigate('/');
             } else navigate('/');
         };
         videoCallValidation();
     },[userInformation,roomID,navigate]);
 
-    useEffect(() => {
-        socket.emit('user in room', roomID); 
+    useEffect(() => socket.emit('user in room', roomID),[roomID]);
 
+    useEffect(() => {
         socket.on('user error in videocall', () => {
             console.log('Usuario en videollamada');
         });
@@ -84,7 +84,9 @@ function VideoCall({ userInformation }) {
                 };
             };
 
-            const peers = peersRef.current.filter(peer => peer.peerID !== socketID);
+            const peers = peersRef.current.filter(peer => peer.userID !== socketID);
+
+            console.log(peers);
 
             setPeers(peers);
             peersRef.current.forEach((peer,index) => (peer.peerID === socketID) && peersRef.current.splice(index,1));
@@ -125,7 +127,7 @@ function VideoCall({ userInformation }) {
             });
             
             peer.on("signal", signal => {
-                socket.emit("sending signal", { 
+                socket.emit("sending signal", {
                     userToSignal, 
                     callerID, 
                     signal, 
@@ -340,7 +342,7 @@ function VideoCall({ userInformation }) {
                             )}
                             {peers.length > 0 
                                 ? peers.map((user, index) => (user.userID !== owner.current) && (
-                                        <div className="students-video" key={index}>
+                                        <div className="students-video" key={user.peerID}>
                                             {!user.media.video && <img src={(user.media.profilePicture === null || user.media.profilePicture === undefined) ? "/img/noProfilePicture.png" : user.media.profilePicture} alt="video call user" className="video_call-user-profile-image-students" referrerPolicy="no-referrer"/>}
                                             <Video peer={user.peer} hidden={user.media.video ? false : true} muted={user.media.audio ? false : true} />
                                             <p className="username-video_call-control">{user.names.username}</p>

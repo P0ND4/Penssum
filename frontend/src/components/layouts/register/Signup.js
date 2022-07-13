@@ -1,8 +1,8 @@
-import { useState, } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
-import GoogleLogin from 'react-google-login';
 import { createUser } from '../../../api';
+import jwt_decode from 'jwt-decode';
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
@@ -29,8 +29,10 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
 
     const navigate = useNavigate();
     
+    const buttonGoogle = useRef();
+
     const responseFacebook = async (response) => {
-        const username = response.name+'_'+response.email.slice(0,5)+`-${response.userID.charAt(response.userID.length - 1)}`;
+        const username = response.name.slice(0,2)+response.email.slice(0,2)+`${response.userID.charAt(response.userID.length - 1)}${Math.round(Math.random() * 1000)}`;
 
         const data = {
             username: username.replace(/ /g, ""),
@@ -55,38 +57,53 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
         };
     };
 
-    const responseGoogle = async (response) => {
-        const user = response.profileObj;
-        const username = user.givenName+user.givenName.slice(0,2)+'_'+user.email.slice(0,5)+`-${user.googleId.charAt(user.googleId.length - 1)}`;
+    const responseGoogle = useCallback(
+        async (response) => {
+            const user = jwt_decode(response.credential);
 
-        const data = {
-            firstName: user.givenName,
-            lastName:  user.familyName,
-            username: username.replace(/ /g, ""),
-            email: user.email,
-            password: user.googleId,
-            profilePicture: user.imageUrl,
-            registered: 'google'
-        };
+            const username = user.given_name.slice(0,2)+user.email.slice(0,2)+`${user.sub.charAt(user.sub.length - 1)}${Math.round(Math.random() * 1000)}`;
 
-        setSendingInformation(true);
-        const result = await createUser(data);
-        setSendingInformation(false);
+            const data = {
+                firstName: user.given_name,
+                lastName:  user.family_name,
+                username: username.replace(/ /g, ""),
+                email: user.email,
+                password: user.sub,
+                profilePicture: user.picture,
+                registered: 'google'
+            };
 
-        if (result.error) {
-            const error = document.querySelector('.register_error');
-            error.textContent = 'El usuario ya esta registrado, por favor inicie sesion.';
-            error.classList.add('showError');
-        } else {
-            setRegistrationProcess({ ...registrationProcess, selection: false });
-            cookies.set('id', result._id, { path: '/' });
-            setUserInformation(result);
-            navigate('/signup/selection'); 
-        };
-    };
+            setSendingInformation(true);
+            const result = await createUser(data);
+            setSendingInformation(false);
+
+            if (result.error) {
+                const error = document.querySelector('.register_error');
+                error.textContent = 'El usuario ya esta registrado, por favor inicie sesion.';
+                error.classList.add('showError');
+            } else {
+                setRegistrationProcess({ ...registrationProcess, selection: false });
+                cookies.set('id', result._id, { path: '/' });
+                setUserInformation(result);
+                navigate('/signup/selection'); 
+            }
+        },[navigate,setUserInformation,setRegistrationProcess,registrationProcess]
+    );
+
+    useEffect(() => {
+        window.google.accounts.id.initialize({
+            client_id: process.env.REACT_APP_GOOGLE_ID,
+            callback: responseGoogle
+        });
+
+        window.google.accounts.id.renderButton(buttonGoogle.current,{
+            theme: 'outline',
+            text: 'signup'
+        });
+    },[responseGoogle]);
 
     const signUpFormValidation = {
-        textLimit: /^[a-zA-Za]{0,16}$/,
+        textLimit: /^[a-zA-ZA-ÿ\u00f1\u00d1\s!:,.;]{0,16}$/,
         username: /^[a-zA-Z0-9_.+-]{3,16}$/,
         email: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/,
         password: /^.{6,30}$/
@@ -146,8 +163,8 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
         const targetName = e.target.name;
         const input = e.target;
 
-        if (targetName === "firstname") { validateField(signUpFormValidation.textLimit, input) };
-        if (targetName === "lastname") { validateField(signUpFormValidation.textLimit, input) };
+        if (targetName === "firstName") { validateField(signUpFormValidation.textLimit, input) };
+        if (targetName === "lastName") { validateField(signUpFormValidation.textLimit, input) };
         if (targetName === "username") { validateField(signUpFormValidation.username, input) };
         if (targetName === "email") { validateField(signUpFormValidation.email, input) };
         if (targetName === "password") { validateField(signUpFormValidation.password, input) };
@@ -155,8 +172,8 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
     };
 
     const validation = async () => {
-        setSendingInformation(true);
         if (field.firstName && field.lastName && field.username && field.email && field.password && field.repeatPassword) {            
+            setSendingInformation(true);
             const result = await createUser(data);
             if (result.error) {
                 setTimeout(() => {
@@ -173,7 +190,6 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
             };
         } else { 
             setTimeout(() => {
-                setSendingInformation(false);
                 document.querySelector(".field_fill_in_fields").classList.add('showError');
             },800);
         };
@@ -189,12 +205,12 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
                     <p className="field register_error" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}></p>
                     <div className="form-grid">
                         <div className="form-control">
-                            <input type="text" placeholder="Nombre (opcional)" name="firstname" onKeyUp={changeEvent} />
-                            <p className="field field_firstname">El nombre no puede superar los 16 caracteres tener numeros o contener simbolos extraños.</p>
+                            <input type="text" placeholder="Nombre (opcional)" name="firstName" onKeyUp={changeEvent} />
+                            <p className="field field_firstname">El nombre no puede superar los 16 caracteres ni tener numeros.</p>
                         </div>
                         <div className="form-control">
-                            <input type="text" placeholder="Apellido (opcional)" name="lastname" onKeyUp={changeEvent} />
-                            <p className="field field_lastname">El apellido no puede superar los 16 caracteres tener numeros o contener simbolos extraños.</p>
+                            <input type="text" placeholder="Apellido (opcional)" name="lastName" onKeyUp={changeEvent} />
+                            <p className="field field_lastname">El apellido no puede superar los 16 caracteres tener ni numeros.</p>
                         </div>
                         <div className="form-control">
                             <input type="text" placeholder="Nombre de usuario" name="username" onKeyUp={changeEvent} />
@@ -234,19 +250,14 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
                                 appId={process.env.REACT_APP_FACEBOOK_ID}
                                 autoLoad={false}
                                 fields="name,email,picture"
-                                callback={responseFacebook} 
+                                callback={responseFacebook}
+                                disableMobileRedirect={true}
                                 render={renderProps => (
-                                    <button id="signup-wity-facebook" onClick={renderProps.onClick}><img src="/img/icon/facebook_icon.svg" alt="facebook" className="facebook_icon" /> FACEBOOK</button>
+                                    <button id="signup-with-facebook" onClick={renderProps.onClick}><img src="/img/icon/facebook_icon.svg" alt="facebook" className="facebook_icon" /> FACEBOOK</button>
                                 )}/>
-                            <GoogleLogin
-                                clientId={process.env.REACT_APP_GOOGLE_ID}
-                                render={renderProps => (
-                                    <button id="signup-wity-google" onClick={renderProps.onClick} disabled={renderProps.disabled}><img src="/img/icon/google_icon.svg" alt="google" className="google_icon" /> GOOGLE</button>
-                                )}
-                                onSuccess={responseGoogle}
-                                onFailure={() => console.log('There is an error starting Google')}
-                                cookiePolicy={'single_host_origin'}
-                                />
+                            <div className="google-zone-form">
+                                <div ref={buttonGoogle}></div>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -260,27 +271,26 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
                         el uso adecuado, lea con atencion las
                         siguientes caracteristicas, una vez registrada la cuenta
                         podra hacer uso de las siguientes funcionalidades:
-                        <ul>
-                            <li>Tener perfil personalizable</li>
-                            <li>Podra comprar productos</li>
-                            <li>Podra publicar productos</li>
-                            <li>Podra tener acceso a videollamadas</li>
-                        </ul><br />
-                        Estas son algunas reglas que debe cumplir:
-                        <ul>
-                            <li>No esta permitido indicio de pornografia, juguetes sexuales, u otros</li>
-                            <li>Impuntualidad a la presentacion por videollamada</li>
-                            <li>No esta permitido las malas palabras, discriminacion, racismo, incitar al odio, palabras de doble sentido u otro en publicaciones</li>
-                        </ul><br />
-                        Algun incumplimiento de estas reglas pueden llevar a cabo las siguientes penalizaciones:
-                        <ul>
-                            <li>La advertencia por medio de la aplicacion</li>
-                            <li>La suspencion temporal</li>
-                            <li>El bloqueo permanente</li>
-                        </ul><br />
-
-                        Por favor siga las reglas con prudencia.
                     </p>
+                    <ul>
+                        <li>Tener perfil personalizable</li>
+                        <li>Podra comprar productos</li>
+                        <li>Podra publicar productos</li>
+                        <li>Podra tener acceso a videollamadas</li>
+                    </ul>
+                    <p>Estas son algunas reglas que debe cumplir: </p>
+                    <ul>
+                        <li>No esta permitido indicio de pornografia, juguetes sexuales, u otros</li>
+                        <li>Impuntualidad a la presentacion por videollamada</li>
+                        <li>No esta permitido las malas palabras, discriminacion, racismo, incitar al odio, palabras de doble sentido u otro en publicaciones</li>
+                    </ul>
+                    <p>Algun incumplimiento de estas reglas pueden llevar a cabo las siguientes penalizaciones: </p>
+                    <ul>
+                        <li>La advertencia por medio de la aplicacion</li>
+                        <li>La suspencion temporal</li>
+                        <li>El bloqueo permanente</li>
+                    </ul>
+                    <p>Por favor siga las reglas con prudencia.</p>
                 </div>
             </div>
         </div>

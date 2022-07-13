@@ -17,7 +17,7 @@ function PreferencePrivacy(data) {
         
         buttonToggleEvent ? buttonToggle.classList.add('button-animated-active') : buttonToggle.classList.remove('button-animated-active');
         buttonToggleEvent ? stateSpan.textContent = 'Activado' : stateSpan.textContent = 'Desactivado';
-        buttonToggleEvent ? stateSpan.style.color = '#3282B8' : stateSpan.style.color = '#e82626';
+        buttonToggleEvent ? stateSpan.style.color = '#3282B8' : stateSpan.style.color = '#283841';
     });
 
     const changeValue = async () => {

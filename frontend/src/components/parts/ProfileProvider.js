@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getVote } from '../../api';
 import { Link } from 'react-router-dom';
+import { thousandsSystem } from '../helpers';
 
 function ProfileProvider(data) {
     const [score,setScore] = useState({ votes: 0, count: 0 });
@@ -19,7 +20,7 @@ function ProfileProvider(data) {
 
     return (
         <Link className="profile_provider" to={`/${data.link}`} style={{ background: `linear-gradient(45deg, #1B262Cbb,#0F4C7588), url(${data.coverImage})` }}>
-            <img src={data.profileImage} className="profile_provider-image" alt="profile_provider" />
+            <img src={data.profileImage} className="profile_provider-image" referrerPolicy="no-referrer" alt="profile_provider" />
             <div className="profile_provider-data">
                 <div className="profile_provider-name-and-description">
                     <h1 className="profile_provider-name">{data.name}</h1>
@@ -34,6 +35,7 @@ function ProfileProvider(data) {
                         <i className="fas fa-star" style={{ color: Math.round(score.votes) === 2 || Math.round(score.votes) === 5 || Math.round(score.votes) === 4 || Math.round(score.votes) === 3 ? '#fbff00' : ''  }}></i>
                         <i className="fas fa-star" style={{ color: Math.round(score.votes) === 1 || Math.round(score.votes) === 5 || Math.round(score.votes) === 4 || Math.round(score.votes) === 3 || Math.round(score.votes) === 2 ? '#fbff00' : ''  }}></i>
                     </div>
+                    <p className="value-per-hour-found-user">Valor por hora: <span>{data.valuePerHour ? `$${thousandsSystem(data.valuePerHour)}` : ''}</span></p>
                 </div>
             </div>
         </Link>

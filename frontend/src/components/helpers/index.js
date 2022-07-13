@@ -16,22 +16,33 @@ export const definePhoto = (files) => {
 
 export const socketio = API => io(API);
 
-export const changeDate = date => {
+export const changeDate = (date,full) => {
     const currentDate = new Date(date);
     let day = currentDate.getDate();
     let month = currentDate.getMonth();
     let year = currentDate.getFullYear();
+    let hours = currentDate.getHours();
+    let minutes = currentDate.getMinutes();
+    let seconds = currentDate.getSeconds();
+
+    let time = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+
+    minutes = minutes < 10 ? `0${minutes}` : minutes
+    seconds = seconds < 10 ? `0${seconds}` : seconds
 
     if (day < 10) day = `0${day}`;
     if (month < 10) month = `0${month}`;
 
-    return `${day}-${month}-${year}`;
+
+    return `${day}-${month}-${year} ${full ? `${hours}:${minutes}:${seconds} ${time}` : ''}`;
 };
 
 export const fileEvent = {
     insertFiles: async (files, editing, obtainedFiles, setObtainedFiles) => {
         const formData = new FormData();
-        for (let i = 0; i < files.length; i++) { formData.append('files', files[i]) };
+        for (const file of files) formData.append('productFiles', file);
         const result = await fileSelection(formData);
 
         if (!editing) setObtainedFiles(result.successfulFiles)
@@ -77,6 +88,12 @@ export const fileEvent = {
     }
 };
 
+export const thousandsSystem = (num) => {
+    num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1.');
+    num = num.split('').reverse().join('').replace(/^[.]/,'');
+    return num;
+};
+
 export const getRemainTime = (deadline) => {
     const now = new Date();
     const remainTime = (new Date(deadline) - now + 1000) / 1000;
@@ -93,3 +110,83 @@ export const getRemainTime = (deadline) => {
         remainDays
     };
 };
+
+export const verificationOfInformation = (typeOfUser,userInformation) => {
+    if (typeOfUser === 'Profesor') {
+        if (userInformation.firstName &&
+            userInformation.secondName &&
+            userInformation.lastName &&
+            userInformation.secondSurname &&
+            userInformation.originalDescription &&
+            userInformation.identification &&
+            userInformation.phoneNumber &&
+            userInformation.valuePerHour) return true
+        else return false
+    };
+
+    if (typeOfUser === 'Alumno') {
+        if (userInformation.firstName &&
+            userInformation.lastName &&
+            userInformation.phoneNumber) return true
+        else return false
+    };
+
+    return { error: true, type: 'You need a typeOfUser' };
+};
+
+export const randomName = (repeat,options) => {
+    const possibleGlobal = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
+
+    if (options === undefined || Object.keys(options).length === 0) {
+        let stringRandom = '';
+        for (let i = 0; i < repeat; i++) {
+            stringRandom += possibleGlobal.charAt(Math.floor(Math.random() * possibleGlobal.length));
+        };
+        return stringRandom;
+    } else {
+        const { Number, String, Letters, Signs } = options;
+
+        let possible = '';
+
+        if (Number) possible += '1234567890';
+        if (String && Letters === 'both') possible += 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        if (String && Letters === 'lowercase') possible += 'abcdefghijklmnopqrstuvwxyz';
+        if (String && Letters === 'uppercase') possible += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (Signs) possible += '!@#$%^&*()_+=-[]{}|/~';
+
+        if (possible === '') possible = possibleGlobal;
+
+        let stringRandom = '';
+
+        for (let i = 0; i < repeat; i++) {
+            stringRandom += possible.charAt(Math.floor(Math.random() * possible.length));
+        };
+        return stringRandom;
+    }
+};
+
+export const defineName = (foundUserInformation,complete) => {
+        if (complete) {
+            if (foundUserInformation.firstName === '' && foundUserInformation.lastName === '') {
+                return foundUserInformation.username;
+            } else {
+                return `${foundUserInformation.firstName} ${foundUserInformation.lastName}`
+            }
+        }
+
+        if (foundUserInformation.firstName === '' && foundUserInformation.secondName === '' && foundUserInformation.lastName === '' && foundUserInformation.secondSurname === '') {
+            return foundUserInformation.username;
+        } else {
+            if (foundUserInformation.objetive === 'Alumno') {
+                if (foundUserInformation.firstName !== undefined) return `${foundUserInformation.firstName}`
+                else return `${foundUserInformation.username}`;
+            } else if (foundUserInformation.firstName !== undefined && foundUserInformation.secondName !== undefined && foundUserInformation.lastName !== undefined && foundUserInformation.secondSurname !== undefined) {
+                return `
+                    ${foundUserInformation.firstName !== '' ? foundUserInformation.firstName : ''} 
+                    ${foundUserInformation.secondtName !== '' ? foundUserInformation.secondName : ''}
+                    ${foundUserInformation.lastName !== '' ? foundUserInformation.lastName : ''} 
+                    ${foundUserInformation.secondSurname !== '' ? foundUserInformation.secondSurname : ''}  
+                `;
+            };
+        };
+    };

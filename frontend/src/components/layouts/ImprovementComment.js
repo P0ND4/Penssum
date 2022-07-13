@@ -22,20 +22,23 @@ function ImprovementComment({ obtainedFiles, setObtainedFiles }) {
     };
 
     const uploadFiles = async (files) => {
-        const errorHandler = document.querySelector('.publish_error_handler');
-        errorHandler.classList.remove('showError');
-        errorHandler.textContent = '';
+        if (files.length > 0) {
+            const errorHandler = document.querySelector('.publish_error_handler');
+            errorHandler.classList.remove('showError');
+            errorHandler.textContent = '';
 
+            setSendingInformation(true);
+            const result = await fileEvent.uploadFiles(files, 6, obtainedFiles, setObtainedFiles);
+            setSendingInformation(false);
 
-        const result = await fileEvent.uploadFiles(files, 6, obtainedFiles, setObtainedFiles);
-
-        if (result.error) {
-            if (result.type === 'Exceeds the number of files allowed') {
-                errorHandler.textContent = 'Solo se acepta un maximo de 6 archivos.';
-                errorHandler.classList.add('showError');
-            } else if (result.type === 'some files were not uploaded becuase they break file rules') {
-                errorHandler.innerHTML = `Algunos archivos no fueron subidos.`;
-                errorHandler.classList.add('showError');
+            if (result.error) {
+                if (result.type === 'Exceeds the number of files allowed') {
+                    errorHandler.textContent = 'Solo se acepta un maximo de 6 archivos.';
+                    errorHandler.classList.add('showError');
+                } else if (result.type === 'some files were not uploaded becuase they break file rules') {
+                    errorHandler.innerHTML = `Algunos archivos no fueron subidos.`;
+                    errorHandler.classList.add('showError');
+                };
             };
         };
     };
@@ -136,7 +139,15 @@ function ImprovementComment({ obtainedFiles, setObtainedFiles }) {
                             )}
                         </div>
                         <div className="form-control">
-                            <label htmlFor="search-image-video-to-improve" className="search-image-video-in-improvementComment">Agregar captura de pantalla foto (recomendado)</label>
+                            <label  
+                                className="search-image-video-in-improvementComment"
+                                htmlFor={!sendingInformation ? "search-image-video-to-improve" : ""}
+                                style={{ 
+                                    background: sendingInformation ? '#3282B8' : '', 
+                                    opacity: sendingInformation ? '.4' : '', 
+                                    cursor: sendingInformation ? 'not-allowed' : '' 
+                                }}
+                            >Agregar captura de pantalla foto (recomendado)</label>
                             <input type="file" id="search-image-video-to-improve" multiple hidden onChange={e => uploadFiles(e.target.files)} />
                         </div>
                         <p className="improve-opinion">

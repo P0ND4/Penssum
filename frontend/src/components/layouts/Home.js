@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { changeDate } from '../helpers';
+import { Link, useNavigate } from 'react-router-dom';
+import swal from 'sweetalert';
+import { changeDate, verificationOfInformation } from '../helpers';
 
 import CoverImageInformation from '../parts/CoverImageInformation';
 import Product from '../parts/Product';
 
-function Main({ username, products, auth, productsToPut, userErrorHandler, isTheUserSuspended }) {
+function Main({ userInformation, username, products, auth, productsToPut, userErrorHandler, isTheUserSuspended }) {
     const [position, setPosition] = useState(0);
     const [productLimit, setProductLimit] = useState(false);
+
+    const navigate = useNavigate();
 
     let productCount = useRef(0).current;
 
@@ -43,6 +46,17 @@ function Main({ username, products, auth, productsToPut, userErrorHandler, isThe
 
     useEffect(() => putPost(20), [putPost, products]);
 
+    const checkAuth = typeOfButton => {
+        if (!auth) {
+            swal({
+                title: 'No estas registrado',
+                text: typeOfButton === 'quote' ? 'Para enviar una actividad necesitas tener una cuenta como PROFESOR ¿quieres crear una cuenta?' : 'Para hacer una publicación necesitas tener una cuenta como Alumno ¿quieres crear una cuenta?',
+                icon: 'info',
+                buttons: ['No', 'Si']
+            }).then(res => res && navigate("/signup"));
+        } else navigate(verificationOfInformation(userInformation.objetive,userInformation) ? typeOfButton === 'quote' ? '/send/quote' : '/post/activity' : '/complete/information');
+    };
+
     return (
         <div>
             <header className="main-home-carousel">
@@ -55,7 +69,7 @@ function Main({ username, products, auth, productsToPut, userErrorHandler, isThe
                                             category={product.category}
                                             customCategory={product.customCategory}
                                             dateOfDelivery={product.dateOfDelivery === null ? 'Indefinido' : changeDate(product.dateOfDelivery)}
-                                            value={product.value === null ? 'Negociable' : `${product.value}$`}
+                                            value={product.valueNumber === 0 ? 'Negociable' : `$${product.valueString}`}
                                             description={product.description}
                                             votes={product.votes}
                                         />
@@ -80,21 +94,15 @@ function Main({ username, products, auth, productsToPut, userErrorHandler, isThe
                         <div className="carousel-image" style={{ background: `linear-gradient(45deg, #1B262Cbb,#2c373ddd), url("/img/Penssum-cover.jpeg")` }}>
                             <div className="main-image-info-no-products">
                                 <h1 className="title-carousel">Penssum</h1>
-                                <p className="carousel-image-description">
-                                    Somos una plataforma de comercio electronico basado en ofertas y contraofertas,
-                                    nuestro principal objetivo es dar la mayor facilidad y calidad a nuestros usuarios
-                                    de poder conseguir a los mejores profesores del mundo, consiga los mejores precios
-                                    en nuestra plataforma, todas sus dudas pueden ser respondidas por profesores en un ambito
-                                    profesional en el area, disfrute del uso completo de nuestra aplicacion web.
-                                </p>
+                                <p className="carousel-image-description">Penssum es una plataforma de asistencia académica, que permite a los estudiantes conectarse con los mejores docentes en soluciones inmediatas a las actividades diarias currículares más exigentes, es el mejor aliado estratégico para fortalecer y obtener conocimientos y las mejores calificaciones de una manera fácil ágil y segura.</p>
                             </div>
                         </div>
                     )}
             </header>
             {!userErrorHandler && !isTheUserSuspended && (
                 <div className="home-events-button-container">
-                    {(products.length > 0) ? <Link to={auth ? `/post/activity` : '/signin'} className="home-events-button">Crea una publicacion</Link> : <></>}
-                    {(products.length > 0) ? <Link to={auth ? '/send/quote' : '/signin'} className="home-events-button">Enviar una cotizacion</Link> : <></>}
+                    {(products.length > 0) ? (!auth || (userInformation && userInformation.objetive !== 'Profesor')) && <button onClick={() => checkAuth('activity')} className="home-events-button">Crea una publicacion</button> : <></>}
+                    {(products.length > 0) ? (!auth || (userInformation && userInformation.objetive !== 'Alumno')) && <button onClick={() => checkAuth('quote')} className="home-events-button">Enviar una actividad</button> : <></>}
                 </div>
             )}
             {!userErrorHandler && (
@@ -102,8 +110,8 @@ function Main({ username, products, auth, productsToPut, userErrorHandler, isThe
                     ? <></>
                     : <div className="thereAreNoProducts-container">
                         <div className="thereAreNoProducts">
-                            <h1>NO HAY PRODUCTOS</h1>
-                            <Link to={username === undefined ? '/signin' : `/post/activity`} className="button-thereAreNoProducts">SE EL PRIMERO EN CREAR TU SERIVICIO</Link>
+                            <h1>Aún no hay publicación</h1>
+                            {userInformation.objetive !== 'Profesor' && <Link to={username === undefined ? '/signin' : verificationOfInformation(userInformation.objetive,userInformation) ? `/post/activity` : "/complete/information"} className="button-thereAreNoProducts">SE EL PRIMERO EN CREAR UNA</Link>}
                         </div>
                     </div>
             )}
@@ -122,7 +130,7 @@ function Main({ username, products, auth, productsToPut, userErrorHandler, isThe
                                             category: product.subCategory,
                                             title: product.title,
                                             description: product.description.slice(0, 40) + '...',
-                                            price: product.value === null ? 'Negociable' : `${product.value}$`
+                                            price: product.valueNumber
                                         }}
                                     />
                                 </div>

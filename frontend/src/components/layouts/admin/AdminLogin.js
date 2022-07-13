@@ -9,6 +9,7 @@ function AdminLogin({ setDashboard }) {
         password: '',
         keyword: ''
     });
+    const [sendingInformation,setSendingInformation] = useState(false);
 
     const navigate = useNavigate();
 
@@ -19,7 +20,9 @@ function AdminLogin({ setDashboard }) {
         if (data.email === '' || data.password === '' || data.keyword === '') {
             document.querySelector('.field_error_fill_field').classList.add('showError');
         } else {
+            setSendingInformation(true);
             const checkInformation = await checkAdminInformation({ security: 2, data });
+            setSendingInformation(false);
 
             if (!checkInformation.error) {
                 setDashboard(true);
@@ -70,19 +73,26 @@ function AdminLogin({ setDashboard }) {
                     <p className="field login_error_admin" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}>Correo o contraseña invalida</p>
                     <div className="form-container">
                         <div className="form-control">
-                            <input type="email" placeholder="Correo" name="email" onChange={e => setData({ ...data, email: e.target.value })} autoComplete="off" />
+                            <input type="email" placeholder="Correo" name="email" onChange={e => setData({ ...data, email: e.target.value.trim() })} autoComplete="off" />
                         </div>
                         <div className="form-control">
                             <input type="password" placeholder="Contraseña" name="password" onChange={e => setData({ ...data, password: e.target.value })} autoComplete="off" />
                         </div>
                         <div className="form-control">
-                            <input type="text" placeholder="Palabra clave" name="keyword" onChange={e => setData({ ...data, keyword: e.target.value })} autoComplete="off" />
+                            <input type="text" placeholder="Palabra clave" name="keyword" onChange={e => setData({ ...data, keyword: e.target.value.trim() })} autoComplete="off" />
                         </div>
                     </div>
                     {/*<p className="attempts-available">Intentos disponibles: <span>3</span></p>*/}
                     <p className="field field_error_fill_field">Rellene todos los campos.</p>
                     <div className="form-control">
-                        <button id="signin-admin-button" onClick={() => validate()}>Ingresar</button>
+                        <button 
+                            id="signin-admin-button"
+                            style={{ 
+                                background: sendingInformation ? '#3282B8' : '', 
+                                opacity: sendingInformation ? '.4' : '', 
+                                cursor: sendingInformation ? 'not-allowed' : '' 
+                            }} 
+                            onClick={() => { if (!sendingInformation) validate() }}>Ingresar</button>
                     </div>
                 </form>
             </div>

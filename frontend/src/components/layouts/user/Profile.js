@@ -9,12 +9,13 @@ import {
     socket, 
     reviewBlocked, 
     removeBlock, 
-    filterProducts, 
+//   filterProducts, 
     getNotifications,
     getTransaction,
-    getVote
+    getVote,
+    getOffer
 } from '../../../api';
-import { changeDate } from '../../helpers';
+import { changeDate, thousandsSystem, verificationOfInformation, defineName } from '../../helpers';
 import getCroppedImg from '../../parts/user/cropImage';
 import Cropper from 'react-easy-crop'
 import swal from 'sweetalert';
@@ -40,11 +41,14 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
         amount: 0
     });
     const [informationIsActivated, setInformationIsActivated] = useState(false);
-    const [filter, setFilter] = useState({
+    const [tasksTaken,setTasksTaken] = useState(0);
+    /*const [filter, setFilter] = useState({
         mainCategory: 'category',
         mainSubcategory: 'subcategory'
-    });
+    });*/
     const [score,setScore] = useState({ votes: 0, count: 0 });
+    const [zone,setZone] = useState('tasks');
+    const [moneyHandler,setMoneyHandler] = useState(0);
 
     const { username } = useParams();
     const navigate = useNavigate();
@@ -71,21 +75,58 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
 
     useEffect(() => {
         const getUserParams = async () => {
-            const user = await getUser({ username });
-            const userProducts = await getProducts({ username });
-            const userTransaction = await getTransaction({ userID: cookies.get('id') });
-            if (user.error) return navigate('/');
-            if (!userTransaction.error) {
-                setUserTransaction({
-                    transaction: true,
-                    amount: userTransaction.amount
-                });
-            };
-            setFoundUserInformation(user);
-            setUserProducts(userProducts);
+            if (!userProducts) {
+                const user = await getUser({ username });
+                let userProducts;
+                if (user.objetive === 'Profesor') {
+                    userProducts = await getProducts({ tasks: user._id });
+
+                    for (let i = 0; i < userProducts.length; i++) {
+                        let amount = 0;
+
+                        if (userProducts[i].paymentRequest.active) {
+                            const result = await getOffer({ id_user: user._id, id_product: userProducts[i]._id });
+                            if (!result.error) {
+                                amount += result.amountNumber;
+                                setMoneyHandler(amount)
+                            } else {
+                                amount += userProducts[i].valueNumber;
+                                setMoneyHandler(amount);
+                            };
+                        };
+                    };
+
+                    setTasksTaken(userProducts.length);
+                } else userProducts = await getProducts({ username });
+                const userTransaction = await getTransaction({ userID: cookies.get('id') });
+                if (user.error) return navigate('/');
+                if (!userTransaction.error) {
+                    setUserTransaction({
+                        transaction: true,
+                        amount: userTransaction.amount
+                    });
+                };
+                setFoundUserInformation(user);
+                setUserProducts(userProducts);
+            } 
         };
         getUserParams()
-    }, [navigate, username]);
+    }, [navigate, username, foundUserInformation, userProducts]);
+
+    useEffect(() => {
+        const searchProducts = async () => {
+            if (zone === 'tasks') {
+                const products = await getProducts({ tasks: userInformation._id });
+                setUserProducts(products);
+            };
+
+            if (zone === 'created') {
+                const products = await getProducts({ username });
+                setUserProducts(products);
+            };
+        };
+        searchProducts();
+    },[zone,userInformation,username]);
 
     useEffect(() => {
         const watchLock = async () => {
@@ -105,12 +146,13 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                         }).then(async res => {
                             if (res) {
                                 await removeBlock({ from: id, to: foundUserInformation._id });
-                                socket.emit('received event', foundUserInformation._id);
                                 setIsBlocked({ blocked: false, userView: null });
 
                                 const products = await getProducts({ blockSearch: id });
                                 setProducts(products);
                                 const briefNotifications = await getNotifications(cookies.get('id'));
+                                socket.emit('unlocked', { userID: foundUserInformation._id, from: userInformation._id });
+                                socket.emit('received event', foundUserInformation._id);
 
                                 const currentNotification = [];
                                 let count = 0;
@@ -127,24 +169,7 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
             }
         };
         watchLock();
-    }, [foundUserInformation, setProducts, setCountInNotification, setNotifications]);
-
-    const nameEvent = () => {
-        if (foundUserInformation.firstName === '' && foundUserInformation.secondName === '' && foundUserInformation.lastName === '' && foundUserInformation.secondSurname === '') {
-            return foundUserInformation.username;
-        } else {
-            if (foundUserInformation.firstName !== undefined && foundUserInformation.secondName !== undefined && foundUserInformation.lastName !== undefined && foundUserInformation.secondSurname !== undefined) {
-                return `
-                    ${foundUserInformation.firstName !== '' ? foundUserInformation.firstName : ''} 
-                    ${foundUserInformation.secondtName !== '' ? foundUserInformation.secondName : ''}
-                    ${foundUserInformation.lastName !== '' ? foundUserInformation.lastName : ''} 
-                    ${foundUserInformation.secondSurname !== '' ? foundUserInformation.secondSurname : ''}  
-                `;
-            } else {
-                return <Loading margin="auto" />;
-            };
-        };
-    };
+    }, [foundUserInformation, setProducts, setCountInNotification, setNotifications, userInformation]);
 
     const getNotificationsInProfile = async () => {
         const briefNotifications = await getNotifications(cookies.get('id'));
@@ -168,7 +193,6 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
         }).then(async res => {
             if (res) {
                 const result = await blockUser({ from, to });
-
                 socket.emit('received event', to);
 
                 if (!result.error) {
@@ -221,8 +245,6 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                     timer: '2000',
                     button: false
                 });
-
-                socket.emit('received event', receiver);
             };
         });
     };
@@ -286,7 +308,7 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
         document.querySelector('body').style.overflow = 'auto';
     };
 
-    const searchByFilter = async e => {
+    /*const searchByFilter = async e => {
         document.getElementById("subcategory-secondary").value = '';
 
         setFilter({
@@ -300,6 +322,17 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
             subCategory: (e.target.name === 'mainSubcategory') ? e.target.value : filter.mainSubcategory
         });
         setUserProducts(products);
+    };*/
+
+    const checkAuth = typeOfButton => {
+        if (!auth) {
+            swal({
+                title: 'No estas registrado',
+                text: typeOfButton === 'quote' ? 'Para enviar una actividad necesitas tener una cuenta como PROFESOR ¿quieres crear una cuenta?' : 'Para hacer una publicación necesitas tener una cuenta como Alumno ¿quieres crear una cuenta?',
+                icon: 'info',
+                buttons: ['No', 'Si']
+            }).then(res => res && navigate("/signup"));
+        } else navigate(verificationOfInformation(userInformation.objetive,userInformation) ? typeOfButton === 'quote' ? '/send/quote' : '/post/activity' : '/complete/information');
     };
 
     return userProducts !== null && (isBlocked.blocked !== null || !auth) && foundUserInformation !== null ? 
@@ -313,9 +346,12 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                                 <img src={(foundUserInformation.profilePicture === null || foundUserInformation.profilePicture === undefined) ? "/img/noProfilePicture.png" : foundUserInformation.profilePicture} className="profile-picture" referrerPolicy="no-referrer" alt="imagen de perfil" />
                             </div>
                             {mainUsername !== username && auth && !isBlocked.blocked && (
-                                <div className="user-option-icon">
-                                    <i className="fas fa-ban" title="Bloquear" onClick={() => block(cookies.get('id'), foundUserInformation._id)}></i>
-                                    <i className="fas fa-paper-plane" title="Enviar mensaje" onClick={() => sendMessage(cookies.get('id'), foundUserInformation._id)}></i>
+                                <div className="user-option-icon" style={{ 
+                                    justifyContent: ((foundUserInformation.objetive === 'Alumno' && userInformation.objetive === 'Alumno') || (foundUserInformation.objetive === 'Profesor' && userInformation.objetive === 'Profesor')) ? 'center' : '',
+                                    width: ((foundUserInformation.objetive === 'Alumno' && userInformation.objetive === 'Alumno') || (foundUserInformation.objetive === 'Profesor' && userInformation.objetive === 'Profesor')) ? '60px' : ''
+                                }}>
+                                    {((foundUserInformation.objetive === 'Profesor' && userInformation.objetive === 'Alumno') || (foundUserInformation.objetive === 'Alumno' && userInformation.objetive === 'Profesor')) && <i className="fas fa-ban" title="Bloquear" onClick={() => block(cookies.get('id'), foundUserInformation._id)}></i>}
+                                    {((foundUserInformation.objetive === 'Profesor' && userInformation.objetive === 'Alumno') || (foundUserInformation.objetive === 'Alumno' && userInformation.objetive === 'Profesor')) && <i className="fas fa-paper-plane" title="Enviar mensaje" onClick={() => sendMessage(cookies.get('id'), foundUserInformation._id)}></i>}
                                     <i className="fas fa-exclamation-triangle" title="Reportar usuario" onClick={() => {
                                         setReportUsername(username);
                                         navigate('/report');
@@ -350,9 +386,8 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                             {!isBlocked.blocked &&
                                 (
                                     <div className="profile-description-control">
-                                        <h1 className="profile-username">{nameEvent()}</h1>
-                                        <p className="profile-description">{foundUserInformation.description}</p>
-                                        {(mainUsername === username && userTransaction.transaction) && <p className="profile-money-pit">Dinero retenido: <span>{userTransaction.amount}$</span></p>}
+                                        <h1 className="profile-username">{defineName(foundUserInformation)}</h1>
+                                        <p className="profile-description">{foundUserInformation.originalDescription}</p>
                                     </div>
                                 )}
                             {!isBlocked.blocked &&
@@ -376,13 +411,16 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                         <section>
                             <p>Tipo de usuario: {foundUserInformation.objetive}</p>
                             <p>Ciudad: {foundUserInformation.city === null || foundUserInformation.city === '' ? 'Indefinido' : foundUserInformation.city}</p>
-                            <p>Años de experiencia: {foundUserInformation.yearsOfExperience === null || foundUserInformation.yearsOfExperience === '' ? 'Indefinido' : foundUserInformation.yearsOfExperience}</p>
+                            {foundUserInformation.objetive === 'Profesor' && <p>Años de experiencia: {foundUserInformation.yearsOfExperience === null || foundUserInformation.yearsOfExperience === '' ? 'Indefinido' : foundUserInformation.yearsOfExperience}</p>}
                             <p>Disponibilidad de clases virtuales: {foundUserInformation.virtualClasses === false ? 'No' : 'Si'}</p>
                             <p>Disponibilidad de clases presenciales: {foundUserInformation.faceToFaceClasses === false ? 'No' : 'Si'}</p>
+                            {foundUserInformation.objetive === 'Profesor' && <p>Facultad: {foundUserInformation.faculties.length === 0 ? 'No definido' : foundUserInformation.faculties[0]}</p>}
+                            {foundUserInformation.objetive === 'Profesor' && <p>Asignatura: {foundUserInformation.subjects.length === 0 ? 'No definido' : foundUserInformation.subjects[0]}</p>}
+                            <p>Fecha de creacion: {changeDate(foundUserInformation.creationDate,true)}</p>
                         </section>
                     </div>
                     {!isBlocked.blocked && (
-                        <i className="fa-solid fa-circle-exclamation view-user-information" title="Ver mas informacion" onClick={() => {
+                        <span className="show-more-information" title="Ver mas informacion" onClick={() => {
                             if (!informationIsActivated) {
                                 userProfile.current.style.transform = 'scaleY(0)'
                                 userInformationDetails.current.style.transform = 'scaleY(1)';
@@ -394,7 +432,10 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                             };
 
                             setInformationIsActivated(!informationIsActivated);
-                        }}></i>
+                        }}>
+                            <i className="fa-solid fa-circle-exclamation view-user-information"></i>
+                            <p>Mas información</p>
+                        </span>
                     )}
                     {mainUsername === username ? <label htmlFor="change-profile-picture" className="edit-user-cover-photo" title="Edita la foto de portada" ref={changePhotoToCover} onClick={() => setPhotoType('cover')}><i className="fa fa-pencil"></i> <p>Editar foto de portada</p></label> : ''}
                     {mainUsername === username ? <input ref={searchPhoto} type="file" accept="image/*" id="change-profile-picture" hidden onChange={e => uploadedImage(e.target.files[0], photoType)} /> : ''}
@@ -422,10 +463,22 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                         </div>
                     </section>
                 )}
+                {auth && !isTheUserSuspended && userTransaction.transaction && (
+                    <div className="profile-money-container">
+                        {(mainUsername === username && moneyHandler !== 0) && <p className="profile-money-on-hold">Dinero en espera: <span>${thousandsSystem(moneyHandler)}</span></p>}
+                        {(mainUsername === username && userTransaction.transaction) && <p className="profile-money-pit">Dinero retenido: <span>${thousandsSystem(userTransaction.amount)}</span></p>}
+                        {(mainUsername === username && userTransaction.transaction && moneyHandler !== 0) && <p className="profile-money-total">Dinero total: <span>${thousandsSystem(userTransaction.amount + moneyHandler)}</span></p>}
+                    </div>
+                )}
+                {!verificationOfInformation(userInformation.objetive,userInformation) && mainUsername === username && (
+                    <section className="complete-information">
+                        <p><i className="fa-solid fa-circle-exclamation"></i> Necesitas completar tu informacion como {userInformation.objetive}, <Link to="/complete/information">Completar informacion</Link></p>
+                    </section>
+                )}
                 {!isBlocked.blocked
                     ? (
                         <div className="profile-business-hours-for-mobile">
-                            <h1 className="business-hours-title">Horario De Atencion</h1>
+                            <h1 className="business-hours-title">{foundUserInformation.objetive === 'Profesor' ? 'Horario De Atención' : 'Días Disponible' }</h1>
                             <div className="weeksdays-container">
                                 <p className={foundUserInformation.availability.monday ? "day-active" : ''}>Lunes</p>
                                 <p className={foundUserInformation.availability.tuesday ? "day-active" : ''}>Martes</p>
@@ -441,24 +494,24 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                     <section className="filter-container">
                         {!isBlocked.blocked && (
                             <div className="profile-options">
-                                {(foundUserInformation.showMyNumber && foundUserInformation.phoneNumber !== null)
+                                {(auth && foundUserInformation.showMyNumber && foundUserInformation.phoneNumber !== null)
                                     ? <div id="profile-phone-number">{foundUserInformation.phoneNumber}</div>
                                     : ''}
-                                {mainUsername === username && !isTheUserSuspended ? <Link to="/post/activity"><button id="create-post">Crear una publicacion</button></Link> : ''}
-                                {!isTheUserSuspended && <Link to={auth ? '/send/quote' : '/signin'} style={{ textDecoration: 'none' }}><button id="send-quote">Enviar cotizacion</button></Link>}
+                                {mainUsername === username && !isTheUserSuspended && userInformation.objetive !== 'Profesor' && <button id="create-post" onClick={() => checkAuth('activity')}>Crear una publicacion</button>}
+                                {!isTheUserSuspended && userInformation.objetive !== 'Alumno' && <button id="send-quote" onClick={() => checkAuth('quote')}>Enviar actividad</button>}
                             </div>
                         )}
                         {!isBlocked.blocked && (
                             <div className="profile-filter">
-                                <select id="main-category" defaultValue={filter.mainCategory} name="mainCategory" onChange={e => searchByFilter(e)}>
+                                {/*<select id="main-category" defaultValue={filter.mainCategory} name="mainCategory" onChange={e => searchByFilter(e)}>
                                     <option value="category">CATEGORIA</option>
                                     <option value="Resolver">RESOLVER...</option>
                                     <option value="Explicar">EXPLICAR...</option>
                                     <option value="Tutoria">TUTORIA...</option>
                                     <option value="Curso">CURSO...</option>
                                     <option value="Otros">OTROS</option>
-                                </select>
-                                <select id="main-subcategory" defaultValue={filter.subCategory} name="mainSubcategory" onChange={e => searchByFilter(e)}>
+                                </select>*/}
+                                {/*<select id="main-subcategory" defaultValue={filter.subCategory} name="mainSubcategory" onChange={e => searchByFilter(e)}>
                                     <option value="subcategory">SUBCATEGORIA</option>
                                     <option value="Facultad ingenieria">FACULTAD INGENIERIA</option>
                                     <option value="Facultad arquitectura">FACULTAD ARQUITECTURA</option>
@@ -476,8 +529,8 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                                     <option value="Facultad quimica">FACULTAD QUIMICA</option>
                                     <option value="Facultad turismo">FACULTAD TURISMO</option>
                                     <option value="Otros">OTRO</option>
-                                </select>
-                                <input id="subcategory-secondary" placeholder="Busca por subcategorias Personalizadas" onChange={async e => {
+                                </select>*/}
+                                {/*<input id="subcategory-secondary" placeholder="Busca por subcategorias Personalizadas" onChange={async e => {
                                     if (e.target.value === '') {
                                         const userProducts = await getProducts({ username });
                                         setUserProducts(userProducts);
@@ -493,13 +546,13 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                                         const products = await filterProducts({ idUser: foundUserInformation._id, customSearch: e.target.value });
                                         setUserProducts(products);
                                     }
-                                }} />
+                                }} />*/}
                             </div>
                         )}
                     </section>
                     <section className="profile-products-container">
                         <div className="profile-business-hours">
-                            <h1 className="business-hours-title">Horario De Atencion</h1>
+                            <h1 className="business-hours-title">{foundUserInformation.objetive === 'Profesor' ? 'Horario De Atención' : 'Días Disponible' }</h1>
                             {!isBlocked.blocked && (
                                 <div className="weeksdays-container">
                                     <p className={foundUserInformation.availability.monday ? "day-active" : ''}>Lunes</p>
@@ -513,7 +566,18 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                             )}
                         </div>
                         <hr />
-                        {(!isBlocked.blocked && userProducts.length === 0) && (<h1 style={{ textAlign: 'center', margin: '20px 0', color: '#3282B8', fontSize: '32px' }}>NO HAY PRODUCTOS</h1>)}
+                        {(!isBlocked.blocked) && (
+                            <div className="product-divider-container">
+                                {userProducts.length === 0 && <h1 className="thereAreNoProducts-profile">NO HAY PRODUCTOS</h1>}
+                                {foundUserInformation._id === userInformation._id && userInformation.objetive === 'Profesor' && (
+                                    <div className="product-divider">
+                                    {userProducts.length !== 0 && zone === 'tasks' && <p style={{ marginRight: '16px', color: '#3282B8', fontSize: '24px', display: 'inline-block' }}>{userProducts.length}/6</p>}
+                                        <i className="fa-solid fa-list-check" title="Publicacion tomadas" style={{ background: zone === 'tasks' ? '#0f2749' : '' }} onClick={() => { if (zone !== 'tasks') setZone('tasks') }}></i>
+                                        <i className="fa-solid fa-bars-progress" title="Publicaciones creadas" style={{ background: zone === 'created' ? '#0f2749' : '' }} onClick={() => { if (zone !== 'created') setZone('created') }}></i>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         {isBlocked.blocked && (
                             <div className="profile-blocked">
                                 <i className="fas fa-ban"></i>
@@ -528,7 +592,7 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                         )}
                         {!isBlocked.blocked && (
                             <div className="product-zone">
-                                <h1 className="profile-filter-name">CATEGORY</h1>
+                                <h1 className="profile-filter-name">CATEGORIA</h1>
                                 <div className="profile-products">
                                     {(userProducts.length > 0)
                                         ? userProducts.map(product => product.stateActivated === false
@@ -542,8 +606,8 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                                                             mainCategory: product.category,
                                                             category: product.subCategory,
                                                             title: product.title.slice(0, 30) + '...',
-                                                            description: product.description.slice(0, 20) + '...',
-                                                            price: product.value === null ? 'Negociable' : `${product.value}$`,
+                                                            description: product.description.slice(0, 40) + '...',
+                                                            price: product.valueNumber,
                                                             review: true
                                                         }}
                                                     />
@@ -558,8 +622,8 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                                                         mainCategory: product.category,
                                                         category: product.subCategory,
                                                         title: product.title.slice(0, 30) + '...',
-                                                        description: product.description.slice(0, 20) + '...',
-                                                        price: product.value === null ? 'Negociable' : `${product.value}$`
+                                                        description: product.description.slice(0, 40) + '...',
+                                                        price: product.valueNumber
                                                     }}
                                                 />
                                             </div>
@@ -569,7 +633,21 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                         )}
                     </section>
                     <section className="advertising-container">
-                        <article className="advertising">PUBLICIDAD</article>
+                        <div className="advertising">
+                            <section>
+                                <h2>Actividad</h2>
+                                <p>Proyectos completados: <span>{foundUserInformation.completedWorks}</span></p>
+                                {foundUserInformation.objetive === 'Profesor' && <p>Proyectos en curso: <span>{tasksTaken}</span></p>}
+                                {foundUserInformation.objetive === 'Alumno' && <p>Publicaciones actuales: <span>{thousandsSystem(userProducts.length)}</span></p>}
+                            </section>
+                            <section>
+                                <h2>Información</h2>
+                                {foundUserInformation.objetive === 'Profesor' && <p>Cobro por hora: <span>{foundUserInformation.valuePerHour === null || foundUserInformation.valuePerHour === 0 ? 'indefinido' : `$${thousandsSystem(foundUserInformation.valuePerHour)}/Hr`}</span></p>}
+                                <p>Calificaciones de {foundUserInformation.objetive === 'Profesor' ? 'Alumnos' : 'Profesores'}: <span>{thousandsSystem(score.count)}</span></p>
+                                <p>Incumplimientos a las normas: <span>{thousandsSystem(foundUserInformation.breaches)}</span></p>
+                                {foundUserInformation.objetive === 'Profesor' && <p>Facultad: <span>{foundUserInformation.faculties.length === 0 ? 'indefinido' : foundUserInformation.faculties[0]}</span></p>}
+                            </section>
+                        </div>
                     </section>
                 </div>
                 {imgSrc && (

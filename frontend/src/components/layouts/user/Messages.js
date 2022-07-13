@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom'
 import { socket, getUser, markUncheckedMessages, getProducts, getNotifications, blockUser } from '../../../api';
 import swal from 'sweetalert';
@@ -69,6 +69,21 @@ function Messages({ setProducts, setNotifications, setCountInNotification }) {
         return () => { socket.off() };
     }, [messageArrival]);
 
+    const searchNotifications = useCallback(
+        async () => {
+            const briefNotifications = await getNotifications(cookies.get('id'));
+
+            const currentNotification = [];
+            let count = 0;
+
+            for (let i = 0; i < 3; i++) { if (briefNotifications[i] !== undefined) currentNotification.push(briefNotifications[i]) };
+            for (let i = 0; i < briefNotifications.length; i++) { if (!briefNotifications[i].view) count += 1 };
+
+            setCountInNotification(count);
+            setNotifications(currentNotification);
+        },[setCountInNotification,setNotifications]
+    );
+
     useEffect(() => {
         socket.on('contacts', contactsObtained => defineContact(contactsObtained));
         socket.on('messages', messagesObtained => setMessages(messagesObtained));
@@ -83,7 +98,13 @@ function Messages({ setProducts, setNotifications, setCountInNotification }) {
             if (contactActive !== null && contactActive.idUser === from) {
                 setIsBlocked({ blocked: true, userView: 'to' });   
             }
-        })
+        });
+        socket.on('unlocked', from => {
+            if (contactActive !== null && contactActive.idUser === from) {
+                setIsBlocked({ blocked: false, userView: null });
+            }
+        });
+        socket.on('received event', async () => await searchNotifications());
 
         return () => { socket.off() };
     });
@@ -99,7 +120,6 @@ function Messages({ setProducts, setNotifications, setCountInNotification }) {
             const value = inputText.value;
             setMessages(prev => [...prev, { transmitter: cookies.get('id'), receiver: contactActive.idUser, message: value }]);
             socket.emit('send_message', cookies.get('id'), contactActive.idUser, value);
-            socket.emit('received event', contactActive.idUser);
         };
         inputText.value = '';
     };
@@ -127,17 +147,7 @@ function Messages({ setProducts, setNotifications, setCountInNotification }) {
                 if (!result.error) {
                     const products = await getProducts({ blockSearch: cookies.get('id') });
                     setProducts(products);
-
-                    const briefNotifications = await getNotifications(cookies.get('id'));
-
-                    const currentNotification = [];
-                    let count = 0;
-
-                    for (let i = 0; i < 3; i++) { if (briefNotifications[i] !== undefined) currentNotification.push(briefNotifications[i]) };
-                    for (let i = 0; i < briefNotifications.length; i++) { if (!briefNotifications[i].view) count += 1 };
-
-                    setCountInNotification(count);
-                    setNotifications(currentNotification);
+                    await searchNotifications();
 
                     setIsBlocked({ blocked: true, userView: 'from' });
                     socket.emit('send_block', { from, to });
@@ -150,7 +160,7 @@ function Messages({ setProducts, setNotifications, setCountInNotification }) {
                         button: false,
                     });
 
-                    socket.emit('received event', contactActive.idUser);
+                    socket.emit('received event', to);
                 } else {
                     swal({
                         title: 'Error',
@@ -202,10 +212,10 @@ function Messages({ setProducts, setNotifications, setCountInNotification }) {
                         <div className="message-header">
                             <div className="message-header-main">
                                 {width <= 700 && <i className="fa-solid fa-bars" onClick={()=> setIsActiveContact(false)}></i>}
-                                <Link to={`/${contactActive === null ? '' : contactActive.username === 'Admin' ? 'messages' : contactActive.username}`} style={{ textDecoration: 'none' }}><h1 className="message-header-title">{contactActive === null ? 'Cargando...' : contactActive.firstName === '' ? contactActive.username : `${contactActive.firstName} .${contactActive.lastName.slice(0, 1)}`}</h1></Link>
+                                <Link to={`/${contactActive === null || contactActive.username === undefined ? '' : contactActive.username === 'Admin' ? 'messages' : contactActive.username}`} style={{ textDecoration: 'none' }}><h1 className="message-header-title">{contactActive === null ? 'Cargando...' : contactActive.firstName === undefined || contactActive.firstName === '' || contactActive.firstName === null ? contactActive.username === undefined || contactActive.username === null ? 'ELIMINADO' : contactActive.username : `${contactActive.firstName} .${contactActive.lastName === undefined ? '' : contactActive.lastName.slice(0, 1)}`}</h1></Link>
                             </div>
                             <div className="message-header-icon">
-                                {!isBlocked.blocked && contactActive !== null && contactActive.username !== 'Admin' ? <i className="fas fa-ban" title="Bloquear" onClick={() => block(cookies.get('id'), contactActive.idUser)}></i> : ''}
+                                {!isBlocked.blocked && contactActive !== null && contactActive.username !== 'Admin' && contactActive.username !== undefined ? <i className="fas fa-ban" title="Bloquear" onClick={() => block(cookies.get('id'), contactActive.idUser)}></i> : ''}
                                 {/*<i className="fas fa-trash-alt" title="Eliminar Chat"></i>*/}
                             </div>
                         </div>
@@ -224,7 +234,7 @@ function Messages({ setProducts, setNotifications, setCountInNotification }) {
                             </div>
                         </div>
                         {!isBlocked.blocked
-                            ? contactActive !== null && contactActive.username !== 'Admin' && (
+                            ? contactActive !== null && contactActive.username !== 'Admin' && contactActive.username !== undefined && (
                                 <form className="send-message" onSubmit={e => sendMessage(e)}>
                                     <input type="text" id="input-message" placeholder="Escriba el mensaje" />
                                     <button id="send-message" onClick={e => sendMessage(e)}><i className="fas fa-paper-plane"></i></button>

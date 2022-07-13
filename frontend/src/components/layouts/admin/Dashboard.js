@@ -299,8 +299,8 @@ function Dashboard({ setProducts }) {
                                                             mainCategory: product.category,
                                                             category: product.subCategory,
                                                             title: product.title.slice(0, 30) + '...',
-                                                            description: product.description.slice(0, 20) + '...',
-                                                            price: product.value === null ? 'Negociable' : `${product.value}$`,
+                                                            description: product.description.slice(0, 40) + '...',
+                                                            price: product.valueNumber,
                                                             setProductsToReview,
                                                             information,
                                                             setInformation,
@@ -350,6 +350,7 @@ function Dashboard({ setProducts }) {
                                                             username={user.username}
                                                             date={changeDate(user.creationDate)}
                                                             setUsers={setUsers}
+                                                            userInformation={user}
                                                             data={{
                                                                 property: `${user._id}-information-dashboard`,
                                                                 registered: user.registered,
@@ -359,7 +360,7 @@ function Dashboard({ setProducts }) {
                                                                 secondName: user.secondName,
                                                                 lastName: user.lastName,
                                                                 secondSurname: user.secondSurname,
-                                                                description: user.description,
+                                                                description: user.originalDescription,
                                                                 profilePicture: user.profilePicture,
                                                                 coverPhoto: user.coverPhoto,
                                                                 identification: user.identification,
@@ -387,9 +388,13 @@ function Dashboard({ setProducts }) {
                                                     {transactions !== null && transactions.length > 0 
                                                         ? transactions.map(transaction => {
                                                             return (
-                                                                <div key={transaction.transactionId}>
+                                                                <div key={transaction._id}>
                                                                     <PaymentCard
                                                                         id={transaction._id}
+                                                                        productTitle={transaction.productTitle}
+                                                                        username={transaction.username}
+                                                                        method={transaction.method}
+                                                                        advance={transaction.advance}
                                                                         amount={transaction.amount}
                                                                         bank={transaction.bank}
                                                                         accountNumber={transaction.accountNumber}
@@ -404,6 +409,8 @@ function Dashboard({ setProducts }) {
                                                                         paymentNetwork={transaction.paymentNetwork}
                                                                         setTransaction={setTransactions}
                                                                         transactions={transactions}
+                                                                        verification={transaction.verification}
+                                                                        files={transaction.files}
                                                                     />
                                                                 </div>
                                                             )

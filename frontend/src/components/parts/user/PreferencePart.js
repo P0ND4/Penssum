@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { changePreferenceValue } from "../../../api";
+import { thousandsSystem } from '../../helpers';
 import Cookies from "universal-cookie";
 
 const cookies = new Cookies();
@@ -16,7 +17,8 @@ function PreferencePart(data) {
         sunday: false
     });
 
-    useEffect(() => {
+    useEffect(() => {        
+        setInformation(data.thousandsSystem ? data.value === 'No definido' ? '' : thousandsSystem(data.value) : data.value === '' ? null : data.value);
         if (data.userInformation) {
             const days = data.userInformation.availability;
             setDayOfTheWeek({
@@ -70,19 +72,22 @@ function PreferencePart(data) {
         const valueToChange = {
             id: cookies.get('id'),
             name: data.name,
-            value: (type === 'information') ? information : dayOfTheWeek
+            value: (type === 'information') ? data.thousandsSystem ? parseInt(information.replace(/\./g, '')) : information : dayOfTheWeek
         };
 
-        const result = await changePreferenceValue(valueToChange);
-        data.setUserInformation(result);
+        if (information !== data.value || type === 'availability' || information.replace(/\./g, '') !== data.value) {
+            const result = await changePreferenceValue(valueToChange);
+            data.setUserInformation(result);
+        };
     };
 
     return (
         <div>
             <div className="general-preference-card">
+                {data.required && data.value === 'No definido' && data.requiredFor === 'both' ? <i className="fa-solid fa-circle-exclamation field-required-icon" title="Campo requerido"></i> : data.requiredFor === 'teacher' && data.typeOfUser === 'Profesor' && data.value === 'No definido' ? <i className="fa-solid fa-circle-exclamation field-required-icon" title="Campo requerido"></i> : ''}
                 <div className="general-preference" style={{ width: data.width }}>
                     <p>{data.property}</p>
-                    <h4>{data.value}</h4>
+                    <h4>{data.thousandsSystem ? data.value === 'No definido' ? 'No definido' : `$${thousandsSystem(data.value)}/Hr` : data.value}</h4>
                 </div>
                 <button onClick={() => {
                     document.getElementById(data.property).style.display = 'flex';
@@ -94,7 +99,16 @@ function PreferencePart(data) {
                     <div className="dark-input">
                         <h1>Introduce el {data.property}</h1>
                         <p className={`field field_${data.id}`} style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF', margin: '5px 0' }}>Ingrese un formato valido.</p>
-                        <input type={data.inputType} placeholder={data.placeholder} id={data.idInput} onChange={e => setInformation(e.target.value)} />
+                        <input type={data.inputType} placeholder={data.placeholder} id={data.idInput} onChange={e => {
+                            if (data.thousandsSystem) {
+                                var num = e.target.value.replace(/\./g,'');
+                                if(!isNaN(num)){
+                                    num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1.');
+                                    num = num.split('').reverse().join('').replace(/^[.]/,'');
+                                    setInformation(num);
+                                } else setInformation(e.target.value.replace(/[^\d.]*/g,''));
+                            } else setInformation(e.target.value.trim());
+                        }} value={information === 'No definido' ? '' : information}/>
                         <div className="dark-button-container">
                             <button className="save-edit" id={data.id} onClick={() => changeInformation('information',`.field_${data.id}`)}>Guardar</button>
                             <button className="cancel-edit" onClick={() => {
