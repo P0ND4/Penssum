@@ -5,7 +5,7 @@ const MessageSchema = new Schema ({
     receiver: { type: String, require: true },
     message: { type: String, require: true },
     view: { type: Boolean, default: false },
-    creationDate: { type: Date, default: Date.now() }
+    creationDate: { type: Date, default: Date.now }
 });
 
 module.exports = model('message', MessageSchema);

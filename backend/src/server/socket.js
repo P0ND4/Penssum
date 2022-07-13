@@ -103,7 +103,7 @@ module.exports = server => {
 
             const newMessage = new Message({ transmitter: senderId, receiver: receiverId, message });
             const resultMessage = await newMessage.save();
-
+            
             if (user) io.to(user.socketId).emit('new_message', resultMessage);
         });
 
@@ -132,7 +132,37 @@ module.exports = server => {
                 const user = getUser(id ? id : product.owner);
 
                 if (user) io.to(user.socketId).emit('received event');
-            } else io.emit('received event');
+            };
+        });
+
+        socket.on('unlocked', ({ userID, from }) => {
+            const user = getUser(userID);
+            if (user) io.to(user.socketId).emit('unlocked', from);
+        });
+
+        socket.on('product updated', async ({ userID, post_id, globalProductUpdate, product }) => {
+            const user = getUser(userID);
+            const productUpdated = await Product.findById(post_id);
+
+            if (user) io.to(user.socketId).emit('product updated', { product: product ? product : productUpdated, global: globalProductUpdate });
+        });
+
+        socket.on('product deleted', ({ userID, finished }) => {
+            const user = getUser(userID);
+
+            if (user) io.to(user.socketId).emit('product deleted', { finished }); 
+        });
+
+        socket.on('new offer', ({ userID, post_id }) => {
+            const user = getUser(userID);
+
+            if (user) io.to(user.socketId).emit('new offer', { productID: post_id }); 
+        });
+
+        socket.on('offer event', ({ userID, post_id }) => {
+            const user = getUser(userID);
+
+            if (user) io.to(user.socketId).emit('offer event', { productID: post_id });
         });
 
         // video_call
@@ -223,6 +253,7 @@ module.exports = server => {
 
             socket.on('call teacher', ({ teacherToCall, from, name, profilePicture }) => {
                 const isTheExistingUser = idUsersInTheRoom.filter(user => user.userID === from);
+                
                 if (isTheExistingUser.length > 0) return;
 
                 const teacher = getUser(teacherToCall);
@@ -280,6 +311,7 @@ module.exports = server => {
         });
 
         socket.on('disconnect', () => {
+            const user = getUser(socket.id);
             const foundUser = removeUser(socket.id);
 
             if (foundUser) { 

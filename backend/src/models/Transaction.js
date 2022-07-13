@@ -2,14 +2,20 @@ const { Schema, model } = require('mongoose');
 
 const TransactionSchema = new Schema({
 	userId: { type: String, required: true },
-	ownerId: { type: String, required: true },
-	productId: { type: String, required: true },
+	advance: { type: Boolean, default: false },
+	method: { type: String },
+	productTitle: { type: String },
+	ownerId: { type: String },
+	productId: { type: String },
 	amount: { type: Number, required: true },
 	orderId: { type: Number, default: 0 },
-	transactionId: { type: String, required: true },
-	operationDate: { type: Number, required: true },
-	paymentType: { type: String, required: true },
-	paymentNetwork: { type: String, required: true }
+	transactionId: { type: String },
+	operationDate: { type: Number, default: Date.now },
+	paymentType: { type: String },
+	paymentNetwork: { type: String },
+	verification: { type: Boolean, default: false },
+	files: { type: Array, default: [] },
+	creationDate: { type: Date, default: Date.now }
 });
 
 module.exports = model('transaction', TransactionSchema);

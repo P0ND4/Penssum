@@ -13,9 +13,14 @@ const product = require('../controllers/product');
 const admin = require('../controllers/administration');
 const event = require('../controllers/event');
 
+const root = path.join(__dirname, '../public', 'build');
+
 module.exports = app => {
     // event
-    app.get('/', (req,res) => { res.send('Api from Penssum'); });
+
+    app.use(express.static(root));
+    app.get("*", (req, res) => res.sendFile('index.html', { root }));
+
     app.post('/notifications', event.getNotifications);
     app.post('/mark/notification', event.revisedNotification);
     app.post('/unchecked/messages', event.getUncheckedMessages);
@@ -29,7 +34,9 @@ module.exports = app => {
     app.post('/get/transaction', event.transactions)
     app.post('/remove/transaction', event.removeTransaction);
     app.post('/vote', event.vote);
-    app.post('/get/vote', event.getVote)
+    app.post('/get/vote', event.getVote);
+    app.post('/rejection/vote', event.rejectVote);
+    app.post('/send/transaction/verification', event.sendTransactionVerification);
 
     // users routes
     app.post('/users', user.users);
@@ -41,14 +48,17 @@ module.exports = app => {
     app.post('/user/signup/token/verification', user.tokenVerification);
     app.post('/user/delete', user.delete);
     app.post('/user/change/preference/value', user.changePreferenceValue);
+    app.post('/user/complete/information', user.completeInformation);
     app.post('/user/change/password', user.changePassword);
     app.post('/search/users', user.search);
     app.post('/search/all/users', user.findAllUsers);
     app.post('/user/change/photo', uploadProfile.single('image'), user.changePhoto);
+    app.post('/user/recovery/password', user.recoveryPassword);
 
     // routes product
     app.post('/products', product.products);
-    app.post('/product/file/selection', uploadTemporal.array('files'), product.fileSelection);
+    app.post('/search/products', product.search);
+    app.post('/product/file/selection', uploadTemporal.array('productFiles'), product.fileSelection);
     app.post('/product/remove/files', product.removeFiles);
     app.post('/product/create', uploadServices.array('files'), product.create);
     app.post('/product/increase/view', product.increaseView);
@@ -60,11 +70,17 @@ module.exports = app => {
     app.post('/product/accept', product.accept);
     app.post('/product/remove', product.delete);
     app.post('/product/send/quote', product.sendQuote);
+    app.post('/product/take', product.take);
+    app.post('/product/remove/take', product.removeTake);
     app.post('/filter/product', product.filter);
     app.post('/change/video_call/URL', product.changeVideoCallURL);
     app.post('/pay/product', product.payProduct);
     app.post('/get/banks/available', product.banksAvailable);
     app.post('/save/transaction', product.saveTransaction);
+    app.post('/get/task', product.getTask);
+    app.post('/product/request/payment', product.requestPayment);
+    app.post('/product/teacher/payment', product.teacherPayment);
+    app.post('/remove/payment', product.removePayment);
 
     //admin
     app.post('/admin/information', admin.main);

@@ -249,7 +249,11 @@ ctrl.userStatusChange = async (req,res) => {
 
     await User.findByIdAndUpdate(id,{ 'typeOfUser.user': typeOfUser });
     
-    if (typeOfUser === 'layoff' || typeOfUser === 'block') await Administration.findByIdAndUpdate(administration[0]._id, { violations: administration[0].violations + 1 });
+    if (typeOfUser === 'layoff' || typeOfUser === 'block') {
+        await Administration.findByIdAndUpdate(administration[0]._id, { violations: administration[0].violations + 1 });
+        const user = await User.findById(id);
+        await User.findByIdAndUpdate(id, { breaches: user.breaches + 1 });
+    };
     
     if (date) { await User.findByIdAndUpdate(id,{ 'typeOfUser.suspension': date }) }
     else { await User.findByIdAndUpdate(id,{ 'typeOfUser.suspension': null }) };

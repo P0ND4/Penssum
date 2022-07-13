@@ -22,14 +22,18 @@ ctrl.users = async (req, res) => {
 };
 
 ctrl.get = async (req, res) => {
-    const { id, username } = req.body;
+    const { id, username, email } = req.body;
 
     if (id) {
         const user = await User.findById(id);
         return res.send(user);
     } else if (username) {
         const user = await User.findOne({ username });
-        if (!user) return res.send({ error: true, type: 'user not found for id and username' });
+        if (!user) return res.send({ error: true, type: 'user not found for username' });
+        return res.send(user);
+    } else if (email) {
+        const user = await User.findOne({ email });
+        if (!user) return res.send({ error: true, type: 'user not found for email' });
         return res.send(user);
     } else {
         res.send({ error: true, type: 'There are no data' });
@@ -162,7 +166,7 @@ ctrl.delete = async (req, res) => {
     await Offer.deleteMany({ user: id });
     await Product.deleteMany({ owner: id });
     await Block.deleteMany({ $or: [{ from: id }, { to: id }] });
-    await Message.deleteMany({ $or: [{ transmitter: id }, { receiver: id }] });
+    //await Message.deleteMany({ $or: [{ transmitter: id }, { receiver: id }] });
     await Notification.deleteMany({ to: id });
     await Transaction.findOneAndDelete({ ownerId: id });
     await Vote.findOneAndDelete({ from: id });
@@ -190,9 +194,9 @@ ctrl.changeMail = async (req, res) => {
                     <a href="${process.env.FRONTEND_PENSSUM}/signup/email/verification/${TOKEN}" style="text-decoration: none;">
                         <button style="border: none; outline: none; border-radius: 40px; padding: 8px 20px; font-size: 22px; font-family: sans-serif; background: #3282B8; color: #FFF; cursor: pointer;">Confirmar</button>
                     </a>
-                    <p style="color: #666; font-size: 18px; margin: 8px 0;">Si no funciona el boton presiona <a href="http://localhost:3000/signup/email/verification/${TOKEN}" style="color: #3282B8;">Aqui</a></p>
+                    <p style="color: #666; font-size: 18px; margin: 8px 0;">Si no funciona el boton presiona <a href="${process.env.FRONTEND_PENSSUM}/signup/email/verification/${TOKEN}" style="color: #3282B8;">Aqui</a></p>
                 </div>
-                <p style="display: block; width: 90%; margin: 0 auto; color: #666; font-size: 18px; text-align: center;">Si no fuiste tu, puedes ignorar este correo. Este correo es un correo automatizado de nuestra plataforma Penssum Lee nuestros terminos y condiciones de uso de nuestra aplicacion. <a href="http://localhost:3000/help/information/mod=terms_and_conditions" style="color: #3282B8;">Terminos y condiciones</a></p>
+                <p style="display: block; width: 90%; margin: 0 auto; color: #666; font-size: 18px; text-align: center;">Si no fuiste tu, puedes ignorar este correo. Este correo es un correo automatizado de nuestra plataforma Penssum Lee nuestros terminos y condiciones de uso de nuestra aplicacion. <a href="${process.env.FRONTEND_PENSSUM}/help/information/mod=terms_and_conditions" style="color: #3282B8;">Terminos y condiciones</a></p>
             </div>
         `
 
@@ -214,8 +218,51 @@ ctrl.changeMail = async (req, res) => {
     }
 };
 
+ctrl.recoveryPassword = async (req,res) => {
+    const { userInformation } = req.body;
+
+    const CODE = randomName(6, { Number: true });
+
+    const contentHTML = `
+        <div style="width: 100%; margin: 0;" >
+            <img src="cid:penssum" style="display: block; margin: 20px auto; width: 120px; border-radius: 16px;" />
+            <p style="display: block; width: 90%; margin: 0 auto; text-align: center; font-family: sans-serif; font-size: 22px; color: #666;">
+                Hola, ${userInformation.firstName !== '' ? userInformation.firstName : userInformation.username}: <br/><br/>
+                Hemos recibido una solicitud para modificar la contraseña de Penssum.
+                Introduce el siguiente codigo para restablecer la contraseña: <br/><br/>
+                <div style="display: block; text-align: center;">
+                    <div style="display: inline-block; padding: 0 20px; border-radius: 12px; border: 1px solid #0F4C75; background: #3282B822;">
+                        <p style="font-size: 16px;"><b>${CODE}</b></p>
+                    </div>
+                </div>
+            </p>
+            <p style="display: block; width: 90%; margin: 0 auto; color: #666; font-size: 18px; text-align: center;"><b>¿No has pedido este cambio?</b><br/> Si no has solicitado una nueva contraseña, <a href="${process.env.FRONTEND_PENSSUM}/help" style="color: #3282B8;">Informarnos</a>.</p>
+        </div>
+    `
+
+    const informationToSend = {
+        to: userInformation.email,
+        subject: `${CODE} es el codigó de recuperación de tu cuenta de Penssum`,
+        html: contentHTML,
+        attachments: [{
+            filename: 'penssum-transparent.png',
+            path: `${process.env.API_PENSSUM}/penssum-transparent.png`,
+            cid: 'penssum'
+        }]
+    };
+
+    const result = await sendEmail(informationToSend);
+
+    res.send({ code: CODE, message: result });
+};
+
 ctrl.changePreferenceValue = async (req, res) => {
     const { id, name, value } = req.body;
+
+    if (name === 'originalDescription') {
+        const valueChanged = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        await User.findByIdAndUpdate(id, { 'modifiedDescription': valueChanged });
+    };
 
     await User.findByIdAndUpdate(id, { [name]: value });
     const updatedUser = await User.findById(id);
@@ -224,12 +271,12 @@ ctrl.changePreferenceValue = async (req, res) => {
 };
 
 ctrl.changePassword = async (req, res) => {
-    const { id, password, newPassword } = req.body;
+    const { id, password, newPassword, isForgot } = req.body;
 
     const user = await User.findById(id);
     const match = await hash.matchPassword(password, user.password);
 
-    if (match) {
+    if (match || isForgot) {
         const encryptedPassword = await hash.scryptPassword(newPassword);
         await User.findByIdAndUpdate(id, { password: encryptedPassword });
         const userUpdated = await User.findById(id);
@@ -238,7 +285,7 @@ ctrl.changePassword = async (req, res) => {
 };
 
 ctrl.search = async (req, res) => {
-    const { id, search, filterNav } = req.body;
+    let { id, search, filterNav } = req.body;
 
     const removeData = {
         email: false,
@@ -259,23 +306,32 @@ ctrl.search = async (req, res) => {
         faceToFaceClasses: false
     };
 
+    search = search.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
     const dataToSearch = {
         _id: { $ne: id },
         description: { $ne: '' },
         validated: true,
         'typeOfUser.user': {$ne: 'block'},
+        objetive: 'Profesor',
         $or: [
-            { firstName: { $regex: '.*' + search + '.*', $options: 'i' } },
-            { secondName: { $regex: '.*' + search + '.*', $options: 'i' } },
-            { lastName: { $regex: '.*' + search + '.*', $options: 'i' } },
-            { secondSurname: { $regex: '.*' + search + '.*', $options: 'i' } },
-            { username: { $regex: '.*' + search + '.*', $options: 'i' } },
+            { firstName: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { secondName: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { lastName: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { modifiedDescription: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { secondSurname: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { username: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { faculties: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { subjects: { $regex: '.*' + search + '.*', $options: 'im' } },
             { email: search }
         ]
     };
 
     if (filterNav.city !== 'ciudad') dataToSearch.city = filterNav.city;
-    if (filterNav.user !== 'usuario') dataToSearch.objetive = filterNav.user;
+    if (filterNav.classType !== 'classType') {
+        if (filterNav.classType === 'virtual') dataToSearch.virtualClasses = true;
+        if (filterNav.classType === 'presencial') dataToSearch.faceToFaceClasses = true;
+    };
 
     const users = await User.find(dataToSearch, removeData);
 
@@ -339,6 +395,20 @@ ctrl.changePhoto = async (req, res) => {
         };
     };
     validateFile();
+};
+
+ctrl.completeInformation = async (req,res) => {
+    const { id, data } =  req.body;
+
+    if (data.originalDescription){
+        const valueChanged = data.originalDescription.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        await User.findByIdAndUpdate(id, { 'modifiedDescription': valueChanged });
+    };
+
+    await User.findByIdAndUpdate(id,data);
+    const userUpdated = await User.findById(id);
+
+    res.send(userUpdated);
 };
 
 module.exports = ctrl;
