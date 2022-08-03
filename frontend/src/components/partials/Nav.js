@@ -114,7 +114,14 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
 
     const changeSearch = e => {
         setSearch(e.target.value);
-        (e.target.value === '') ? navigate('/') : navigate(`/search/${e.target.value}`)
+        if (e.target.value === '') {
+            navigate('/');
+            setFilterNav({
+                city: 'ciudad',
+                classType: 'classType',
+                category: 'categoria'
+            });
+        } else navigate(`/search/${e.target.value}`)
     };
 
     return (
@@ -122,7 +129,10 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
             <Link to="/" className="main-logo"><img src="/img/penssum-transparent.png" alt="icon-logo"/> Penssum</Link>
             <div className="search-provider" style={{ display: (isOpenSearch && width < 600) ? 'flex' : (width > 600) ? 'flex' : 'none' }}>
                 <input type="text" placeholder={userInformation.objetive === 'Profesor' && auth ? "Encuentra Publicaciones" : "Encuentra Profesores"} id="search" value={search} autoComplete="off" onChange={e => changeSearch(e)} />
-                <select id="filter-city" defaultValue="ciudad" onChange={e => setFilterNav({ ...filterNav, city: e.target.value })}>
+                <select id="filter-city" value={filterNav.city} onChange={e => {
+                    setFilterNav({ ...filterNav, city: e.target.value });
+                    if (search === '') navigate('/search/mod=filter');
+                }}>
                     <option value="ciudad">Ciudad</option>
                     <option value="ciudad">Cualquier ciudad</option>
                     <option value="Bogota">Bogota</option>
@@ -160,7 +170,10 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
                     <option value="Vichada">Vichada</option>
                 </select>
                 {(userInformation.objetive === 'Alumno' || !auth) && (
-                    <select id="filter-user" defaultValue="classType" onChange={e => setFilterNav({ ...filterNav, classType: e.target.value })}>
+                    <select id="filter-user" value={filterNav.classType} onChange={e => {
+                        setFilterNav({ ...filterNav, classType: e.target.value });
+                        if (search === '') navigate('/search/mod=filter');
+                    }}>
                         <option value="classType">Tipo de clases</option>
                         <option value="virtual">Virtual</option>
                         <option value="presencial">Presencial</option>
@@ -168,7 +181,10 @@ function Nav({ auth, userInformation, setUserInformation, setAuth, search, setSe
                     </select>
                 )}
                 {userInformation.objetive === 'Profesor' && auth && (
-                    <select id="filter-user" defaultValue="Facultad" onChange={e => setFilterNav({ ...filterNav, category: e.target.value })}>
+                    <select id="filter-user" value={filterNav.category} onChange={e => {
+                        setFilterNav({ ...filterNav, category: e.target.value });
+                        if (search === '') navigate('/search/mod=filter');
+                    }}>
                         <option value="categoria">Categoria</option>
                         <option value="Virtual">Virtual</option>
                         <option value="Presencial">Presencial</option>

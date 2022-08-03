@@ -46,14 +46,16 @@ function Footer() {
                 <div className="rights">
                     <div className='support-and-right'>
                         <h3 className="law-degree">Todos los derechos de la aplicación pertenece a PENSSUM</h3>
-                        <h3 className='penssum-version'>PENSSUM Version: 2.1.3v</h3>
+                        <h3 className="phone-number-penssum">Escribenos a nuestro WhatsApp: <a className="fa-whatsapp" href="https://wa.me/573207623454" target="_BLANK" rel="noreferrer">+57 3207623454</a></h3>
+                        <h3 className='penssum-version'>PENSSUM Version: 2.4.6v</h3>
                     </div>
                     <div className="social-networks-container">
                         <h2 className="social-networks-title">Siguenos en nuestras redes sociales</h2>
                         <div className="social-networks">
-                            <Link to="/"><i className="fab fa-twitter"></i></Link>
-                            <Link to="/"><i className="fab fa-facebook-square"></i></Link>
-                            <Link to="/"><i className="fab fa-instagram"></i></Link>
+                            <a href="https://wa.me/573207623454" target="_BLANK" rel="noreferrer"><i className="fa-brands fa-whatsapp"></i></a>
+                            <a href="https://twitter.com/penssum?t=seJ7n3XjHGKSx8zNBLexmQ&s=09" target="_BLANK" rel="noreferrer"><i className="fab fa-twitter"></i></a>
+                            <a href="https://www.facebook.com/Penssum-103217072423786/" target="_BLANK" rel="noreferrer"><i className="fab fa-facebook-square"></i></a>
+                            <a href="https://www.instagram.com/penssum/" target="_BLANK" rel="noreferrer"><i className="fab fa-instagram"></i></a>
                         </div>
                     </div>
                 </div>

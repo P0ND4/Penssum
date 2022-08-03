@@ -117,7 +117,7 @@ export const verificationOfInformation = (typeOfUser,userInformation) => {
             userInformation.secondName &&
             userInformation.lastName &&
             userInformation.secondSurname &&
-            userInformation.originalDescription &&
+            userInformation.description &&
             userInformation.identification &&
             userInformation.phoneNumber &&
             userInformation.valuePerHour) return true

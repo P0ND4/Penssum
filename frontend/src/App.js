@@ -87,6 +87,7 @@ function App() {
   const [repeatVote,setRepeatVote] = useState(true);
   const [pendingInformation,setPendingInformation] = useState(false);
   const [reportTransaction,setReportTransaction] = useState(false);
+  const [zoneCompleteInformation,setZoneCompleteInformation] = useState('main');
 
   const [filterNav, setFilterNav] = useState({
     city: 'ciudad',
@@ -199,7 +200,6 @@ function App() {
     if (auth) {
       const searchVotePending = async () => {
         const result = await getVote({ from: userInformation._id, voteType: 'pending' });
-        console.log(result);
         if (result.error) return
         else setVotePending(result);
       };
@@ -245,7 +245,7 @@ function App() {
                 <Route path="/signup/selection" element={<Selection setUserInformation={setUserInformation} userInformation={userInformation} setAuth={setAuth} setRegistrationProcess={setRegistrationProcess} registrationProcess={registrationProcess} setRegistration={setRegistration} />} />
                 <Route path="/signup/check/email" element={<CheckEmail setRegistration={setRegistration} userInformation={userInformation} setUserInformation={setUserInformation} registrationProcess={registrationProcess} />} />
 
-                <Route path="/complete/information" element={auth ? <CompleteInformation setUserInformation={setUserInformation} userInformation={userInformation}/> : <Navigate to="/signin"/>}/>
+                <Route path="/complete/information" element={auth ? <CompleteInformation setUserInformation={setUserInformation} userInformation={userInformation} zone={zoneCompleteInformation} setZone={setZoneCompleteInformation}/> : <Navigate to="/signin"/>}/>
 
                 <Route path="/signup/email/verification/:token" element={<TokenVerification setAuth={setAuth} setUserInformation={setUserInformation} setRegistration={setRegistration} />} />
 
@@ -260,8 +260,8 @@ function App() {
                 {/*<Route path="/video_call/meeting/:meeting_id" element={auth ? <VideoCall userInformation={userInformation}/> : <Navigate to="/signin" /> } />*/}
                 <Route path="/messages" element={auth ? <Messages setProducts={setProducts} setNotifications={setNotifications} setCountInNotification={setCountInNotification} /> : <Navigate to="/signin" />} />
                 <Route path="/notifications" element={auth ? <Notifications /> : <Navigate to="/signin" />} />
-                <Route path="/preference/:attribute" element={auth ? <Preferences userInformation={userInformation} setUserInformation={setUserInformation} /> : <Navigate to="/signin" />} />
-                <Route path="/send/quote" element={auth && userInformation.objetive !== 'Alumno' && verificationOfInformation(userInformation.objetive,userInformation) ? <Quote obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} isTheUserSuspended={isTheUserSuspended} username={userInformation.username} quoteId={quoteId} setQuoteId={setQuoteId}/> : verificationOfInformation(userInformation.objetive,userInformation) ? <Navigate to="/complete/information" /> : <Navigate to="/signin" />} />
+                <Route path="/preference/:attribute" element={auth ? <Preferences userInformation={userInformation} setUserInformation={setUserInformation} setZoneCompleteInformation={setZoneCompleteInformation}/> : <Navigate to="/signin" />} />
+                <Route path="/send/quote" element={auth && userInformation.objetive !== 'Alumno' && verificationOfInformation(userInformation.objetive,userInformation) ? <Quote obtainedFiles={obtainedFiles} setObtainedFiles={setObtainedFiles} isTheUserSuspended={isTheUserSuspended} username={userInformation.username} quoteId={quoteId} setQuoteId={setQuoteId} /> : verificationOfInformation(userInformation.objetive,userInformation) ? <Navigate to="/complete/information" /> : <Navigate to="/signin" />} />
 
                 <Route path="/signin/admin" element={signinAdmin ? <AdminLogin setDashboard={setDashboard} /> : <Navigate to="/signin" />} />
 

@@ -306,7 +306,7 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
                                         <div className="pay-options-information">
                                         <p> 
                                             Si seleccionas el metodo de pago necesitaremos verificar su informacion 
-                                            bancaria para la transaccion, puede entrar en configuracion > pagos he ingresar
+                                            bancaria para la transaccion, puede entrar en configuracion, pagos he ingresar
                                             sus datos, de lo contrario no podremos
                                             enviarle el dinero del servicio, recuerde que si no activa la pasarela
                                             de pago, debe llegar a un acuerdo sobre el pago con el cliente.

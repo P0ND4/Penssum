@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { changePreferenceValue } from "../../../api";
 import { useParams } from 'react-router';
 
@@ -12,7 +12,7 @@ import Cookies from "universal-cookie";
 
 const cookies = new Cookies();
 
-function Preference({ userInformation, setUserInformation }) {
+function Preference({ userInformation, setUserInformation, setZoneCompleteInformation }) {
     const { attribute } = useParams();
     const [bankData,setBankData] = useState({
         bank: userInformation.bankData.bank,
@@ -22,6 +22,8 @@ function Preference({ userInformation, setUserInformation }) {
 
     const descriptionTimer = useRef(null);
 
+    const navigate = useNavigate();
+
     const changeDescription = (e, id) => {
         document.getElementById(id).textContent = `${e.target.value.length}/250`;
 
@@ -30,7 +32,7 @@ function Preference({ userInformation, setUserInformation }) {
         descriptionTimer.current = setTimeout(async () => {
             const valueToChange = {
                 id: cookies.get('id'),
-                name: 'originalDescription',
+                name: 'description',
                 value: e.target.value
             };
     
@@ -169,8 +171,8 @@ function Preference({ userInformation, setUserInformation }) {
                             <PreferencePart property="Segundo Apellido" value={userInformation.secondSurname === '' ? 'No definido' : userInformation.secondSurname} id="edit-second-surname" inputType="text" placeholder="Ejemplo: Perez" idInput="second-surname-input" name="secondSurname" setUserInformation={setUserInformation} typeOfUser={userInformation.objetive} required={true} requiredFor="teacher"/>
                             <div className="preference-description-container">
                                 <div className="preference-description-zone">
-                                    {userInformation.objetive === 'Profesor' && !userInformation.originalDescription && <i className="fa-solid fa-circle-exclamation field-required-icon" title="Campo requerido"></i>}
-                                    <textarea className="preference-description" maxLength={250} placeholder="Una breve descripción sobre las asignaturas que manejas y los temas de dichas asignaturas, de esta manera los estudiantes podrán encontrarte con facilidad. TE DESEAMOS EXÍTOS." id="preference-description-input" onChange={e => changeDescription(e, 'letter-count-description-preference')} defaultValue={userInformation.originalDescription}></textarea>
+                                    {userInformation.objetive === 'Profesor' && !userInformation.description && <i className="fa-solid fa-circle-exclamation field-required-icon" title="Campo requerido"></i>}
+                                    <textarea className="preference-description" maxLength={250} placeholder="Una breve descripción sobre las asignaturas que manejas y los temas de dichas asignaturas, de esta manera los estudiantes podrán encontrarte con facilidad. TE DESEAMOS EXÍTOS." id="preference-description-input" onChange={e => changeDescription(e, 'letter-count-description-preference')} defaultValue={userInformation.description}></textarea>
                                     <span id="letter-count-description-preference">0/250</span>
                                 </div>
                             </div>
@@ -328,67 +330,21 @@ function Preference({ userInformation, setUserInformation }) {
                                         </div>
                                     )}
                                     {userInformation.objetive === 'Profesor' && <PreferencePart property="Valor por hora" value={userInformation.valuePerHour === null || userInformation.valuePerHour === 0 ? 'No definido' : userInformation.valuePerHour}  id="edit-value-per-hour" inputType="text" thousandsSystem={true} placeholder="Ejemplo: 11" idInput="value-per-hour-input" name="valuePerHour" setUserInformation={setUserInformation} />}
-                                    {/*userInformation.objetive === 'Profesor' && (
+                                    {userInformation.objetive === 'Profesor' && (
                                         <div className="preference-subject-container" style={{ marginTop: '10px' }}>
                                             <div className="preference-subject-zone">
                                                 <div className="preference-subject-information">
-                                                    <p>Asignatura</p>
-                                                    <h4>{userInformation.subjects.length === 0 ? 'No definido' : userInformation.subjects[0]}</h4>
+                                                    <p>Asignatura y temas</p>
+                                                    <h4>{userInformation.specialty.subjects.length === 0 ? 'No definido' : userInformation.specialty.subjects}</h4>
                                                 </div>
-                                                <p className="preference-subject-description">Puedes elejir la asignatura en el cual te especializas.</p>
+                                                <p className="preference-subject-description">Puedes elejir las asignaturas el cual se especializas.</p>
                                             </div>
                                             <button id="edit-faculty" onClick={() => {
-                                                document.getElementById("subjects").style.display = 'flex';
-                                                document.querySelector('body').style.overflow = 'hidden';
+                                                setZoneCompleteInformation('subjects');
+                                                navigate('/complete/information');
                                             }}>Editar</button>
                                         </div>
-                                    )*/}
-                                    {/*userInformation.objetive === 'Profesor' && (
-                                        <div className="dark" id="subjects">
-                                            <div className="dark-input">
-                                                <h1>¿Que asignatura das?</h1>
-                                                <select id="filter-subjects-change" defaultValue="-- Seleccione asignatura --">
-                                                    <option value="-- Seleccione asignatura --" hidden>-- Seleccione asignatura --</option>
-                                                    <option value="Ciencias">Ciencias</option>
-                                                    <option value="Fisica">Física</option>
-                                                    <option value="Biologia">Biología</option>
-                                                    <option value="Anatomia y fisiología">Anatomía y fisiología</option>
-                                                    <option value="Matematicas">Matemáticas</option>
-                                                    <option value="Quimica">Química</option>
-                                                    <option value="Ecologia">Ecología</option>
-                                                    <option value="Metodologia de la investigacion">Metodología de la investigación</option>
-                                                    <option value="Ciencias sociales">Ciencias sociales</option>
-                                                    <option value="Geografia">Geografía</option>
-                                                    <option value="Economia">Economía</option>
-                                                    <option value="Medio ambiente">Medio ambiente</option>
-                                                    <option value="Biografias">Biografías</option>
-                                                    <option value="Arte">Arte</option>
-                                                    <option value="Historia del arte">Historia del arte</option>
-                                                    <option value="Filosofia">Filosofía</option>
-                                                    <option value="Etica y valores">Ética y valores</option>
-                                                    <option value="Literatura">Literatura</option>
-                                                    <option value="Castellano">Castellano</option>
-                                                    <option value="Ingles">Inglés</option>
-                                                    <option value="Informatica">Informática</option>
-                                                    <option value="Psicologia">Psicología</option>
-                                                    <option value="Educacion fisica">Educación física</option>
-                                                    <option value="Tecnologia">Tecnología</option>
-                                                    <option value="Politica">Política</option>
-                                                    <option value="Religion">Religión</option>
-                                                    <option value="Salud">Salud</option>
-                                                    <option value="Educacion">Educación</option>
-                                                    <option value="Otro">Otro</option>
-                                                </select>
-                                                <div className="dark-button-container">
-                                                    <button className="save-edit" id="edit-ci" onClick={() => changeProffesorInformation('subjects', document.getElementById('filter-subjects-change').value,'subjects')}>Guardar</button>
-                                                    <button className="cancel-edit" onClick={() => {
-                                                        document.getElementById("subjects").style.display = 'none';
-                                                        document.querySelector('body').style.overflow = 'auto';
-                                                    }}>Cancelar</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )*/}
+                                    )}
                                     <PreferenceToggle idButton="class-button-toggle" idContainer="button-toggle-class" h4="Clases virtuales" p="¿Tienes la disponibilidad de tener clases virtuales?" name="virtualClasses" value={userInformation.virtualClasses} setUserInformation={setUserInformation} />
                                     <PreferenceToggle idButton="presentClass-button-toggle" idContainer="button-toggle-presentClass" h4="Clases presencial" p="¿Tienes la disponibilidad de tener clases presenciales?" name="faceToFaceClasses" value={userInformation.faceToFaceClasses} setUserInformation={setUserInformation} />
                                 </div>

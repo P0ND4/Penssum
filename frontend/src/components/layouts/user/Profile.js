@@ -387,7 +387,7 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                                 (
                                     <div className="profile-description-control">
                                         <h1 className="profile-username">{defineName(foundUserInformation)}</h1>
-                                        <p className="profile-description">{foundUserInformation.originalDescription}</p>
+                                        <p className="profile-description">{foundUserInformation.description}</p>
                                     </div>
                                 )}
                             {!isBlocked.blocked &&
@@ -415,7 +415,7 @@ function Profile({ mainUsername, userInformation, setUserInformation, auth, setP
                             <p>Disponibilidad de clases virtuales: {foundUserInformation.virtualClasses === false ? 'No' : 'Si'}</p>
                             <p>Disponibilidad de clases presenciales: {foundUserInformation.faceToFaceClasses === false ? 'No' : 'Si'}</p>
                             {foundUserInformation.objetive === 'Profesor' && <p>Facultad: {foundUserInformation.faculties.length === 0 ? 'No definido' : foundUserInformation.faculties[0]}</p>}
-                            {foundUserInformation.objetive === 'Profesor' && <p>Asignatura: {foundUserInformation.subjects.length === 0 ? 'No definido' : foundUserInformation.subjects[0]}</p>}
+                            {foundUserInformation.objetive === 'Profesor' && <p>Asignatura: {foundUserInformation.specialty.subjects.length === 0 ? 'No definido' : foundUserInformation.specialty.subjects}</p>}
                             <p>Fecha de creacion: {changeDate(foundUserInformation.creationDate,true)}</p>
                         </section>
                     </div>

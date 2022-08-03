@@ -66,7 +66,7 @@ function Vote ({ setVotePending, votePending, firstUser, setRepeatVote, pending,
 		<div className="vote-container">
 			<div className="vote">
 				<img src={!postInformation ? (firstUser.profilePicture === null || firstUser.profilePicture === undefined) ? "/img/noProfilePicture.png" : firstUser.profilePicture : (userToVote.profilePicture === null || userToVote.profilePicture === undefined) ? "/img/noProfilePicture.png" : userToVote.profilePicture} alt="user to vote"/>
-	            <h1>Puntuar a {!postInformation ? firstUser.username : userToVote.firstName ? userToVote.firstName : userToVote.secondName ? userToVote.secondName : userToVote.username}</h1>
+	            <h1>Puntuar a {!postInformation ? firstUser.firstName ? firstUser.firstName : firstUser.secondName ? firstUser.secondName : firstUser.username : userToVote.firstName ? userToVote.firstName : userToVote.secondName ? userToVote.secondName : userToVote.username}</h1>
 	            <h2>{score !== 0 ? score === 1 ? 'HORRIBLE' : score === 2 ? 'MALO' : score === 3 ? 'NORMAL' : score === 4 ? 'BUENO' : 'EXCELENTE' : ''}</h2>
 	            <div className="vote-start-container">
 		            <i className="fas fa-star" style={{ color: score === 5 ? '#fe7' : '',  textShadow: score === 5 ? '0 0 20px #952' : '' }} onClick={() => voteUser(5)}></i>

@@ -26,6 +26,7 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
         repeatPassword: ''
     });
     const [sendingInformation,setSendingInformation] = useState(false);
+    const [errorGoogle,setErrorGoogle] = useState(false);
 
     const navigate = useNavigate();
     
@@ -91,16 +92,23 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
     );
 
     useEffect(() => {
-        window.google.accounts.id.initialize({
-            client_id: process.env.REACT_APP_GOOGLE_ID,
-            callback: responseGoogle
-        });
+        const google = document.getElementById('google-handler');
 
-        window.google.accounts.id.renderButton(buttonGoogle.current,{
-            theme: 'outline',
-            text: 'signup'
-        });
-    },[responseGoogle]);
+        if (window.google) {
+            window.google.accounts.id.initialize({
+                client_id: process.env.REACT_APP_GOOGLE_ID,
+                callback: responseGoogle
+            });
+            window.google.accounts.id.renderButton(buttonGoogle.current,{
+                theme: 'outline',
+                text: 'signup'
+            });
+        };
+
+        google.addEventListener('load', () => setErrorGoogle(true));
+
+        return (() => setErrorGoogle(false));
+    },[responseGoogle,errorGoogle]);
 
     const signUpFormValidation = {
         textLimit: /^[a-zA-ZA-ÿ\u00f1\u00d1\s!:,.;]{0,16}$/,

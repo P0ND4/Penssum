@@ -14,6 +14,7 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin, setRegistrationPr
         password: ''
     });
     const [sendingInformation,setSendingInformation] = useState(false);
+    const [errorGoogle,setErrorGoogle] = useState(false);
 
     const navigate = useNavigate();
     const buttonGoogle = useRef();
@@ -113,16 +114,23 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin, setRegistrationPr
     );
 
     useEffect(() => {
-        window.google.accounts.id.initialize({
-            client_id: process.env.REACT_APP_GOOGLE_ID,
-            callback: responseGoogle
-        });
+        const google = document.getElementById('google-handler');
 
-        window.google.accounts.id.renderButton(buttonGoogle.current,{
-            theme: 'outline',
-            text: 'signup'
-        });
-    },[responseGoogle]);
+        if (window.google) {
+            window.google.accounts.id.initialize({
+                client_id: process.env.REACT_APP_GOOGLE_ID,
+                callback: responseGoogle
+            });
+            window.google.accounts.id.renderButton(buttonGoogle.current,{
+                theme: 'outline',
+                text: 'signin'
+            });
+        };
+
+        google.addEventListener('load', () => setErrorGoogle(true));
+
+        return (() => setErrorGoogle(false));
+    },[responseGoogle,errorGoogle]);
 
     const changeData = e => {
         document.querySelector('.login_error').classList.remove('showError');

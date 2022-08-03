@@ -25,8 +25,8 @@ function Found({ filterNav, userInformation, auth }) {
 
         searchTimer.current = setTimeout(async () => {
             let result;
-            if (userInformation.objetive === 'Alumno' || !auth) result = await searchUsers({ id: cookies.get('id'), search: profile_provider, filterNav });
-            if (userInformation.objetive === 'Profesor') result = await searchProducts({ search: profile_provider, filterNav });
+            if (userInformation.objetive === 'Alumno' || !auth) result = await searchUsers({ id: cookies.get('id'), search: profile_provider === 'mod=filter' ? '' : profile_provider, filterNav });
+            if (userInformation.objetive === 'Profesor') result = await searchProducts({ search: profile_provider === 'mod=filter' ? '' : profile_provider, filterNav });
             if (result.error) setError(true)
             else {
                 setData(result);
@@ -55,7 +55,7 @@ function Found({ filterNav, userInformation, auth }) {
                                         coverImage={user.coverPhoto === null ? "/img/cover.jpg" : user.coverPhoto}
                                         profileImage={user.profilePicture === null ? "/img/noProfilePicture.png" : user.profilePicture}
                                         name={name(user.firstName, user.lastName, user.username)}
-                                        description={`${user.originalDescription.slice(0,140)}${user.originalDescription.length > 160 ? '...' : ''}`}
+                                        description={`${user.description.slice(0,140)}${user.description.length > 160 ? '...' : ''}`}
                                         valuePerHour={user.valuePerHour}
                                         link={user.username}
                                     />

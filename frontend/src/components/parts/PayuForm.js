@@ -131,7 +131,7 @@ function PayuForm ({ title, amount, userInformation, productTitle, paymentHandle
             if (result.transactionResponse.state === 'APPROVED') {
                 swal({
                     title: 'APROBADO',
-                    text: `TRANSACCION REALIZADA CORRECTAMENTE, MONTO PAGADO: $${thousandsSystem(amount)} IVA: $${thousandsSystem(Math.round((amount * 0.19)))}, TOTAL: $${thousandsSystem(amount + Math.round((amount * 0.19)))}`,
+                    text: `TRANSACCION REALIZADA CORRECTAMENTE, MONTO PAGADO: $${thousandsSystem(amount)}`,
                     icon: 'success',
                     button: '!Gracias!',
                 }).then(() => {
