@@ -172,7 +172,7 @@ function Preference({ userInformation, setUserInformation, setZoneCompleteInform
                             <div className="preference-description-container">
                                 <div className="preference-description-zone">
                                     {userInformation.objetive === 'Profesor' && !userInformation.description && <i className="fa-solid fa-circle-exclamation field-required-icon" title="Campo requerido"></i>}
-                                    <textarea className="preference-description" maxLength={250} placeholder="Una breve descripción sobre las asignaturas que manejas y los temas de dichas asignaturas, de esta manera los estudiantes podrán encontrarte con facilidad. TE DESEAMOS EXÍTOS." id="preference-description-input" onChange={e => changeDescription(e, 'letter-count-description-preference')} defaultValue={userInformation.description}></textarea>
+                                    <textarea className="preference-description" maxLength={250} placeholder="Has una breve descripción de quien eres." id="preference-description-input" onChange={e => changeDescription(e, 'letter-count-description-preference')} defaultValue={userInformation.description}></textarea>
                                     <span id="letter-count-description-preference">0/250</span>
                                 </div>
                             </div>
