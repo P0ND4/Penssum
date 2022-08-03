@@ -259,9 +259,10 @@ ctrl.recoveryPassword = async (req,res) => {
 ctrl.changePreferenceValue = async (req, res) => {
     const { id, name, value } = req.body;
 
-    if (name === 'originalDescription') {
+    if (name === 'subjects' || name === 'topics') {
         const valueChanged = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        await User.findByIdAndUpdate(id, { 'modifiedDescription': valueChanged });
+        if (name === 'subjects') await User.findByIdAndUpdate(id, { 'specialty.subjects': valueChanged });
+        if (name === 'topics') await User.findByIdAndUpdate(id, { 'specialty.topics': valueChanged });
     };
 
     await User.findByIdAndUpdate(id, { [name]: value });
@@ -312,17 +313,17 @@ ctrl.search = async (req, res) => {
         _id: { $ne: id },
         description: { $ne: '' },
         validated: true,
-        'typeOfUser.user': {$ne: 'block'},
+        'typeOfUser.user': { $ne: 'block' },
         objetive: 'Profesor',
         $or: [
             { firstName: { $regex: '.*' + search + '.*', $options: 'im' } },
             { secondName: { $regex: '.*' + search + '.*', $options: 'im' } },
             { lastName: { $regex: '.*' + search + '.*', $options: 'im' } },
-            { modifiedDescription: { $regex: '.*' + search + '.*', $options: 'im' } },
             { secondSurname: { $regex: '.*' + search + '.*', $options: 'im' } },
             { username: { $regex: '.*' + search + '.*', $options: 'im' } },
             { faculties: { $regex: '.*' + search + '.*', $options: 'im' } },
-            { subjects: { $regex: '.*' + search + '.*', $options: 'im' } },
+            { 'specialty.subjects': { $regex: '.*' + search + '.*', $options: 'im' } },
+            { 'specialty.topics': { $regex: '.*' + search + '.*', $options: 'im' } },
             { email: search }
         ]
     };
@@ -333,9 +334,9 @@ ctrl.search = async (req, res) => {
         if (filterNav.classType === 'presencial') dataToSearch.faceToFaceClasses = true;
     };
 
-    const users = await User.find(dataToSearch, removeData);
+    const users = await User.find(dataToSearch, removeData).limit(50).sort({ completedWorks: -1 });
 
-    (users.length > 0)
+    (users.length > 0 && search.length >= 2)
         ? res.send(users)
         : res.send({ error: true, type: 'users not found' });
 };
@@ -399,11 +400,6 @@ ctrl.changePhoto = async (req, res) => {
 
 ctrl.completeInformation = async (req,res) => {
     const { id, data } =  req.body;
-
-    if (data.originalDescription){
-        const valueChanged = data.originalDescription.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        await User.findByIdAndUpdate(id, { 'modifiedDescription': valueChanged });
-    };
 
     await User.findByIdAndUpdate(id,data);
     const userUpdated = await User.findById(id);

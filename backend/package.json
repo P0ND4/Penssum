@@ -4,7 +4,8 @@
   "description": "API from Penssum",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/"
+    "dev": "nodemon src/",
+    "product": "pm2 start src/ --name 'server-production' && pm2 monit"
   },
   "keywords": [],
   "author": "",

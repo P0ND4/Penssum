@@ -9,8 +9,7 @@ const UserSchema = new Schema ({
     secondName: { type: String, default: '' },
     lastName: { type: String, default: '' },
     secondSurname: { type: String, default: '' },
-    originalDescription: { type: String, default: '' },
-    modifiedDescription: { type: String, default: '' },
+    description: { type: String, default: '' },
     username: { type: String, required: true },
     stringToCompare: { type: String, required: true },
     userImageFileName: { type: Object, default: { profilePicture: '', coverPhoto: '' }},
@@ -43,7 +42,10 @@ const UserSchema = new Schema ({
     completedWorks: { type: Number, default: 0 },
     breaches: { type: Number, default: 0 },
     faculties: { type: Array, default: [] },
-    subjects: { type: Array, default: [] },
+    specialty: { type: Object, default: {
+        subjects: '',
+        topics: ''
+    }},
     bankData: { type: Object, default: {
         bank: '',
         accountNumber: '',
@@ -55,4 +57,4 @@ const UserSchema = new Schema ({
     creationDate: { type: Date, default: Date.now }
 });
 
-module.exports = model('user', UserSchema);
+module.exports = model('user', UserSchema);;
