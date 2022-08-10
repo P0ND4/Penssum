@@ -275,8 +275,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: appearCompleteForm .6s forwards ease-in-out;
+    flex-direction: column;
 }
+
+.complete-form, .complete-form-subjects, .complete-form-topics { animation: appearCompleteForm .6s forwards ease-in-out; }
 
 @keyframes appearCompleteForm {
     0% { 
@@ -289,7 +291,20 @@
     }
 }
 
-.complete-form { width: 500px; }
+.complete-form { 
+    width: 500px; 
+    max-width: 100%;
+}
+
+.complete-form-topics {
+    width: 540px;
+    max-width: 100%;
+}
+
+.complete-form-subjects { 
+    width: 680px;
+    max-width: 100%;
+}
 
 .complete-form-title h1 {
     color: #3282B8;
@@ -427,6 +442,170 @@
 
 #you-forgot-the-password:hover { color: #1b262c9e; }
 
+.progress-bar-container {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 30px;
+    max-width: 100%;
+    width: 350px;
+}
+
+.progress-bar-container::before {
+    content: '';
+    width: 100%;
+    background: #DDDDDD;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 5px;
+    z-index: -1;
+    transition: .4s ease-in-out;
+}
+
+.progress {
+    background: #3282B8;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 0;
+    height: 5px;
+    z-index: -1;
+    transition: .4s ease-in-out;
+}
+
+.progress-circle {
+    background: #DDDDDD;
+    color: #777777;
+    border-radius: 50%;
+    height: 34px;
+    width: 34px;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: .3s all ease-in-out;
+}
+
+.complete-form-subjects-container {
+    max-width: 100%;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.subject-container {
+    cursor: pointer;
+    position: relative;
+    width: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    height: 65px;
+    border-radius: 6px;
+    margin: 4px;
+    transition: .3s all ease-in-out;
+}
+
+.subject-container:hover { opacity: .8; }
+
+#check-subject {
+    position: absolute;
+    font-size: 28px;
+    top: -5px;
+    right: -10px;
+    color: #3282B8;
+}
+
+.subject { text-align: center; }
+
+.subject h1 {
+    color: #FFFFFF;
+    font-size: 15px;
+}
+
+.complete-form-topics-container { margin: 40px 0; }
+
+.complete-form-topics-container p {
+    color: #AAAAAA;
+    font-size: 16px;
+}
+
+.complete-form-topics-container ul {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid #AAAAAA;
+    padding: 7px ;
+    border-radius: 5px;
+    margin: 12px 0;
+}
+
+.complete-form-topics-container ul li {
+    list-style: none;
+    background: #DDDDDD;
+    margin: 4px 3px;
+    padding: 5px 8px 5px 10px;
+    border: 1px solid #AAAAAA;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.complete-form-topics-container ul li i {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #CCCCCC;
+    font-size: 12px;
+    color: #808080;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 8px;
+    transition: .2s all ease-in-out;
+}
+
+.complete-form-topics-container ul li i:hover { background: #BBBBBB; }
+
+.complete-form-topics-container ul input {
+    border: none;
+    outline: none;
+    flex: 1;
+    padding: 5px;
+    font-size: 16px;
+    background: transparent;
+}
+
+.tag-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tag-details p span {
+    color: #3282B8;
+    font-weight: 600;
+}
+
+.tag-details button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background: #3282B8;
+    color: #FFFFFF;
+    font-size: 14px;
+    padding: 9px 15px;
+    border-radius: 5px;
+    transition: .2s all ease-in-out;
+}
+
+.tag-details button:hover { background: #1B262C; }
+
 @media only screen and (max-width: 1000px) {
     .signup-container {
         display: flex;
@@ -493,3 +672,5 @@
         width: 100%;
     }
 }
+
+@media only screen and (max-width: 392px) { .subject-container { width: 100%; } }

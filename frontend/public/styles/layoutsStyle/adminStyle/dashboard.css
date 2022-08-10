@@ -500,6 +500,199 @@
     padding: 0 10px;
 }
 
+#arror-right-dashboard { 
+    margin-left: 20px; 
+    transition: .2s all ease-in-out;
+}
+
+.selectable-dashboard {
+    width: 100%;
+    padding: 0 10px;
+    overflow: hidden;
+    height: 0;
+    transition: .3s all ease-in-out;
+}
+
+.selectable-dashboard ul {
+    border-left: 1px solid #FFFFFF;
+    margin-left: 30px;
+    padding: 0 20px;
+}
+
+.selectable-dashboard ul li { list-style: none; }
+
+.selectable-dashboard ul li a {
+    font-size: 16px;
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+#icon-ticket-dashboard {
+    color: #DDDDDD;
+    font-size: 20px;
+    transform: rotate(45deg);
+}
+
+.coupon-title-container { margin: 30px 0; }
+
+.coupon-subtitle { color: #222222; }
+
+.coupons-container {
+    padding: 40px;
+    width: 100%;
+    max-height: 70vh;
+    overflow: auto;
+    background: #FFFFFF;
+    border-radius: 8px;
+}
+
+.nav-coupons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-coupons h2 {
+    color: #3282B8;
+    font-size: 26px;
+}
+
+.nav-coupons button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #3282B8;
+    color: #FFFFFF;
+    font-size: 16px;
+}
+
+.coupons { margin-top: 20px; }
+
+.cuopon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: #EEEEEE;
+    margin: 5px 0;
+    border-radius: 8px;
+}
+
+.cuopon p {
+    font-size: 16px;
+    color: #444444;
+}
+
+.cuopon p span {
+    font-size: 17px;
+    font-weight: 600;
+    color: #3282B8;
+}
+
+.cuopon button {
+    background: #3282B8;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: .2s all ease;
+}
+
+.cuopon button i {
+    color: #FFFFFF;
+    font-size: 16px;
+}
+
+.cuopon button:hover { background: #1B262C; }
+
+.create-coupon-container {
+    animation: appearPaymentInformation .4s forwards ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #2c373d81;
+    z-index: 50;
+}
+
+.create-coupon {
+    width: 500px;
+    background: #FFFFFF;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.create-coupon h1 {
+    color: #3282B8;
+    font-size: 30px;
+    text-align: center;
+}
+
+.create-coupon-body { margin: 20px 0; }
+
+.create-coupon .create-coupon-name, .divider-create-coupon input, .create-coupon-amount {
+    background: #EEEEEE;
+    margin: 5px 0;
+    border-radius: 40px;
+    padding: 8px 12px;
+    font-size: 17px;
+    width: 100%;
+    border: none;
+    outline: none;
+    transition: .2s all ease-in-out;
+}
+
+.divider-create-coupon { margin: 15px 0; }
+
+.divider-create { 
+    margin-right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.divider-create button {
+    margin: 10px 0;
+    background: #AAAAAA;
+}
+
+.divider-create-coupon p {
+    color: #666666;
+    font-size: 18px;
+}
+
+.button-container-coupon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.button-container-coupon button {
+    color: #FFFFFF;
+    padding: 8px 12px;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    cursor: pointer;
+    width: 100%;
+    margin: 5px;
+    transition: .3s all ease-in-out;
+}
+
+.button-container-coupon button:nth-child(1) { background: #2c373d; }
+.button-container-coupon button:nth-child(2) { background: #3282B8; }
+
+.button-container-coupon button:nth-child(1):hover { background: #1B262C; }
+.button-container-coupon button:nth-child(2):hover { background: #0F4C75; }
+
 @keyframes appearSlowly {
     0% { 
         height: 0; 
@@ -522,6 +715,15 @@
         width: 90%; 
         margin: 0 auto;
     }
+}
+
+@media only screen and (max-width: 900px) {
+    .cuopon {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .cuopon button { width: 180px; }
 }
 
 @media only screen and (max-width: 850px) {

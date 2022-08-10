@@ -82,13 +82,13 @@
 
 .support-and-right { width: 48%; }
 
-.law-degree, .penssum-version {
+.law-degree, .penssum-version, .phone-number-penssum {
     color: #aaaaaa;
     font-size: 18px;
     margin: 8px 0;
 }
 
-.fa-whatsapp { 
+.whatsapp, .whatsapp i { 
     font-size: 20px;
     color: #46b5ff; 
 }

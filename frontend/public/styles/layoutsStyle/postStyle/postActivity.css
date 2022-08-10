@@ -179,7 +179,7 @@
 
 .pay-options img { width: 120px; }
 
-.pay-options-button, .integrate-video_call-button, .integrate-advancePayment-button {
+.pay-options-button, .integrate-video_call-button, .integrate-advancePayment-button, .dashboard-selection-button {
     height: 30px;
     border-radius: 40px;
     margin: 6px 0 12px 0;
@@ -195,13 +195,13 @@
     background: #EEEEEE;
 }
 
-.integrate-video_call-button, .integrate-advancePayment-button { 
+.integrate-video_call-button, .integrate-advancePayment-button, .dashboard-selection-button { 
     margin: 0 10px;
     width: 63px; 
     background: #FFFFFF;
 }
 
-.pay-options-button div, .integrate-video_call-button div, .integrate-advancePayment-button div {
+.pay-options-button div, .integrate-video_call-button div, .integrate-advancePayment-button div , .dashboard-selection-button div {
     width: 30px;
     height: 100%;
     border-radius: 50%;
@@ -273,6 +273,86 @@
     color: #3282B8;
 }
 
+.coupon-zone-container {
+    margin-top: 50px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.coupon-zone-title {
+    color: #666666;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.coupon-zone-locked {
+    color: #666666;
+    font-size: 16px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.coupon-zone-selection input, .coupon-zone-selection button {
+    padding: 8px 12px;
+    border: none;
+    outline: none;
+    font-size: 17px;
+}
+
+.coupon-zone-selection input { 
+    border-radius: 40px 0 0 40px; 
+    background: #FFFFFF;
+}
+
+.coupon-zone-selection button { 
+    border-radius: 0 40px 40px 0; 
+    background: #3282B8;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.coupon-zone-selection button:hover { background: #1B262C; }
+
+.coupon-applied-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.coupon-applied {
+    display: flex;
+    align-items: center;
+}
+
+.coupon-applied img {
+    width: 40px;
+    height: 40px;
+}
+
+.coupon-applied p, .coupon-applied-container p {
+    font-size: 20px;
+    color: #666666;
+    margin: 0 10px;
+    text-align: center;
+}
+
+.coupon-applied-container p span {
+    color: #3282B8;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+@media only screen and (max-width: 1450px) {
+    .coupon-applied p, .coupon-applied-container p { font-size: 16px; }
+    .coupon-applied-container p span { font-size: 17px; }
+}
+
 @media only screen and (max-width: 1000px) {
     .post-photos-container, .post-form-container { width: 70%; }
     .post-activity {
@@ -287,6 +367,12 @@
     .post-activity-container { background: none; }
     .post-photos-container, .post-form-container { width: 100%; }
     .post-subtitle { display: none; }
+    .coupon-applied-container {
+        flex-direction: column;
+        justify-content: center;
+    }
+    .coupon-applied p, .coupon-applied-container p { font-size: 20px; }
+    .coupon-applied-container p span { font-size: 22px; }
 }
 
 @media only screen and (max-width: 600px) {
@@ -302,6 +388,7 @@
 }
 
 @media only screen and (max-width: 400px) {
+    .coupon-zone-selection input { width: 150px; }
     .video_call-option-container, .advancePayment-option-container {
         display: flex;
         flex-direction: column;
