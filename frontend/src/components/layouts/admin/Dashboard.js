@@ -8,10 +8,13 @@ import {
     getTransaction, 
     socket, 
     markNotification,
-    getNotifications
+    getNotifications,
+    getCoupons,
+    createCoupon,
+    removeCoupon
 } from '../../../api';
 import { WeeklyRegisteredUsers, UserState, PublishedProducts } from '../../parts/dashboard/Graphics';
-import { changeDate } from '../../helpers/';
+import { changeDate, thousandsSystem } from '../../helpers/';
 import swal from 'sweetalert';
 
 import StatisticsCard from '../../parts/dashboard/StatisticsCard';
@@ -36,10 +39,25 @@ function Dashboard({ setProducts }) {
     const [countInNotification,setCountInNotification] = useState(0);
     const [notifications,setNotifications] = useState(null);
     const [sendingInformation,setSendingInformation] = useState(false);
+    const [selectedTool,setSelectedTool] = useState(false);
+    const [width,setWidth] = useState(window.innerWidth);
+    const [coupons,setCoupons] = useState([]);
+    const [activeCreateCoupon,setActiveCreateCoupon] = useState(false);
+    const [dataCoupons,setDataCoupons] = useState({
+        name: '',
+        amount: '',
+        utility: '',
+        time: '',
+        activeUtility: false,
+        activeTime: false
+    });
 
     const { attribute } = useParams();
     let menuDashboard = useRef();
+    let tools = useRef();
     const plainNotificationBell = useRef();
+
+    window.addEventListener('resize', () => setWidth(window.innerWidth));
 
     useEffect(() => {
         const menuDashboardhandler = e => {
@@ -88,22 +106,27 @@ function Dashboard({ setProducts }) {
             setUsers(users);
             const transactions = await getTransaction();
             setTransactions(transactions);
+            const coupons = await getCoupons();
+            setCoupons(coupons);
         };
         getInformation();
     }, []);
 
+    useEffect(() => { 
+        if (width <= 600) document.querySelector('.dashboard-sections-container').classList.add('dashboard-sections-container-in-mobile');
+        else document.querySelector('.dashboard-sections-container').classList.remove('dashboard-sections-container-in-mobile');
+    },[width,attribute]);
+
     useEffect(() => {
         document.querySelectorAll('.dashboard-sections').forEach(section => section.classList.remove('dashboard-active'));
-        if (window.innerWidth <= 600) document.querySelector('.dashboard-sections-container').classList.add('dashboard-sections-container-in-mobile');
-        else document.querySelector('.dashboard-sections-container').classList.remove('dashboard-sections-container-in-mobile');
-
         if (attribute === 'mod=general') document.querySelector('.dashboard').classList.add('dashboard-active');
         if (attribute === 'mod=products') document.querySelector('.dashboard-product').classList.add('dashboard-active');
         if (attribute === 'mod=users') document.querySelector('.dashboard-users').classList.add('dashboard-active');
         if (attribute === 'mod=payments') document.querySelector('.dashboard-payments').classList.add('dashboard-active');
         if (attribute === 'mod=rules') document.querySelector('.dashboard-rules').classList.add('dashboard-active');
         if (attribute === 'mod=setting') document.querySelector('.dashboard-setting').classList.add('dashboard-active');
-    });
+        if (attribute === 'mod=coupons') document.querySelector('.dashboard-tools').classList.add('dashboard-active');
+    },[attribute]);
 
     const searchAllUsers = async () => {
         const value = document.getElementById('search-user-dashboard').value;
@@ -148,6 +171,68 @@ function Dashboard({ setProducts }) {
         });
     };
 
+    const makeCoupon = async () => {
+        setSendingInformation(true);
+
+        const data = {
+            name: dataCoupons.name,
+            amount: parseInt(dataCoupons.amount.replace(/\./g, '')),
+            utility: parseInt(dataCoupons.utility.replace(/\./g, '')),
+            time: dataCoupons.time
+        };
+
+        const result = await createCoupon(data);
+    
+        if (!result.error) {
+            const coupons = await getCoupons();
+            setCoupons(coupons);
+            setActiveCreateCoupon(false);
+
+            setDataCoupons({ 
+                name: '',
+                amount: '',
+                utility: '',
+                time: '',
+                activeUtility: false,
+                activeTime: false
+            });
+
+            swal({
+                title: 'Creado',
+                text: 'Cupon creado correctamente.',
+                icon: 'success',
+                timer: '2000',
+                button: false
+            });
+        } else {
+            swal({
+                title: '!OOPS!',
+                text: 'El cupon ya existe.',
+                icon: 'error',
+                timer: '2000',
+                button: false
+            });
+        };
+
+        setSendingInformation(false);        
+    };
+
+    const deleteCoupon = id => {
+        swal({
+            title: '¿Estas seguro?',
+            text: '¿Quieres eliminar el cupon?.',
+            icon: 'warning',
+            buttons: ['No', 'Si']
+        }).then(async res => {
+            if (res) {
+                await removeCoupon({ id_coupon: id });
+                const coupons = await getCoupons();
+                setCoupons(coupons);
+            };
+        });
+        
+    };
+
     return (
         <div className="dashboard-container">
             <div className="dashboard-sections-container">
@@ -183,14 +268,27 @@ function Dashboard({ setProducts }) {
                             <i className="fas fa-ruler-combined"></i>
                             <p>Reglas</p>
                         </Link>*/}
+                        <div className="selectable-dashboard-container">
+                            <section className="dashboard-sections dashboard-tools" onClick={() => {
+                                if (!selectedTool) tools.current.style.height = `${tools.current.scrollHeight}px`
+                                else tools.current.style.height = '';
+                                setSelectedTool(!selectedTool);
+                            }}>
+                                <i className="fas fa-tools"></i>
+                                <p>Herramientas</p>
+                                <i className="fa-solid fa-angle-right" id="arror-right-dashboard" style={{ transform: selectedTool ? 'rotate(90deg)' : '' }}></i>
+                            </section>
+                            
+                            <section className="selectable-dashboard" ref={tools}>
+                                <ul>
+                                    <li><Link to="/dashboard/mod=coupons">Cupones <i className="fa-solid fa-ticket" id="icon-ticket-dashboard"></i></Link></li>
+                                </ul>
+                            </section>    
+                        </div>
                         <Link to="/dashboard/mod=setting" className="dashboard-sections dashboard-setting">
                             <i className="fas fa-cog"></i>
                             <p>Configuracion</p>
-                        </Link>
-                        {/*<Link to="/dashboard/mod=tools" className="dashboard-sections">
-                            <i className="fas fa-tools"></i>
-                            <p>Herramientas</p>
-                        </Link>*/}
+                        </Link>   
                     </div>
                 </div>
             </div>
@@ -424,8 +522,169 @@ function Dashboard({ setProducts }) {
                                             <PreferenceToggle h4="Permitir revicion de productos" p="Permite la revicion de productos, si esta desactivado los productos se publicaran sin necesidad de revicion" idContainer="allowProductReview" idButton="buttonAllowProductReview" />
                                             <PreferenceToggle h4="Permitir videollamadas" p="Bloquea las reuniones por videollamadas en la plataforma" idContainer="allowVideoCall" idButton="buttonAllowVideoCall" />
                                         </div>
-                                        : attribute === 'mod=tools'
-                                            ? <div className="commomStylePadding dashboard-tools"></div>
+                                        : attribute === 'mod=coupons'
+                                            ? <div className="commomStylePadding dashboard-coupons">
+                                                <div className="coupon-title-container">
+                                                    <h2 className="coupon-title">CUPONES <i className="fa-solid fa-ticket"></i></h2>
+                                                    <h1 className="coupon-subtitle">AYUDA A TUS USUARIOS</h1>
+                                                </div>
+                                                <div className="coupons-container">
+                                                    <div className="nav-coupons">
+                                                        <h2>{coupons.length === 0 ? 'NO HAY CUPONES' : 'CUPONES ACTUALES'}</h2>
+                                                        <button onClick={() => setActiveCreateCoupon(true)}>Crear</button>
+                                                    </div>
+                                                    {coupons.map(coupon => (
+                                                        <div className="coupons" key={coupon.name}>
+                                                            <div className="cuopon">
+                                                                <p>Código: <span>{coupon.name}</span></p>
+                                                                <p>Monto: <span>${coupon.amount >= 1000 ? thousandsSystem(coupon.amount) : coupon.amount}</span></p>
+                                                                <p>Uso restante: <span>{coupon.utility >= 1000 ? thousandsSystem(coupon.utility) : coupon.utility ? coupon.utility : 'Ilimitado'}</span></p>
+                                                                <p>Expira: <span>{coupon.time ? changeDate(coupon.time) : 'No Expira'}</span></p>
+                                                                <button title="Eliminar" onClick={() => deleteCoupon(coupon._id)}><i className="fa-solid fa-trash"></i></button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {activeCreateCoupon && (
+                                                    <div className="create-coupon-container" onClick={e => e.target.className === 'create-coupon-container' && setActiveCreateCoupon(false)}>
+                                                        <div className="create-coupon">
+                                                            <h1>CREA UN CUPON</h1>
+                                                            <div className="create-coupon-body">
+                                                                <input 
+                                                                    className="create-coupon-name" 
+                                                                    type="text" 
+                                                                    placeholder="Nombre del cupon a utilizar"
+                                                                    value={dataCoupons.name}
+                                                                    onChange={e => {
+                                                                        if (e.target.value.length <= 20) {
+                                                                            setDataCoupons({
+                                                                                ...dataCoupons,
+                                                                                name: e.target.value.trim()
+                                                                            });
+                                                                        };
+                                                                    }}
+                                                                />
+                                                                <input 
+                                                                    className="create-coupon-amount" 
+                                                                    type="text" 
+                                                                    placeholder="Dinero a abonar"
+                                                                    value={dataCoupons.amount}
+                                                                    onChange={e => {
+                                                                        if (e.target.value.length < 14 && /^[0-9.]{0,20}$/.test(e.target.value)) {
+                                                                            var num = e.target.value.replace(/\./g,'');
+                                                                            if(!isNaN(num)){
+                                                                                num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1.');
+                                                                                num = num.split('').reverse().join('').replace(/^[.]/,'');
+                                                                                setDataCoupons({ ...dataCoupons, amount: num });
+                                                                            } else setDataCoupons({ ...dataCoupons, amount: num });
+                                                                        };
+                                                                    }}
+                                                                />
+                                                                <div className="divider-create-coupon">
+                                                                    <div className="divider-create">
+                                                                        <p>¿Quieres agregar un limite de uso?</p>
+                                                                        <button 
+                                                                            className="dashboard-selection-button"
+                                                                            onClick={() => {
+                                                                                setDataCoupons({ 
+                                                                                    ...dataCoupons, 
+                                                                                    activeUtility: !dataCoupons.activeUtility,
+                                                                                    utility: ''
+                                                                                });
+                                                                            }}>
+                                                                            <div style={{ 
+                                                                                transform: !dataCoupons.activeUtility ? 'translateX(0)' : 'translateX(33px)',
+                                                                                background: !dataCoupons.activeUtility ? '#283841' : '#3282B8'
+                                                                            }}>{!dataCoupons.activeUtility ? 'No' : 'Si'}</div>
+                                                                        </button>
+                                                                    </div>
+                                                                    <input  
+                                                                        disabled={!dataCoupons.activeUtility ? true : false} 
+                                                                        type="text" 
+                                                                        placeholder="Cuantas veces se va a utilizar el cupon"
+                                                                        value={dataCoupons.utility}
+                                                                        onChange={e => {
+                                                                            if (e.target.value.length < 10 && /^[0-9.]{0,20}$/.test(e.target.value)) {
+                                                                                var num = e.target.value.replace(/\./g,'');
+                                                                                if(!isNaN(num)){
+                                                                                    num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1.');
+                                                                                    num = num.split('').reverse().join('').replace(/^[.]/,'');
+                                                                                    setDataCoupons({ ...dataCoupons, utility: num });
+                                                                                } else setDataCoupons({ ...dataCoupons, utility: num });
+                                                                            };
+                                                                        }}
+                                                                        style={{ 
+                                                                            cursor: !dataCoupons.activeUtility ? 'not-allowed' : '', 
+                                                                            background: !dataCoupons.activeUtility ? '#CCCCCC' : ''    
+                                                                        }}/>
+                                                                </div>
+                                                                <div className="divider-create-coupon">
+                                                                    <div className="divider-create">
+                                                                        <p>¿Quieres integrar una fecha de expedición?</p>
+                                                                        <button 
+                                                                            className="dashboard-selection-button"
+                                                                            onClick={() => setDataCoupons({ 
+                                                                                ...dataCoupons, 
+                                                                                activeTime: !dataCoupons.activeTime,
+                                                                                time: ''
+                                                                            })}>
+                                                                            <div style={{ 
+                                                                                transform: !dataCoupons.activeTime ? 'translateX(0)' : 'translateX(33px)',
+                                                                                background: !dataCoupons.activeTime ? '#283841' : '#3282B8'
+                                                                            }}>{!dataCoupons.activeTime ? 'No' : 'Si'}</div>
+                                                                        </button>
+                                                                    </div>
+                                                                    <input
+                                                                        onChange={e => {
+                                                                            setDataCoupons({ 
+                                                                                ...dataCoupons, 
+                                                                                time: e.target.value
+                                                                            })
+                                                                        }}
+                                                                        value={dataCoupons.time}
+                                                                        disabled={!dataCoupons.activeTime ? true : false}  
+                                                                        type="date"
+                                                                        style={{ 
+                                                                            cursor: !dataCoupons.activeTime ? 'not-allowed' : '',
+                                                                            background: !dataCoupons.activeTime ? '#CCCCCC' : ''
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className="divider-create-coupon button-container-coupon">
+                                                                    <button
+                                                                        style={{ 
+                                                                            background: sendingInformation ? '#3282B8' : '', 
+                                                                            opacity: sendingInformation ? '.4' : '', 
+                                                                            cursor: sendingInformation ? 'not-allowed' : '' 
+                                                                        }}
+                                                                        onClick={() => {
+                                                                            if (!sendingInformation) {
+                                                                                setActiveCreateCoupon(false);
+                                                                                setDataCoupons({ 
+                                                                                    name: '',
+                                                                                    amount: '',
+                                                                                    utility: '',
+                                                                                    time: '',
+                                                                                    activeUtility: false,
+                                                                                    activeTime: false
+                                                                                });
+                                                                            };
+                                                                        }}
+                                                                    >Cancelar</button>
+                                                                    <button
+                                                                        onClick={() => dataCoupons.name && parseInt(dataCoupons.amount.replace(/\./g, '')) > 0 && dataCoupons.amount !== '' && !sendingInformation && makeCoupon()}
+                                                                        style={{ 
+                                                                            background: !dataCoupons.name || parseInt(dataCoupons.amount.replace(/\./g, '')) === 0 || dataCoupons.amount === '' || sendingInformation ? '#3282B8' : '', 
+                                                                            opacity: !dataCoupons.name || parseInt(dataCoupons.amount.replace(/\./g, '')) === 0 || dataCoupons.amount === '' || sendingInformation ? '.4' : '', 
+                                                                            cursor: !dataCoupons.name || parseInt(dataCoupons.amount.replace(/\./g, '')) === 0 || dataCoupons.amount === '' || sendingInformation ? 'not-allowed' : '' 
+                                                                        }}
+                                                                    >Crear</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                             : attribute === 'mod=setting'
                                                 ?   <div className="commomStylePadding dashboard-setting">
                                                         <DashboardPreferencePart

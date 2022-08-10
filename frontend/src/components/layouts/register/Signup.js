@@ -105,7 +105,7 @@ function Signup({ setUserInformation, registrationProcess, setRegistrationProces
             });
         };
 
-        google.addEventListener('load', () => setErrorGoogle(true));
+        if (google) google.addEventListener('load', () => setErrorGoogle(true));
 
         return (() => setErrorGoogle(false));
     },[responseGoogle,errorGoogle]);

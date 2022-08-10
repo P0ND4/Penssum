@@ -127,7 +127,7 @@ function Signin({ setAuth, setUserInformation, setSigninAdmin, setRegistrationPr
             });
         };
 
-        google.addEventListener('load', () => setErrorGoogle(true));
+        if (google) google.addEventListener('load', () => setErrorGoogle(true));
 
         return (() => setErrorGoogle(false));
     },[responseGoogle,errorGoogle]);

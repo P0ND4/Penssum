@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { productCreate } from '../../../api';
-import { fileEvent } from '../../helpers';
+import { productCreate, getCoupons, couponControl } from '../../../api';
+import { fileEvent, thousandsSystem, getRemainTime } from '../../helpers';
 import PayuForm from '../../parts/PayuForm';
 import swal from 'sweetalert';
 import Information from '../../parts/Information';
@@ -36,7 +36,38 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
     const [activateInformation,setActivateInformation] = useState(false);
     const [payForPenssum,setPayForPenssum] = useState(false);
 
+    //Coupon
+
+    const [coupon,setCoupon] = useState(null);
+    const [couponText,setCouponText] = useState(''); 
+    const [errorCoupon,setErrorCoupon] = useState(0);
+    const [incrementError,setIncrementError] = useState(15000);
+    const [timerError,setTimerError] = useState(null);
+
+    const timerErrorRef = useRef();
+
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (errorCoupon === 3 || timerError) {
+            setErrorCoupon(0);
+            if (!timerError) {
+                const currentDate = new Date();
+                const TimeInMilliseconds = currentDate.getTime();
+                const newDate = new Date(TimeInMilliseconds + incrementError);
+
+                setTimerError(getRemainTime(newDate));
+                timerErrorRef.current = setInterval(() => setTimerError(getRemainTime(newDate)),1000);
+                const newIncrement = incrementError * 2;
+                setIncrementError(newIncrement);
+            };
+
+            if (timerError && timerError.remainTime <= 1) {
+                clearInterval(timerErrorRef.current);
+                setTimerError(null);
+            };
+        };
+    },[errorCoupon,timerError,incrementError]);
 
     const saveProduct = useCallback(
         async advancePayment => {
@@ -63,10 +94,11 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
 
             setSendingInformation(true);
             if (obtainedFiles !== null) await productCreate(activityData);
+            if (coupon) await couponControl({ id_coupon: coupon._id, username: userInformation.username });
             setSendingInformation(false);
             setObtainedFiles(null);
             navigate(`/${userInformation.username}`);
-        },[data,userInformation,navigate,valueNumber,valueString,obtainedFiles,setObtainedFiles,paymentHandler]
+        },[data,userInformation,navigate,valueNumber,valueString,obtainedFiles,setObtainedFiles,paymentHandler,coupon]
     );
 
     useEffect(() => {
@@ -170,7 +202,7 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
 
         if (field.category && field.subCategory && field.customCategory && field.title && field.description && data.dateOfDelivery) {
             if (obtainedFiles !== null) {
-                if (data.advancePayment && valueNumber > 0 && valueNumber) {
+                if ((data.advancePayment && valueNumber > 0 && valueNumber) || (coupon !== null && valueNumber > coupon.amount)) {
                     if (valueNumber >= 20000 && valueNumber <= 750000) setActivateInformation(true)
                     else {
                         swal({
@@ -194,6 +226,34 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
             if (!field.category) error.textContent = `Rellene el campo de categoria.`;
 
             error.classList.add('showError');
+        };
+    };
+
+    const getCoupon = async () => {
+        const coupon = await getCoupons({ text: couponText, username: userInformation.username });
+
+        if (coupon.error) {
+            swal({
+                title: '!OOPS!',
+                text: coupon.type === 'the coupon don`t exists' ? 'No se encontro el cupon.' : coupon.type === 'coupon expired' ? 'El cupon expiró.' : 'Ya usó el cupon',
+                icon: 'error',
+                button: 'Gracias',
+            });
+            if (coupon.type === 'the coupon don`t exists') setErrorCoupon(errorCoupon + 1);
+        } else {
+            setCoupon(coupon);
+            setIncrementError(15000);
+            setErrorCoupon(0);
+            setValueNumber(coupon.amount);
+            setValueString(coupon.amount >= 1000 ? thousandsSystem(coupon.amount) : coupon.amount);
+            setData({ ...data, advancePayment: false });
+            swal({
+                title: '!EXCELENTE!',
+                text: 'Cupon agregado correctamente.',
+                icon: 'success',
+                button: false,
+                timer: '2000'
+            });
         };
     };
 
@@ -238,8 +298,20 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
                     </div>
                 </section>
                 <section className="post-form-container">
-                    <h1 className="post-form-containert-title">CREA UNA PUBLICACION</h1>
+                    <div>
+                        <h1 className="post-form-containert-title">CREA UNA PUBLICACION</h1>
+                    </div>
                     <form onSubmit={e => e.preventDefault()} >
+                        {coupon && (
+                            <div className="coupon-applied-container">
+                                <div className="coupon-applied">
+                                    <img src="/img/penssum-transparent.png" alt="penssum-icon"/>
+                                    <p>{coupon.name}</p>
+                                </div>
+                                <p>Cupon agregado correctamente</p>
+                                <p>Cupon de: <span>${coupon.amount >= 1000 ? thousandsSystem(coupon.amount) : coupon.amount}</span></p>
+                            </div>
+                        )}
                         <div className="form-control form-control-select">
                             <select id="main-post-category" defaultValue="category" onChange={e => {
                                 setData({ ...data, category: e.target.value });
@@ -287,11 +359,14 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
                         <div className="form-control">
                             <input type="text" name="value" value={valueString} id="post-product-price" placeholder="Introduzca el valor del producto en pesos Colombianos (COP)" onChange={e => {
                                 var num = e.target.value.replace(/\./g,'');
+
                                 if(!isNaN(num)){
-                                    setValueNumber(parseInt(e.target.value.replace(/\./g, '')));
-                                    num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1.');
-                                    num = num.split('').reverse().join('').replace(/^[.]/,'');
-                                    setValueString(num);
+                                    if ((!coupon || (coupon && parseInt(num) >= coupon.amount)) && num.length <= 10) {
+                                        setValueNumber(parseInt(e.target.value.replace(/\./g, '')));
+                                        num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1.');
+                                        num = num.split('').reverse().join('').replace(/^[.]/,'');
+                                        setValueString(num);
+                                    };
                                 } else setValueString(e.target.value.replace(/[^\d.]*/g,''));
 
                                 changeEvent(e)
@@ -331,7 +406,7 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
                                 </section>
                             )}
                         </div>
-                        {(userInformation.objetive === 'Alumno' && valueNumber > 0 && valueNumber) && (
+                        {(userInformation.objetive === 'Alumno' && valueNumber > 0 && valueNumber && !coupon) && (
                             <div className="advancePayment-option-container">    
                                 <div className="advancePayment-option">
                                     <span>¿Quieres pagar a través de PENSSUM?</span>
@@ -398,23 +473,41 @@ function PostActivity({ userInformation, obtainedFiles, setObtainedFiles, isTheU
                         </div>
                         <p className="field field_fill_in_fields_post_activity" style={{ textAlign: 'center', background: '#d10b0b', padding: '6px', borderRadius: '8px', color: '#FFFFFF' }}></p>
                     </form>
+                    {!coupon && (
+                        <section className="coupon-zone-container">
+                            <p className="coupon-zone-title">¿Tienes un cupon?</p>
+                            <div className="coupon-zone-selection">
+                                <input type="text" value={couponText} onChange={e => setCouponText(e.target.value.trim())} placeholder="Ingresa el cupon aqui"/>
+                                <button 
+                                    style={{ 
+                                        background: timerError ? '#3282B8' : '', 
+                                        opacity: timerError ? '.4' : '', 
+                                        cursor: timerError ? 'not-allowed' : '' 
+                                    }}
+                                    onClick={() => couponText && !timerError && getCoupon()}
+                                >Validar</button>
+                            </div>
+                            {timerError && <p className="coupon-zone-locked">Tiempo de bloqueo: {timerError.remainHours}:{timerError.remainMinutes}:{timerError.remainSeconds}</p>}
+                        </section>
+                    )}
                 </section>
             </div>
             {activatePayment && (
                 <PayuForm
-                    title="PAGO ADELANTADO"
-                    amount={valueNumber}
+                    title={coupon ? 'DIFERENCIA DEL PAGO' : "PAGO ADELANTADO"}
+                    amount={coupon ? valueNumber - coupon.amount : valueNumber}
                     userInformation={userInformation}
                     productTitle={data.title}
                     paymentHandler={setPaymentHandler}
                     setActivatePayment={setActivatePayment}
+                    payment={coupon ? { card: true, pse: false, bank: false, cash: false } : { card: true, pse: true, bank: true, cash: true }}
                 />
             )}
             {activateInformation && (
                 <Information 
                     userInformation={userInformation}
-                    callback={data.advancePayment ? setActivatePayment : saveProduct}
-                    callbackValue={data.advancePayment ? true : false}
+                    callback={data.advancePayment || (coupon !== null && valueNumber > coupon.amount) ? setActivatePayment : saveProduct}
+                    callbackValue={data.advancePayment || coupon !== null ? true : false}
                     controller={setActivateInformation}
                 />
             )}

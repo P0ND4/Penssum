@@ -321,3 +321,23 @@ export const sendTransactionVerification = async data => {
     const result = await axios.post(`${API}/send/transaction/verification`, data);
     return await result.data;
 };
+
+export const createCoupon = async data => {
+    const result = await axios.post(`${API}/create/coupon`, data);
+    return await result.data;
+};
+
+export const getCoupons = async data => {
+    const result = await axios.post(`${API}/get/coupons`, data);
+    return await result.data;
+};
+
+export const removeCoupon = async data => {
+    const result = await axios.post(`${API}/remove/coupon`, data);
+    return await result.data;
+};
+
+export const couponControl = async data => {
+    const result = await axios.post(`${API}/coupon/control`, data);
+    return await result.data;
+};
