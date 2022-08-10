@@ -5,6 +5,7 @@ const Block = require('../models/Block');
 const Message = require('../models/Message');
 const Notification = require('../models/Notification');
 const Offer = require('../models/Offer');
+const Coupon = require('../models/Coupon');
 
 const hash = require('../helpers/hash');
 
@@ -309,6 +310,20 @@ ctrl.userStatusChange = async (req,res) => {
     };
 
     res.send(user);
+};
+
+ctrl.createCoupon = async (req,res) => {
+    const data = req.body;
+
+    const coupon = await Coupon.findOne({ name: data.name });
+
+    if (coupon) res.send({ error: true, type: 'the coupon already exists' })    
+    else {
+        const newCoupon = new Coupon(data);
+        const result = await newCoupon.save();
+        
+        res.send(result);
+    };
 };
 
 module.exports = ctrl;

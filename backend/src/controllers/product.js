@@ -226,7 +226,7 @@ ctrl.create = async (req, res) => {
 
     if (data.advancePayment) {
         const transaction = await Transaction.findOne({ userId: data.owner }).sort({ creationDate: -1 })
-        await Transaction.findById(transaction._id,{ productId: result._id });
+        if (transaction) await Transaction.findByIdAndUpdate(transaction._id,{ productId: result._id });
     }
 
     res.send(result);

@@ -8,8 +8,7 @@ const User = require('../models/User');
 const Offer = require('../models/Offer');
 const Transaction = require('../models/Transaction');
 const Vote = require('../models/Vote');
-
-const { randomName } = require('../helpers/libs');
+const Coupon = require('../models/Coupon');
 
 const ctrl = {};
 
@@ -339,7 +338,7 @@ ctrl.removeTransaction = async (req,res) => {
 };
 
 ctrl.getVote = async (req,res) => {
-    const { from, to, productId, voteType } = req.body;
+    const { from, to, voteType } = req.body;
 
     if (voteType === 'pending') {
         const votes = await Vote.find({ from, pending: true });
@@ -459,6 +458,49 @@ ctrl.sendTransactionVerification = async (req,res) => {
     const result = await newTransaction.save();
 
     res.send(result);
+};
+
+ctrl.getCoupons = async (req,res) => {
+    const { text, username } = req.body;
+
+    const date = new Date();
+
+    if (text) {
+        const coupon = await Coupon.findOne({ name: text });
+
+        if (coupon) {
+            if (coupon.time && coupon.time < date) {
+                await Coupon.findOneAndDelete({ name: text });
+                return res.send({ error: true, type: 'coupon expired' });
+            } else if (coupon.records.indexOf(username) !== -1) res.send({ error: true, type: 'used coupon' })
+            else res.send(coupon);
+        } else res.send({ error: true, type: 'the coupon don`t exists' });
+    } else {
+        const coupons = await Coupon.find().sort({ creationDate: -1 });
+        res.send(coupons);
+    }
+};
+
+ctrl.removeCoupon = async (req,res) => {
+    const { id_coupon } = req.body;
+
+    await Coupon.findByIdAndRemove(id_coupon);
+
+    res.send('removed');
+};
+
+ctrl.couponControl = async (req,res) => {
+    const { id_coupon, username } = req.body;
+
+    const coupon = await Coupon.findById(id_coupon);
+
+    if (coupon.utility) {
+        let count = coupon.utility - 1;
+        if (count === 0) await Coupon.findByIdAndDelete(id_coupon)
+        else await Coupon.findByIdAndUpdate(id_coupon,{ utility: count, records: [...coupon.records, username] });
+    } else await Coupon.findByIdAndUpdate(id_coupon,{ records: [...coupon.records, username] });
+
+    res.send('verified');
 };
 
 module.exports = ctrl;

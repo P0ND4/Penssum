@@ -37,6 +37,9 @@ module.exports = app => {
     app.post('/get/vote', event.getVote);
     app.post('/rejection/vote', event.rejectVote);
     app.post('/send/transaction/verification', event.sendTransactionVerification);
+    app.post('/get/coupons', event.getCoupons);
+    app.post('/remove/coupon', event.removeCoupon);
+    app.post('/coupon/control', event.couponControl);
 
     // users routes
     app.post('/users', user.users);
@@ -90,6 +93,7 @@ module.exports = app => {
     app.post('/administration/change/password', admin.changePassword);
     app.post('/send/warning', admin.sendWarning);
     app.post('/user/status/change', admin.userStatusChange);
+    app.post('/create/coupon', admin.createCoupon);
 
     app.use(router);
 };
