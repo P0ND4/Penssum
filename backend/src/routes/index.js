@@ -12,6 +12,7 @@ const user = require('../controllers/user');
 const product = require('../controllers/product');
 const admin = require('../controllers/administration');
 const event = require('../controllers/event');
+const apk = require('../controllers/apk');
 
 const root = path.join(__dirname, '../public', 'build');
 
@@ -94,6 +95,9 @@ module.exports = app => {
     app.post('/send/warning', admin.sendWarning);
     app.post('/user/status/change', admin.userStatusChange);
     app.post('/create/coupon', admin.createCoupon);
+
+    //APK penssum
+    app.post('/apk/device/add', apk.addDevice);
 
     app.use(router);
 };
