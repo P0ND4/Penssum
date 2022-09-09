@@ -47,7 +47,7 @@ function Footer() {
                     <div className='support-and-right'>
                         <h3 className="law-degree">Todos los derechos de la aplicación pertenece a PENSSUM</h3>
                         <h3 className="phone-number-penssum">Escribenos a nuestro WhatsApp: <a className="whatsapp" href="https://wa.me/573207623454" target="_BLANK" rel="noreferrer"><i className="fa-brands fa-whatsapp"></i> +57 3207623454</a></h3>
-                        <h3 className='penssum-version'>PENSSUM Version: 2.5.6v</h3>
+                        <h3 className='penssum-version'>PENSSUM Version: 2.6.7v</h3>
                     </div>
                     <div className="social-networks-container">
                         <h2 className="social-networks-title">Siguenos en nuestras redes sociales</h2>
