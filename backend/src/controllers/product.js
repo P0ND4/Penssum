@@ -12,6 +12,7 @@ const Notification = require('../models/Notification');
 const Block = require('../models/Block');
 const Transaction = require('../models/Transaction');
 const Vote = require('../models/Vote');
+const sendDeviceNotification = require('../helpers/sendDeviceNotification');
 
 const ctrl = {};
 
@@ -219,10 +220,13 @@ ctrl.create = async (req, res) => {
     data.videoCall = data.videoCall ? await createURL() : null;
     data.linkMiniature = url;
     data.miniature = miniature;
-    data.modifiedDescription = data.description.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     
     const newProduct = new Product(data);
     const result = await newProduct.save();
+
+    const user = await User.findById(data.owner);
+
+    sendDeviceNotification({ name: user.firstName });
 
     if (data.advancePayment) {
         const transaction = await Transaction.findOne({ userId: data.owner }).sort({ creationDate: -1 })
