@@ -1,0 +1,458 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
+import { createUser } from "../../../api";
+import jwt_decode from "jwt-decode";
+import Cookies from "universal-cookie";
+
+const cookies = new Cookies();
+
+function Signup({
+  setUserInformation,
+  registrationProcess,
+  setRegistrationProcess,
+}) {
+  const [field, setField] = useState({
+    firstName: true,
+    lastName: true,
+    username: false,
+    email: false,
+    password: false,
+    repeatPassword: false,
+  });
+
+  const [data, setData] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    password: "",
+    repeatPassword: "",
+  });
+  const [sendingInformation, setSendingInformation] = useState(false);
+  const [errorGoogle, setErrorGoogle] = useState(false);
+
+  const navigate = useNavigate();
+
+  const buttonGoogle = useRef();
+
+  const responseFacebook = async (response) => {
+    const username =
+      response.name.slice(0, 2) +
+      response.email.slice(0, 2) +
+      `${response.userID.charAt(response.userID.length - 1)}${Math.round(
+        Math.random() * 1000
+      )}`;
+
+    const data = {
+      username: username.replace(/ /g, ""),
+      email: response.email,
+      password: response.userID,
+      profilePicture: response.picture.data.url,
+      registered: "facebook",
+    };
+
+    setSendingInformation(true);
+    const result = await createUser(data);
+    setSendingInformation(false);
+
+    if (result.error) {
+      const error = document.querySelector(".register_error");
+      error.textContent =
+        "El usuario ya está registrado, por favor inicie sesión.";
+      error.classList.add("showError");
+    } else {
+      setRegistrationProcess({ ...registrationProcess, selection: false });
+      setUserInformation(result);
+      navigate("/signup/selection");
+    }
+  };
+
+  const responseGoogle = useCallback(
+    async (response) => {
+      const user = jwt_decode(response.credential);
+
+      const username =
+        user.given_name.slice(0, 2) +
+        user.email.slice(0, 2) +
+        `${user.sub.charAt(user.sub.length - 1)}${Math.round(
+          Math.random() * 1000
+        )}`;
+
+      const data = {
+        firstName: user.given_name,
+        lastName: user.family_name,
+        username: username.replace(/ /g, ""),
+        email: user.email,
+        password: user.sub,
+        profilePicture: user.picture,
+        registered: "google",
+      };
+
+      setSendingInformation(true);
+      const result = await createUser(data);
+      setSendingInformation(false);
+
+      if (result.error) {
+        const error = document.querySelector(".register_error");
+        error.textContent =
+          "El usuario ya está registrado, por favor inicie sesión.";
+        error.classList.add("showError");
+      } else {
+        setRegistrationProcess({ ...registrationProcess, selection: false });
+        cookies.set("id", result._id, { path: "/" });
+        setUserInformation(result);
+        navigate("/signup/selection");
+      }
+    },
+    [navigate, setUserInformation, setRegistrationProcess, registrationProcess]
+  );
+
+  useEffect(() => {
+    const google = document.getElementById("google-handler");
+
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_ID,
+        callback: responseGoogle,
+      });
+      window.google.accounts.id.renderButton(buttonGoogle.current, {
+        theme: "outline",
+        text: "signup",
+      });
+    }
+
+    if (google) google.addEventListener("load", () => setErrorGoogle(true));
+
+    return () => setErrorGoogle(false);
+  }, [responseGoogle, errorGoogle]);
+
+  const signUpFormValidation = {
+    textLimit: /^[a-zA-ZA-ÿ\u00f1\u00d1\s!:,.;]{0,16}$/,
+    username: /^[a-zA-Z0-9_.+-]{3,16}$/,
+    email: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$/,
+    password: /^.{6,30}$/,
+  };
+
+  const validateField = (expression, input) => {
+    if (expression.test(input.value)) {
+      document
+        .querySelector(`.field_${input.name}`)
+        .classList.remove("showError");
+      setField({
+        ...field,
+        [input.name]: true,
+      });
+    } else {
+      input.value === ""
+        ? document
+            .querySelector(`.field_${input.name}`)
+            .classList.remove("showError")
+        : document
+            .querySelector(`.field_${input.name}`)
+            .classList.add("showError");
+      setField({
+        ...field,
+        [input.name]: false,
+      });
+    }
+  };
+
+  const passwordValidation = () => {
+    const password = document.getElementById("password");
+    const repeatPassword = document.getElementById("repeatPassword");
+    if (password.value !== repeatPassword.value) {
+      document
+        .querySelector(".field_repeatPassword")
+        .classList.add("showError");
+      if (repeatPassword.value === "")
+        document
+          .querySelector(".field_repeatPassword")
+          .classList.remove("showError");
+      setField({
+        ...field,
+        repeatPassword: false,
+      });
+    } else {
+      document
+        .querySelector(".field_repeatPassword")
+        .classList.remove("showError");
+      setField({
+        ...field,
+        repeatPassword: true,
+      });
+    }
+  };
+
+  const changeEvent = (e) => {
+    document
+      .querySelector(".field_fill_in_fields")
+      .classList.remove("showError");
+    document
+      .querySelector(".field_error_username")
+      .classList.remove("showError");
+    document.querySelector(".field_error_email").classList.remove("showError");
+    const error = document.querySelector(".register_error");
+    error.classList.remove("showError");
+
+    setData({
+      ...data,
+      [e.target.name]: e.target.value,
+    });
+
+    const targetName = e.target.name;
+    const input = e.target;
+
+    if (targetName === "firstName") {
+      validateField(signUpFormValidation.textLimit, input);
+    }
+    if (targetName === "lastName") {
+      validateField(signUpFormValidation.textLimit, input);
+    }
+    if (targetName === "username") {
+      validateField(signUpFormValidation.username, input);
+    }
+    if (targetName === "email") {
+      validateField(signUpFormValidation.email, input);
+    }
+    if (targetName === "password") {
+      validateField(signUpFormValidation.password, input);
+    }
+    if (targetName === "repeatPassword") {
+      passwordValidation();
+    }
+  };
+
+  const validation = async () => {
+    if (
+      field.firstName &&
+      field.lastName &&
+      field.username &&
+      field.email &&
+      field.password &&
+      field.repeatPassword
+    ) {
+      setSendingInformation(true);
+      const result = await createUser(data);
+      if (result.error) {
+        setTimeout(() => {
+          setSendingInformation(false);
+          if (result.type.user)
+            document
+              .querySelector(".field_error_username")
+              .classList.add("showError");
+          if (result.type.email)
+            document
+              .querySelector(".field_error_email")
+              .classList.add("showError");
+          return;
+        }, 1200);
+      } else {
+        setRegistrationProcess({ ...registrationProcess, selection: false });
+        cookies.set("id", result._id, { path: "/" });
+        setUserInformation(result);
+        navigate("/signup/selection");
+      }
+    } else {
+      setTimeout(() => {
+        document
+          .querySelector(".field_fill_in_fields")
+          .classList.add("showError");
+      }, 800);
+    }
+  };
+
+  return (
+    <div className="signup-container">
+      <div className="signup-card">
+        <div className="signup-card-title">
+          <h1>Registrarte</h1>
+        </div>
+        <form onSubmit={(e) => e.preventDefault()} id="main-form-register">
+          <p
+            className="field register_error"
+            style={{
+              textAlign: "center",
+              background: "#d10b0b",
+              padding: "6px",
+              borderRadius: "8px",
+              color: "#FFFFFF",
+            }}
+          ></p>
+          <div className="form-grid">
+            <div className="form-control">
+              <input
+                type="text"
+                placeholder="Nombre (opcional)"
+                name="firstName"
+                onKeyUp={changeEvent}
+              />
+              <p className="field field_firstname">
+                El nombre no puede superar los 16 caracteres ni tener números.
+              </p>
+            </div>
+            <div className="form-control">
+              <input
+                type="text"
+                placeholder="Apellido (opcional)"
+                name="lastName"
+                onKeyUp={changeEvent}
+              />
+              <p className="field field_lastname">
+                El apellido no puede superar los 16 caracteres, tener ni
+                números.
+              </p>
+            </div>
+            <div className="form-control">
+              <input
+                type="text"
+                placeholder="Nombre de usuario"
+                name="username"
+                onKeyUp={changeEvent}
+              />
+              <p className="field field_username">
+                El nombre de usuario no puede superar los 16 caracteres y no
+                puede ser menor a 3 caracteres ni colocar símbolos extraños.
+              </p>
+              <p className="field field_error_username">
+                El nombre de usuario ya existe.
+              </p>
+            </div>
+            <div className="form-control">
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                name="email"
+                onKeyUp={changeEvent}
+              />
+              <p className="field field_email">Correo invalidó.</p>
+              <p className="field field_error_email">El correo está en uso.</p>
+            </div>
+            <div className="form-control">
+              <input
+                type="password"
+                placeholder="Contraseña"
+                id="password"
+                name="password"
+                onKeyUp={changeEvent}
+              />
+              <p className="field field_password">
+                La contraseña no debe tener menos de 6 caracteres ni superar los
+                30 caracteres.
+              </p>
+            </div>
+            <div className="form-control">
+              <input
+                type="password"
+                placeholder="Repite la contraseña"
+                id="repeatPassword"
+                name="repeatPassword"
+                onKeyUp={changeEvent}
+              />
+              <p className="field field_repeatPassword">
+                La contraseña deben ser iguales.
+              </p>
+            </div>
+          </div>
+          <p
+            className="field field_fill_in_fields"
+            style={{
+              textAlign: "center",
+              background: "#d10b0b",
+              padding: "6px",
+              borderRadius: "8px",
+              color: "#FFFFFF",
+            }}
+          >
+            Rellene los campos.
+          </p>
+          <div className="form-control">
+            <button
+              id="signup-button"
+              style={{
+                background: sendingInformation ? "#3282B8" : "",
+                opacity: sendingInformation ? ".4" : "",
+                cursor: sendingInformation ? "not-allowed" : "",
+              }}
+              onClick={() => {
+                if (!sendingInformation) validation();
+              }}
+            >
+              REGISTRARSE
+            </button>
+          </div>
+          <div className="form-control">
+            <h2 className="signUpUsingTitle">O regístrate usando...</h2>
+            <div className="registration-options">
+              <FacebookLogin
+                appId={process.env.REACT_APP_FACEBOOK_ID}
+                autoLoad={false}
+                fields="name,email,picture"
+                callback={responseFacebook}
+                disableMobileRedirect={true}
+                render={(renderProps) => (
+                  <button
+                    id="signup-with-facebook"
+                    onClick={renderProps.onClick}
+                  >
+                    <img
+                      src="/img/icon/facebook_icon.svg"
+                      alt="facebook"
+                      className="facebook_icon"
+                    />{" "}
+                    FACEBOOK
+                  </button>
+                )}
+              />
+              <div className="google-zone-form">
+                <div ref={buttonGoogle}></div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div className="container-description-signup">
+        <div className="description-signup">
+          <h1>¡Regístrate YA!</h1>
+          <p>
+            Al registrarte aceptas los términos y condiciones del uso apropiado
+            de la aplicación, llevando la responsabilidad y el uso adecuado, lea
+            con atención las siguientes características, una vez registrada la
+            cuenta podrá hacer uso de las siguientes funcionalidades:
+          </p>
+          <ul>
+            <li>Tener perfil personalizable</li>
+            <li>Podrá comprar productos</li>
+            <li>Podrá publicar productos</li>
+            <li>Podrá tener acceso a videollamadas</li>
+          </ul>
+          <p>Estas son algunas reglas que debe cumplir: </p>
+          <ul>
+            <li>
+              No está permitido indicio de pornografía, juguetes sexuales, u
+              otros
+            </li>
+            <li>Impuntualidad a la presentación por videollamada</li>
+            <li>
+              No está permitido las malas palabras, discriminación, racismo,
+              incitar al odio, palabras de doble sentido u otro en
+              publicaciones.
+            </li>
+          </ul>
+          <p>
+            Algún incumplimiento de estas reglas pueden llevar a cabo las
+            siguientes penalizaciones:{" "}
+          </p>
+          <ul>
+            <li>La advertencia por medio de la aplicación</li>
+            <li>La suspensión temporal</li>
+            <li>El bloqueo permanente</li>
+          </ul>
+          <p>Por favor, siga las reglas con prudencia.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Signup;
