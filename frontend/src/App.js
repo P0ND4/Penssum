@@ -71,7 +71,7 @@ function App() {
   const [auth, setAuth] = useState(null);
   const [signinAdmin, setSigninAdmin] = useState(false);
   const [userInformation, setUserInformation] = useState({});
-  const [dashboard, setDashboard] = useState(true);
+  const [dashboard, setDashboard] = useState(false);
   const [search, setSearch] = useState('');
   const [products, setProducts] = useState(null);
   const [reportUsername, setReportUsername] = useState('');
