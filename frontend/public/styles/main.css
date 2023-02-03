@@ -1,0 +1,72 @@
+@import url('./layoutsStyle/error404.css');
+@import url('./commonStyles.css');
+@import url('./partialsStyle/nav.css');
+@import url('./layoutsStyle/help.css');
+@import url('./layoutsStyle/partStyle/helpInformation.css');
+@import url('./layoutsStyle/partStyle/payuForm.css');
+@import url('./layoutsStyle/partStyle/vote.css');
+@import url('./layoutsStyle/report.css');
+@import url('./layoutsStyle/tasks.css');
+@import url('./layoutsStyle/home.css');
+@import url('./partialsStyle/footer.css');
+@import url('./layoutsStyle/form.css');
+@import url('./layoutsStyle/smallStyle.css');
+@import url('./layoutsStyle/recovery.css');
+@import url('./layoutsStyle/improvementComment.css');
+@import url('./layoutsStyle/register/selection.css');
+@import url('./layoutsStyle/userStyle/messages.css');
+@import url('./layoutsStyle/userStyle/notifications.css');
+@import url('./layoutsStyle/userStyle/checkEmail.css');
+@import url('./layoutsStyle/userStyle/profile.css');
+@import url('./layoutsStyle/userStyle/preference.css');
+@import url('./layoutsStyle/postStyle/postControl.css');
+@import url('./layoutsStyle/postStyle/postActivity.css');
+@import url('./layoutsStyle/postStyle/postInformation.css');
+@import url('./layoutsStyle/postStyle/quote.css');
+@import url('./layoutsStyle/functionStyle/videoCall.css');
+@import url('./layoutsStyle/functionStyle/transactionReceipt.css');
+@import url('./layoutsStyle/functionStyle/found.css');
+@import url('./layoutsStyle/adminStyle/signinAdmin.css');
+@import url('./layoutsStyle/adminStyle/dashboard.css');
+
+:root {
+    --primary-color: #3282B8;
+    --second-color: #0F4C75;
+    --third-color: #1B262C;
+    --quarter-color: #EEEEEE;
+    --fifth-color: #3d5764;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: #333;
+    font-family: sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body { background: #EEEEEE; }
+
+.loading {
+    border: 16px solid #CCCCCC;
+    border-top-color: #3282B8;
+    border-top-style: groove;
+    height: 100px;
+    width: 100px;
+    border-radius: 100%;
+    animation: turn 1.5s ease-in-out infinite;
+}
+
+@keyframes turn {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-container { animation: appearLoadingContainer .6s forwards ease-in-out; }
+
+@keyframes appearLoadingContainer {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}

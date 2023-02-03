@@ -1,0 +1,53 @@
+.quote-container { padding: 10px 20px; }
+
+.quote { 
+    width: 100%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.quote-form { width: 50%; }
+
+.quote-information-container { 
+    width: 100%; 
+    margin-bottom: 25px;
+}
+
+.quote-information-container p {
+    text-align: center;
+    color: #AAAAAA;
+    font-size: 18px;
+}
+
+.quote-information-container img { 
+    display: block;
+    margin: 0 auto;
+    width: 50%; 
+}
+
+.container-photos-uploaded { width: 80%; }
+
+.quote-file-zone label {
+    display: block;
+    padding: 8px 16px;
+    background: #3282B8;
+    color: #ffffff;
+    font-size: 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    text-align: center;
+    margin: 20px 0;
+    transition: .2s all;
+}
+
+.quote-file-zone label:hover { background: #0F4C75; }
+
+@media only screen and (max-width: 1150px) { .quote-form { width: 60%; } }
+@media only screen and (max-width: 750px) { .quote-form { width: 80%; }}
+@media only screen and (max-width: 600px) { .quote-form { width: 100%; } }
+@media only screen and (max-width: 500px) { 
+    .quote-file-zone label, #send-quote { font-size: 18px; } 
+    .quote-information-container p { font-size: 16px; }
+}
+@media only screen and (max-width: 400px) { .quote-information-container img { width: 80%; } }

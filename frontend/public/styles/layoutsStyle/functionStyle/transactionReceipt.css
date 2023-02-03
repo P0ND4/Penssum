@@ -1,0 +1,168 @@
+.transactionReceipt-container { padding: 20px 60px; }
+
+.transactionReceipt-title { 
+ 	display: flex;
+ 	flex-direction: column;
+ 	justify-content: center;
+ 	align-items: center;  
+}
+
+.transactionReceipt-title h1 {
+	color: #3282B8;
+	font-size: 32px;
+}
+
+.transactionReceipt-title-logo {
+	margin: 15px 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.transactionReceipt-title-logo img {
+	width: 50px;
+	height: 50px;
+}
+
+.transactionReceipt-title-logo h1 {
+	font-size: 34px;
+	margin: 0 10px;
+}
+
+.transactionReceipt-title p {
+	color: #888888;
+	font-size: 22px;
+	text-align: center;
+}
+
+.transactionReceipt {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 20px 0;
+}
+
+.transactionReceipt-table h2 {
+	text-align: center;
+	width: 100%;
+	padding: 12px 18px;
+	font-size: 24px;
+	color: #FFFFFF;
+	background: #3282B8;
+	border: 1px solid #1B262C44;
+	border-radius: 8px 8px 0 0;
+}
+
+.information-transactionReceipt div {
+	width: 100%;
+	border-right: 1px solid #1B262C44;
+	border-bottom: 1px solid #1B262C44;
+	border-left: 1px solid #1B262C44;
+	border-radius: 0 0 8px 8px;
+	display: grid;
+	grid-template-columns: 360px 1fr;
+}
+
+.information-transactionReceipt div p {
+	padding: 6px 30px;
+	justify-content: center;
+	align-items: center;
+	border-right: 1px solid #1B262C44;
+	border-bottom: 1px solid #1B262C44;
+	border-left: 1px solid #1B262C44;
+	color: #666666;
+	font-size: 18px;
+}
+
+.transactionReceipt-button-container {
+	margin-top: 50px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.transactionReceipt-button-container button {
+	margin: 0 20px;
+	padding: 8px 14px;
+	background: #3282B8;
+	color: #FFFFFF;
+	font-size: 20px;
+	border-radius: 40px;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	transition: .2s all ease-in-out;
+}
+
+.transactionReceipt-button-container button i { color: #FFFFFF; }
+
+.transactionReceipt-button-container button:hover {
+	background: #0F4C75;
+	transform: scale(1.05);
+}
+
+@media only screen and (max-width: 1000px) {
+	.transactionReceipt-button-container button { 
+		font-size: 18px; 
+		margin: 0 10px;
+	}
+	.transactionReceipt-table { width: 100%; }
+	.transactionReceipt-container { padding: 20px 20px; }
+}
+
+@media only screen and (max-width: 900px) {
+	.transactionReceipt-container { padding: 20px 15px; }
+}
+
+@media only screen and (max-width: 750px) {
+	.transactionReceipt-title-logo { margin: 10px 0; }
+	.information-transactionReceipt div p { font-size: 14px; }
+	.transactionReceipt-title h1, .transactionReceipt-title-logo h1 { font-size: 24px; }
+	.transactionReceipt-title-logo img { width: 30px; height: 30px; }
+	.transactionReceipt-title p { font-size: 20px; }
+	.transactionReceipt-table h2 { 
+		font-size: 20px; 
+		padding: 8px 12px;
+	}	
+	.information-transactionReceipt div { grid-template-columns: repeat(2, 1fr); }
+	.transactionReceipt-button-container button { 
+		font-size: 16px; 
+		margin: 0 5px;
+	}
+}
+
+@media only screen and (max-width: 600px) {
+	.transactionReceipt-button-container { 
+		flex-direction: column; 
+		margin-top: 20px;
+	}
+	.transactionReceipt-button-container button, .transactionReceipt-button-container a {
+		font-size: 18px;
+		margin: 2px 0; 
+		width: 100%;
+		text-align: center;
+	}
+	.information-transactionReceipt div p { 
+		padding: 6px 10px; 
+		border-left: none;
+		border-right: none;
+		border-bottom: none;
+		max-width: 240px;
+	}
+	.information-transactionReceipt div { 
+		display: flex; 
+		justify-content: space-between;
+		align-items: center;
+	}
+	.transactionReceipt-table h2 { font-size: 16px; }
+}
+
+@media only screen and (max-width: 400px) {
+	.information-transactionReceipt div {
+		flex-direction: column;
+		align-items: initial;
+		justify-content: initial;
+	}
+	.information-transactionReceipt div p { width: 100%; }
+}

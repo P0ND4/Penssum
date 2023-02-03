@@ -1,0 +1,151 @@
+.post-control-container { padding: 40px 60px; }
+
+.post-control-header-title { 
+    display: flex; 
+    align-items: center;
+}
+
+.post-control-header-title a {
+    background: #3282B8;
+    padding: 6px 16px;
+    margin: 0 15px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.post-control-header-title h1 { 
+    color: #1B262C; 
+    font-size: 38px;
+}
+
+.thereAreNoOffers {
+    color: #3282B8;
+    font-size: 28px;
+    width: 100%;
+    text-align: center;
+}
+
+.post-control hr { margin: 18px 0; }
+
+.post-control-card {
+    padding: 20px;
+    background: #FFFFFF;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.offer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background: #f8f8f8;
+}
+
+.offer-information {
+    display: flex;
+    width: 700px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.offer-username h3, .offer-username p {
+    display: inline-block;
+    margin: 0 15px;
+    font-size: 22px;
+}
+
+.offer-username p { color: #1B262C; }
+.offer-username h3, .offer-username h3 a { 
+    color: #3282B8; 
+    text-decoration: none; 
+    transition: all .2s ease-in-out;
+}
+.offer-username h3 a:hover { color: #0f2749; }
+
+.offer-value {
+    color: #3282B8;
+    font-size: 22px;
+}
+
+.post-control-options button {
+    background: #3282B8;
+    margin: 0 5px;
+    padding: 4px 8px;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.post-control-options button:hover { background: #0f2749; }
+
+.post-control-options button i {
+    font-size: 24px;
+    color: #FFFFFF;
+}
+
+#offer-check { background: #01791f; } 
+#offer-check:hover { background: #004912; } 
+#decline-offer { background: #ba0000; }
+#decline-offer:hover { background: #800000; }
+
+@media only screen and (max-width: 1150px) { .offer-information { width: 600px; } }
+@media only screen and (max-width: 1000px) { .offer-information { width: 500px; } }
+
+@media only screen and (max-width: 900px) {
+    .post-control-container { padding: 20px 30px; }
+    .offer-information { width: 340px; }
+    .offer-username p { display: none; }
+}
+
+@media only screen and (max-width: 700px) {
+    .offer-information { width: 280px; }
+    .post-control-container { padding: 20px; }
+    .offer-username h3, .offer-value { font-size: 18px; }
+    .post-control-options button { margin: 0 2px; }
+    .post-control-options button i { font-size: 20px; }
+}
+
+@media only screen and (max-width: 600px) {
+    .thereAreNoOffers { font-size: 22px; }
+    .offer-container { flex-direction: column; }
+    .post-control-options { 
+        width: 50%;
+        margin: 20px 0; 
+        display: flex;
+        justify-content: space-between;
+    }
+    .offer-username p { display: block; }
+    .offer-username h3, .offer-value { font-size: 22px; }
+    .offer-information { width: 100%; }
+    .post-control-options button {
+        margin: 0 5px;
+        padding: 4px 8px;
+    }
+    .post-control-options {
+        display: flex;
+        justify-content: space-between;
+        width: 80%;
+    }
+    .post-control-options button i { font-size: 24px; }
+    .offer-information { 
+        padding: 8px 0;
+        border-bottom: 2px solid #aaaaaa; 
+    }
+    .post-control-header-title h1 { font-size: 32px; }
+}
+
+@media only screen and (max-width: 400px) { 
+    .thereAreNoOffers { font-size: 18px; }
+    .offer-username h3, .offer-value { font-size: 18px; }
+    .offer-information { flex-direction: column; }
+    .offer-username p { display: none; } 
+    .post-control-header-title h1 { font-size: 26px; }
+    .post-control-container { padding: 20px 10px; }
+}

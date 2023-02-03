@@ -1,0 +1,86 @@
+.preference, .helpInformation-container, .dashboard-container  {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: space-between;
+}
+
+.preference-sections-container, .helpInformation-sections-container, .dashboard-sections-container {
+    width: 22%;
+    height: auto;
+    background: #2c373d;
+    z-index: 10;
+    transition: .5s all;
+}
+
+.preference-sections, .helpInformation-sections, .dashboard-sections {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+}
+
+.preference-sections-title, .helpInformation-sections-title, .dashboard-sections-title {
+    margin: 15px;
+    color: #FFFFFF;
+    font-size: 26px;
+}
+
+#fa-chevron-left-preference, #fa-chevron-left-helpInformation, #fa-chevron-left-dashboard {
+    display: none;
+    font-size: 40px;
+    color: #AAAAAA;
+    cursor: pointer;
+    margin-top: 15px;
+    margin-left: 20px;
+}
+
+.preference-sections i, .helpInformation-sections i, .dashboard-sections i {
+    font-size: 20px;
+    color: #DDDDDD;
+    margin-right: 6px;
+}
+
+.preference-sections p, .helpInformation-sections p, .dashboard-sections p {
+    font-size: 16px;
+    color: #FFFFFF;
+}
+
+.preference-sections:hover, .helpInformation-sections:hover { background: #1B262C; }
+
+.main-preference-section, .main-helpInformation-section, .main-dashboard-section { width: 78%; }
+
+.commomStylePadding { padding: 15px 40px; }
+
+@media only screen and (max-width:1230px) {
+    .helpInformation-sections-container { width: 27%; }
+}
+
+@media only screen and (max-width:1150px) {
+    .preference-sections-container, .helpInformation-sections-container { width: 34%; }
+    .main-preference-section, .main-helpInformation-section { width: 70%; } 
+    .commomStylePadding { padding: 15px 20px; }
+}
+
+@media only screen and (max-width: 900px) { .helpInformation-sections-container { width: 38%; }}
+
+@media only screen and (max-width: 830px) {
+    .commomStylePadding { padding: 15px 18px; }
+    .preference-sections-container { width: 40%; }
+    .helpInformation-sections-container { width: 48% }
+    .main-preference-section, .main-helpInformation-section { width: 60%; }
+    .preference-sections { padding: 14px 17px; }
+}
+
+@media only screen and (max-width: 600px) {
+    .commomStylePadding { padding: 15px 15px; }
+    .preference-sections-container, .dashboard-sections-container {
+        position: fixed;
+        height: 100vh;
+        width: 100%;
+    }
+    .main-preference-section, .main-helpInformation-section, .main-dashboard-section { width: 100%; }
+    #fa-chevron-left-helpInformation, #fa-chevron-left-dashboard { display: inline-block; }
+}

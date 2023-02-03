@@ -1,0 +1,35 @@
+.error404 {
+    padding: 40px;
+    text-align: center;
+}
+
+.error404Title {
+    color: #3282B8;
+    font-size: 28px;
+    margin: 8px 0;
+}
+
+.error404Description {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.error-click-here {
+    color: #3282B8;
+    text-decoration: none;    
+    cursor: pointer;
+    transition: .2s all;
+}
+
+.error-click-here:hover { color: #0F4C75; }
+
+.error404 img { 
+    width: 40%; 
+    margin: 20px 0;
+}
+
+@media only screen and (max-width: 700px) {
+    .error404 { padding: 10px; }
+    .error404Description { width: 100%; }
+    .error404 img { width: 80%; margin: 10px 0; }
+}

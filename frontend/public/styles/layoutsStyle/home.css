@@ -1,0 +1,10 @@
+.home {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sidebar-home {
+  width: 400px;
+  background: var(--third-color);
+  padding: 40px;
+}
